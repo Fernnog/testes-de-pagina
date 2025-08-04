@@ -1,3 +1,8 @@
+// ===================================================================================
+// ARQUIVO: script.js (ESTADO ANTERIOR)
+// FUNÇÃO: Este arquivo será descontinuado e sua lógica distribuída nos novos módulos.
+// ===================================================================================
+
 // Configuração do Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyDIXuruqM4M9oA_Rz3PSxVsXM1EEVVbprw",
