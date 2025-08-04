@@ -7,16 +7,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="image/favicon.ico" type="image/x-icon"> <!-- Favicon -->
+    <link rel="icon" href="image/favicon.ico" type="image/x-icon">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
     <header>
         <img src="image/logo.png" alt="Logotipo Escala de Intercessores" class="logo">
-        <h2>GERADOR DE ESCALA DA INTERCESSÃO</h2> <!-- Subtítulo abaixo do logo -->
+        <h2>GERADOR DE ESCALA DA INTERCESSÃO</h2>
     </header>
     <nav>
-        <!-- ATUALIZADO: onclicks removidos e IDs adicionados -->
         <button id="nav-auth"><i class="fas fa-lock"></i> Autenticação</button>
         <button id="nav-cadastro"><i class="fas fa-user-plus"></i> Cadastro de Membros</button>
         <button id="nav-restricoes"><i class="fas fa-calendar-times"></i> Períodos de Restrição</button>
@@ -169,18 +168,7 @@
             <div class="input-group">
                 <select id="mesEscala" required>
                     <option value="" disabled selected hidden>Selecione o mês</option>
-                    <option value="0">Janeiro</option>
-                    <option value="1">Fevereiro</option>
-                    <option value="2">Março</option>
-                    <option value="3">Abril</option>
-                    <option value="4">Maio</option>
-                    <option value="5">Junho</option>
-                    <option value="6">Julho</option>
-                    <option value="7">Agosto</option>
-                    <option value="8">Setembro</option>
-                    <option value="9">Outubro</option>
-                    <option value="10">Novembro</option>
-                    <option value="11">Dezembro</option>
+                    <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option><option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option><option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option><option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
                 </select>
                 <label for="mesEscala">Mês</label>
             </div>
@@ -190,10 +178,9 @@
             </div>
             <button type="submit" class="secondary-button">Gerar Escala</button>
         </form>
-        <!-- ATUALIZADO: Container do índice e do resultado principal -->
-        <div id="resultadoEscala">
-            <div id="balanceIndexContainer" style="display: none;"></div>
-        </div>
+        <div id="resultadoEscala"></div>
+        <div id="balanceIndexContainer" style="display: none;"></div>
+        <div id="diagnosticReportContainer" style="display: none;"></div>
         <button id="btn-exportar-xlsx" class="secondary-button">Exportar Escala (XLSX)</button>
     </div>
 
@@ -203,18 +190,9 @@
             <h3 id="modalTitle">Suspender Membro</h3>
             <input type="hidden" id="membroIndexSuspensao">
             <div class="modal-options">
-                <div class="input-group">
-                    <input type="checkbox" id="suspenderCultos">
-                    <label for="suspenderCultos">Suspender de Cultos (Qua/Dom)</label>
-                </div>
-                <div class="input-group">
-                    <input type="checkbox" id="suspenderSabado">
-                    <label for="suspenderSabado">Suspender de Reuniões (Sáb)</label>
-                </div>
-                <div class="input-group">
-                    <input type="checkbox" id="suspenderWhatsapp">
-                    <label for="suspenderWhatsapp">Suspender de Oração (WhatsApp)</label>
-                </div>
+                <div class="input-group"><input type="checkbox" id="suspenderCultos"><label for="suspenderCultos">Suspender de Cultos (Qua/Dom)</label></div>
+                <div class="input-group"><input type="checkbox" id="suspenderSabado"><label for="suspenderSabado">Suspender de Reuniões (Sáb)</label></div>
+                <div class="input-group"><input type="checkbox" id="suspenderWhatsapp"><label for="suspenderWhatsapp">Suspender de Oração (WhatsApp)</label></div>
             </div>
             <div class="modal-actions">
                 <button id="btn-salvar-suspensao" class="secondary-button">Salvar Alterações</button>
@@ -222,8 +200,8 @@
             </div>
         </div>
     </div>
-    
-    <!-- NOVO: Container para as notificações (toast) -->
+
+    <!-- Container para Notificações Toast -->
     <div id="toast-container"></div>
 
     <!-- Scripts do Firebase -->
@@ -231,7 +209,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     
-    <!-- ATUALIZADO: Chamada para o script modular -->
+    <!-- Script principal modular -->
     <script type="module" src="js/main.js"></script>
 </body>
 </html>
