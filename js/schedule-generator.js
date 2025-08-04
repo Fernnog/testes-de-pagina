@@ -111,10 +111,8 @@ export function setupGeradorEscala() {
     document.getElementById('formEscala').addEventListener('submit', (e) => {
         e.preventDefault();
 
-        // Limpa relatórios anteriores
-        document.getElementById('resultadoEscala').innerHTML = '';
-        document.getElementById('justificationReportContainer').innerHTML = '';
-        document.getElementById('diagnosticReportContainer').style.display = 'none';
+        // MODIFICAÇÃO: A limpeza dos relatórios foi removida daqui e centralizada em main.js
+        // para garantir a ordem correta de execução e evitar código duplicado.
 
         const gerarCultos = document.getElementById('escalaCultos').checked;
         const gerarSabado = document.getElementById('escalaSabado').checked;
