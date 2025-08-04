@@ -16,15 +16,16 @@
         <h2>GERADOR DE ESCALA DA INTERCESSÃO</h2> <!-- Subtítulo abaixo do logo -->
     </header>
     <nav>
-        <button onclick="showTab('auth')"><i class="fas fa-lock"></i> Autenticação</button>
-        <button onclick="showTab('cadastro')"><i class="fas fa-user-plus"></i> Cadastro de Membros</button>
-        <button onclick="showTab('restricoes')"><i class="fas fa-calendar-times"></i> Períodos de Restrição</button>
-        <button onclick="showTab('restricoesPermanentes')"><i class="fas fa-ban"></i> Restrições Permanentes</button>
-        <button onclick="showTab('escala')"><i class="fas fa-calendar-check"></i> Geração da Escala</button>
-        <button onclick="exportarDados()"><i class="fas fa-download"></i> Exportar Dados (JSON)</button>
-        <input type="file" id="importarArquivo" accept=".json" onchange="importarDados(event)" style="display:none;">
-        <button onclick="document.getElementById('importarArquivo').click()"><i class="fas fa-upload"></i> Importar Dados (JSON)</button>
-        <button onclick="limparDados()"><i class="fas fa-trash"></i> Limpar Dados</button>
+        <!-- ATUALIZADO: onclicks removidos e IDs adicionados -->
+        <button id="nav-auth"><i class="fas fa-lock"></i> Autenticação</button>
+        <button id="nav-cadastro"><i class="fas fa-user-plus"></i> Cadastro de Membros</button>
+        <button id="nav-restricoes"><i class="fas fa-calendar-times"></i> Períodos de Restrição</button>
+        <button id="nav-restricoes-permanentes"><i class="fas fa-ban"></i> Restrições Permanentes</button>
+        <button id="nav-escala"><i class="fas fa-calendar-check"></i> Geração da Escala</button>
+        <button id="btn-exportar-dados"><i class="fas fa-download"></i> Exportar Dados (JSON)</button>
+        <input type="file" id="importarArquivo" accept=".json" style="display:none;">
+        <button id="btn-importar-dados"><i class="fas fa-upload"></i> Importar Dados (JSON)</button>
+        <button id="btn-limpar-dados"><i class="fas fa-trash"></i> Limpar Dados</button>
     </nav>
 
     <!-- Aba de Autenticação -->
@@ -39,7 +40,7 @@
                 <input type="password" id="senhaRegistro" required placeholder=" ">
                 <label for="senhaRegistro">Senha</label>
             </div>
-            <button type="submit" class="secondary-button">Registrar</button> <!-- Botão secundário -->
+            <button type="submit" class="secondary-button">Registrar</button>
         </form>
         <form id="formLogin">
             <div class="input-group">
@@ -50,7 +51,7 @@
                 <input type="password" id="senhaLogin" required placeholder=" ">
                 <label for="senhaLogin">Senha</label>
             </div>
-            <button type="submit" class="secondary-button">Login</button> <!-- Botão secundário -->
+            <button type="submit" class="secondary-button">Login</button>
         </form>
         <button id="logout" style="display:none;">Logout</button>
     </div>
@@ -65,23 +66,23 @@
             </div>
             <div class="input-group">
                 <select id="genero" required>
-                    <option value="" disabled selected hidden>Selecione o gênero</option> <!-- Placeholder no select -->
+                    <option value="" disabled selected hidden>Selecione o gênero</option>
                     <option value="M">Masculino</option>
                     <option value="F">Feminino</option>
                 </select>
                 <label for="genero">Gênero</label>
             </div>
             <div class="input-group">
-                <input type="checkbox" id="conjugeParticipa" onchange="toggleConjuge()">
+                <input type="checkbox" id="conjugeParticipa">
                 <label for="conjugeParticipa">Cônjuge participa?</label>
             </div>
             <div class="input-group" id="conjugeField" style="display: none;">
                 <input type="text" id="nomeConjuge" placeholder=" ">
                 <label for="nomeConjuge">Nome do cônjuge</label>
             </div>
-            <button type="submit" class="secondary-button">Cadastrar</button> <!-- Botão secundário -->
+            <button type="submit" class="secondary-button">Cadastrar</button>
         </form>
-        <div class="member-list-summary" id="memberSummary"> <!-- Container para o resumo -->
+        <div class="member-list-summary" id="memberSummary">
             <p>Masculino: <span id="maleCount">0</span></p>
             <p>Feminino: <span id="femaleCount">0</span></p>
             <p>Total: <span id="totalCount">0</span></p>
@@ -96,7 +97,7 @@
         <form id="formRestricao">
             <div class="input-group">
                 <select id="membroRestricao">
-                    <option value="" disabled selected hidden>Selecione um membro</option> <!-- Placeholder no select -->
+                    <option value="" disabled selected hidden>Selecione um membro</option>
                 </select>
                 <label for="membroRestricao">Membro</label>
             </div>
@@ -108,7 +109,7 @@
                 <input type="date" id="dataFim" required placeholder=" ">
                 <label for="dataFim">Data Fim</label>
             </div>
-            <button type="submit" class="secondary-button">Registrar</button> <!-- Botão secundário -->
+            <button type="submit" class="secondary-button">Registrar</button>
         </form>
         <h3>Restrições Cadastradas</h3>
         <ul id="listaRestricoes"></ul>
@@ -120,13 +121,13 @@
         <form id="formRestricaoPermanente">
             <div class="input-group">
                 <select id="membroRestricaoPermanente">
-                    <option value="" disabled selected hidden>Selecione um membro</option> <!-- Placeholder no select -->
+                    <option value="" disabled selected hidden>Selecione um membro</option>
                 </select>
                 <label for="membroRestricaoPermanente">Membro</label>
             </div>
             <div class="input-group">
                 <select id="diaSemana" required>
-                    <option value="" disabled selected hidden>Selecione o dia da semana</option> <!-- Placeholder no select -->
+                    <option value="" disabled selected hidden>Selecione o dia da semana</option>
                     <option value="Quarta">Quarta</option>
                     <option value="Domingo Manhã">Domingo Manhã</option>
                     <option value="Domingo Noite">Domingo Noite</option>
@@ -134,7 +135,7 @@
                 </select>
                 <label for="diaSemana">Dia da Semana</label>
             </div>
-            <button type="submit" class="secondary-button">Registrar</button> <!-- Botão secundário -->
+            <button type="submit" class="secondary-button">Registrar</button>
         </form>
         <h3>Restrições Permanentes Cadastradas</h3>
         <ul id="listaRestricoesPermanentes"></ul>
@@ -159,7 +160,7 @@
             </div>
             <div class="input-group">
                 <select id="quantidadeCultos" required>
-                    <option value="" disabled selected hidden>Selecione a quantidade</option> <!-- Placeholder no select -->
+                    <option value="" disabled selected hidden>Selecione a quantidade</option>
                     <option value="1">1 pessoa</option>
                     <option value="2">2 pessoas</option>
                 </select>
@@ -167,7 +168,7 @@
             </div>
             <div class="input-group">
                 <select id="mesEscala" required>
-                    <option value="" disabled selected hidden>Selecione o mês</option> <!-- Placeholder no select -->
+                    <option value="" disabled selected hidden>Selecione o mês</option>
                     <option value="0">Janeiro</option>
                     <option value="1">Fevereiro</option>
                     <option value="2">Março</option>
@@ -187,13 +188,13 @@
                 <input type="number" id="anoEscala" min="2025" value="2025" required placeholder=" ">
                 <label for="anoEscala">Ano</label>
             </div>
-            <button type="submit" class="secondary-button">Gerar Escala</button> <!-- Botão secundário -->
+            <button type="submit" class="secondary-button">Gerar Escala</button>
         </form>
+        <!-- ATUALIZADO: Container do índice e do resultado principal -->
         <div id="resultadoEscala">
-            <!-- NOVO: Container para o Índice de Equilíbrio -->
             <div id="balanceIndexContainer" style="display: none;"></div>
         </div>
-        <button onclick="exportarEscalaXLSX()" class="secondary-button">Exportar Escala (XLSX)</button> <!-- Botão secundário -->
+        <button id="btn-exportar-xlsx" class="secondary-button">Exportar Escala (XLSX)</button>
     </div>
 
     <!-- Modal de Suspensão Granular -->
@@ -216,13 +217,13 @@
                 </div>
             </div>
             <div class="modal-actions">
-                <button onclick="salvarSuspensao()" class="secondary-button">Salvar Alterações</button>
-                <button onclick="document.getElementById('suspensaoModal').style.display='none'">Cancelar</button>
+                <button id="btn-salvar-suspensao" class="secondary-button">Salvar Alterações</button>
+                <button id="btn-cancelar-suspensao">Cancelar</button>
             </div>
         </div>
     </div>
-
-    <!-- NOVO: Container para as notificações (Toasts) -->
+    
+    <!-- NOVO: Container para as notificações (toast) -->
     <div id="toast-container"></div>
 
     <!-- Scripts do Firebase -->
@@ -230,7 +231,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     
-    <!-- ATUALIZADO: Script agora é modular -->
+    <!-- ATUALIZADO: Chamada para o script modular -->
     <script type="module" src="js/main.js"></script>
 </body>
 </html>
