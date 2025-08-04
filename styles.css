@@ -152,7 +152,7 @@ form {
 }
 
 
-/* Estilização específica para checkboxes */
+/* Estilização específica para checkboxes e radios */
 #formEscala .input-group,
 #cadastro .input-group,
 #suspensaoModal .input-group {
@@ -162,6 +162,7 @@ form {
 }
 
 #formEscala input[type="checkbox"],
+#formEscala input[type="radio"],
 #cadastro input[type="checkbox"],
 #suspensaoModal input[type="checkbox"] {
     accent-color: #ff8c00;
@@ -172,12 +173,14 @@ form {
 }
 
 #formEscala input[type="checkbox"]:hover,
+#formEscala input[type="radio"]:hover,
 #cadastro input[type="checkbox"]:hover,
 #suspensaoModal input[type="checkbox"]:hover {
     opacity: 0.8;
 }
 
 #formEscala input[type="checkbox"]:checked,
+#formEscala input[type="radio"]:checked,
 #cadastro input[type="checkbox"]:checked,
 #suspensaoModal input[type="checkbox"]:checked {
     box-shadow: 0 0 10px rgba(255, 140, 0, 0.7);
@@ -323,12 +326,55 @@ button:active {
 
 .member-list-summary p { margin: 5px 0; }
 
-/* Relatório de participações */
+/* Relatório de participações e Layout de Cards */
 #resultadoEscala {
     background-color: #fff;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.escala-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px 0;
+    background: none; /* sobrescreve o fundo branco */
+    box-shadow: none; /* sobrescreve a sombra */
+}
+
+.escala-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-top: 5px solid #ff8c00;
+    overflow: hidden; /* Garante que os cantos arredondados funcionem */
+}
+.escala-card__header {
+    padding: 15px;
+    background-color: #fff9f2;
+    border-bottom: 1px solid #ffebcc;
+}
+.escala-card__header h4 { margin: 0; color: #af4d00; font-size: 1.1em; }
+.escala-card__header span { font-size: 0.9em; color: #6c757d; }
+
+.escala-card__body {
+    padding: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-start;
+}
+
+.membro-card {
+    background-color: #f1f8ff;
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: 500;
+    color: #0366d6;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    flex-grow: 1; /* Faz os cards ocuparem o espaço */
 }
 
 #resultadoEscala h3, #resultadoEscala h4 {
@@ -366,7 +412,7 @@ button:active {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Rodapé (ESTILO RESTAURADO) */
+/* Rodapé */
 footer {
     background: linear-gradient(45deg, #ff4500, #ff8c00);
     color: white;
@@ -384,7 +430,7 @@ footer {
     .tab { padding: 15px; border-left-width: 3px; }
     form { padding: 15px; }
     .input-group { margin-top: 15px; }
-    #formEscala .input-group { flex-direction: column; align-items: flex-start; }
+    #formEscala .input-group { flex-direction: row; align-items: center; } /* Mantém radio na linha */
     ul li { flex-direction: column; align-items: flex-start; gap: 10px; }
     button, .secondary-button { width: 100%; }
     .logo { max-width: 120px; }
@@ -405,7 +451,7 @@ footer {
 }
 .modal-content {
     background: white; padding: 30px; border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 90%; max-width: 500px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 90%; max-width: 600px;
 }
 .modal-content h3 { margin-top: 0; color: #2c3e50; background: none; -webkit-text-fill-color: initial; text-shadow: none; }
 .modal-options .input-group { display: flex; align-items: center; margin-bottom: 15px; }
@@ -469,70 +515,63 @@ footer {
 .status-suspended { color: #ffc107; }
 .status-restricted-temp { color: #17a2b8; }
 
-#justificationReportContainer {
-    margin-top: 30px;
-    padding: 25px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid #dee2e6;
+/* ===== ESTILOS PARA O NOVO MODAL DE ANÁLISE ===== */
+#analiseConcentracaoModal .modal-content {
+    max-width: 700px; /* Um pouco maior para caber a análise */
 }
 
-#justificationReportContainer h4 {
-    text-align: center;
-    color: #495057;
-    margin-top: 0;
-    margin-bottom: 20px;
-    background: none;
-    -webkit-text-fill-color: initial;
-    text-shadow: none;
-}
-
-.justification-list {
-    list-style: none;
-    padding: 0;
-    display: grid;
-    gap: 15px;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-}
-
-.justification-item {
-    background-color: #fff;
-    border-radius: 6px;
-    padding: 15px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.07);
-    border-left: 5px solid;
-}
-
-.justification-item.status-high { border-color: #dc3545; } /* Muita participação */
-.justification-item.status-mid { border-color: #28a745; }  /* Participação OK */
-.justification-item.status-low { border-color: #ffc107; }  /* Pouca participação */
-.justification-item.status-none { border-color: #6c757d; } /* Nenhuma participação */
-
-.justification-header {
-    font-weight: bold;
+.modal-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
 }
 
-.justification-text {
-    font-size: 0.9em;
-    color: #495057;
-    margin: 0;
-}
-
-#balanceIndexContainer h4 i.fa-info-circle {
-    font-size: 0.8em;
+.close-button {
+    background: none;
+    border: none;
+    font-size: 2.5rem;
+    font-weight: 300;
+    line-height: 1;
     color: #6c757d;
-    cursor: help;
+    cursor: pointer;
+    box-shadow: none;
+    padding: 0 10px;
+}
+.close-button:hover {
+    color: #dc3545;
+    transform: none; /* remove o efeito de hover padrão de botões */
 }
 
-button:disabled, button[disabled] {
-    border: 1px solid #999999;
-    background-color: #cccccc;
-    color: #666666;
-    cursor: not-allowed;
+.modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.analise-turno-bloco { 
+    margin-bottom: 25px; 
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    border-left: 4px solid #17a2b8;
+}
+.analise-turno-bloco h5 { 
+    border-bottom: 2px solid #ffc107; 
+    padding-bottom: 8px;
+    margin-top: 0;
+    font-size: 1.2em;
+}
+.analise-turno-bloco h6 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #343a40;
+}
+.analise-turno-bloco ul li {
+    background: none;
+    border: none;
+    padding: 4px 0;
+    margin: 0;
     box-shadow: none;
-    transform: none;
 }
