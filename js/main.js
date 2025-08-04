@@ -27,7 +27,8 @@ import {
     toggleConjuge,
     atualizarTodasAsListas,
     setupUiListeners,
-    showToast
+    showToast,
+    exportarEscalaXLSX // Importa a função de exportação
 } from './ui.js';
 
 
@@ -90,15 +91,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 salvarDados(auth, database).then(() => {
                     atualizarTodasAsListas();
                     document.getElementById('resultadoEscala').innerHTML = '';
-                    // MODIFICAÇÃO: Garante que os containers de relatório também sejam limpos aqui
-                    document.getElementById('justificationReportContainer').innerHTML = '';
-                    document.getElementById('diagnosticReportContainer').style.display = 'none';
+                    document.getElementById('diagnosticReportContainer').innerHTML = '';
+                    // Desativa o botão de exportar ao limpar os dados
+                    document.getElementById('btn-exportar-xlsx').disabled = true; 
                     showToast('Todos os dados foram limpos.', 'success');
                 });
             }
         });
 
         document.getElementById('logout').addEventListener('click', () => handleLogout(auth));
+        
+        // Adiciona o listener para o botão de exportar a escala
+        document.getElementById('btn-exportar-xlsx').addEventListener('click', exportarEscalaXLSX);
 
         // --- Listeners de Submissão de Formulários ---
         document.getElementById('formCadastro').addEventListener('submit', (e) => {
@@ -154,10 +158,8 @@ document.addEventListener('DOMContentLoaded', () => {
             e.target.reset();
         });
 
-        // MODIFICAÇÃO: Lógica de limpeza centralizada aqui.
-        // Listener para limpar relatórios antigos ao gerar uma nova escala.
+        // Listener para limpar relatórios antigos ao gerar uma nova escala
         document.getElementById('formEscala').addEventListener('submit', () => {
-            document.getElementById('resultadoEscala').innerHTML = '';
             document.getElementById('diagnosticReportContainer').style.display = 'none';
             document.getElementById('justificationReportContainer').innerHTML = '';
        });
