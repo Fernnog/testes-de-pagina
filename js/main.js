@@ -90,7 +90,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 salvarDados(auth, database).then(() => {
                     atualizarTodasAsListas();
                     document.getElementById('resultadoEscala').innerHTML = '';
-                    document.getElementById('diagnosticReportContainer').innerHTML = '';
+                    // MODIFICAÇÃO: Garante que os containers de relatório também sejam limpos aqui
+                    document.getElementById('justificationReportContainer').innerHTML = '';
+                    document.getElementById('diagnosticReportContainer').style.display = 'none';
                     showToast('Todos os dados foram limpos.', 'success');
                 });
             }
@@ -152,8 +154,10 @@ document.addEventListener('DOMContentLoaded', () => {
             e.target.reset();
         });
 
-        // Listener para limpar relatórios antigos ao gerar uma nova escala
+        // MODIFICAÇÃO: Lógica de limpeza centralizada aqui.
+        // Listener para limpar relatórios antigos ao gerar uma nova escala.
         document.getElementById('formEscala').addEventListener('submit', () => {
+            document.getElementById('resultadoEscala').innerHTML = '';
             document.getElementById('diagnosticReportContainer').style.display = 'none';
             document.getElementById('justificationReportContainer').innerHTML = '';
        });
