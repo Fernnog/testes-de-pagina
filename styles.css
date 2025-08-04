@@ -545,3 +545,53 @@ footer {
 .modal-actions button {
     width: auto; /* Permite que os botões tenham larguras diferentes */
 }
+
+/* Cole estas novas regras de CSS no final do arquivo styles.css */
+
+/* ===== Estilos para Notificações (Toast) ===== */
+#toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    padding: 15px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    opacity: 0;
+    transform: translateX(100%);
+    animation: slideIn 0.5s forwards, fadeOut 0.5s 4.5s forwards;
+}
+
+.toast.success {
+    background: linear-gradient(45deg, #28a745, #34d058); /* Verde */
+}
+
+.toast.warning {
+    background: linear-gradient(45deg, #ffc107, #ffdb58); /* Amarelo/Laranja */
+    color: #343a40;
+}
+
+@keyframes slideIn {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
