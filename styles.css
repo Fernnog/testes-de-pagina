@@ -117,6 +117,7 @@ form {
     width: 100%;
     font-size: 16px;
     background-color: #fff;
+    box-sizing: border-box; /* Garante consistência de tamanho */
     transition: border-color 0.3s, box-shadow 0.3s;
 }
 
@@ -143,19 +144,26 @@ form {
 
 .input-group input:focus + label,
 .input-group input:not(:placeholder-shown) + label,
-.input-group select:focus + label {
+.input-group select:focus + label,
+.input-group select:valid + label { /* Garante que o label suba quando uma opção é selecionada */
     top: -10px;
     font-size: 12px;
     color: #ff8c00;
 }
 
-#formEscala .input-group {
+
+/* Estilização específica para checkboxes */
+#formEscala .input-group,
+#cadastro .input-group,
+#suspensaoModal .input-group {
     display: flex;
     align-items: center;
     margin-top: 0;
 }
 
-#formEscala input[type="checkbox"] {
+#formEscala input[type="checkbox"],
+#cadastro input[type="checkbox"],
+#suspensaoModal input[type="checkbox"] {
     accent-color: #ff8c00;
     width: 18px;
     height: 18px;
@@ -163,13 +171,18 @@ form {
     margin-right: 10px;
 }
 
-#formEscala input[type="checkbox"]:hover {
+#formEscala input[type="checkbox"]:hover,
+#cadastro input[type="checkbox"]:hover,
+#suspensaoModal input[type="checkbox"]:hover {
     opacity: 0.8;
 }
 
-#formEscala input[type="checkbox"]:checked {
+#formEscala input[type="checkbox"]:checked,
+#cadastro input[type="checkbox"]:checked,
+#suspensaoModal input[type="checkbox"]:checked {
     box-shadow: 0 0 10px rgba(255, 140, 0, 0.7);
 }
+
 
 /* Botões de formulário e secundários */
 form button, .secondary-button {
@@ -273,13 +286,8 @@ button:active {
     font-size: 14px;
 }
 
-.gender-male {
-    background-color: #e0f7fa;
-}
-
-.gender-female {
-    background-color: #fce4ec;
-}
+.gender-male { background-color: #e0f7fa; }
+.gender-female { background-color: #fce4ec; }
 
 .member-name {
     display: inline-block;
@@ -313,9 +321,7 @@ button:active {
     color: #343a40;
 }
 
-.member-list-summary p {
-    margin: 5px 0;
-}
+.member-list-summary p { margin: 5px 0; }
 
 /* Relatório de participações */
 #resultadoEscala {
@@ -335,6 +341,10 @@ button:active {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+#resultadoEscala ul { margin: 0; }
+#resultadoEscala ul li { background-color: #f8f9fa; padding: 10px; }
+#resultadoEscala p { margin: 5px 0; color: #1a3850; }
+
 /* Botão de exportar XLSX */
 #btn-exportar-xlsx {
     background: linear-gradient(45deg, #17a2b8, #138496);
@@ -346,19 +356,44 @@ button:active {
     letter-spacing: 1px;
 }
 
+#btn-exportar-xlsx:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 15px rgba(23, 162, 184, 0.7);
+}
+
+#btn-exportar-xlsx:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Rodapé (ESTILO RESTAURADO) */
+footer {
+    background: linear-gradient(45deg, #ff4500, #ff8c00);
+    color: white;
+    text-align: center;
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 8px 8px 0 0;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+
 /* Responsividade */
 @media (max-width: 768px) {
     nav { flex-direction: column; padding: 10px; }
-    nav button { width: 100%; margin: 8px 0; }
-    .tab { padding: 15px; }
+    nav button { width: 100%; margin: 8px 0; padding: 12px 20px; }
+    .tab { padding: 15px; border-left-width: 3px; }
     form { padding: 15px; }
+    .input-group { margin-top: 15px; }
     #formEscala .input-group { flex-direction: column; align-items: flex-start; }
     ul li { flex-direction: column; align-items: flex-start; gap: 10px; }
     button, .secondary-button { width: 100%; }
     .logo { max-width: 120px; }
+    #listaMembros li { gap: 5px; }
+    #listaMembros li > div:last-child { flex-direction: row; width: 100%; }
+    #listaMembros li > div:last-child button { flex-grow: 1; }
 }
 
-/* ===== NOVOS ESTILOS PARA SUSPENSÃO E MODAL ===== */
+/* ===== ESTILOS PARA SUSPENSÃO E MODAL ===== */
 .suspended-member { background-color: #e9ecef !important; opacity: 0.7; }
 .suspended-text { text-decoration: line-through; color: #6c757d; }
 .member-name .fa-pause-circle { margin-left: 8px; color: #ffc107; cursor: help; }
@@ -375,13 +410,10 @@ button:active {
 .modal-content h3 { margin-top: 0; color: #2c3e50; background: none; -webkit-text-fill-color: initial; text-shadow: none; }
 .modal-options .input-group { display: flex; align-items: center; margin-bottom: 15px; }
 .modal-options label { position: static; transform: none; pointer-events: auto; background: none; padding: 0; color: #1a3850; font-size: 16px; font-weight: normal; }
-.modal-options input[type="checkbox"] { width: 18px; height: 18px; margin-right: 10px; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
 .modal-actions button { width: auto; }
 
-/* ===== NOVOS ESTILOS PARA FEEDBACK E DIAGNÓSTICO ===== */
-
-/* Estilos para Notificações (Toast) */
+/* ===== ESTILOS PARA FEEDBACK E DIAGNÓSTICO ===== */
 #toast-container {
     position: fixed; top: 20px; right: 20px; z-index: 2000;
     display: flex; flex-direction: column; gap: 10px;
@@ -397,13 +429,12 @@ button:active {
 @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
 @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; transform: translateX(100%); } }
 
-/* Estilos para Índice de Equilíbrio */
 #balanceIndexContainer {
     margin: 25px 0; padding: 20px; background-color: #f8f9fa;
     border-radius: 8px; text-align: center;
 }
 #balanceIndexContainer h4 {
-    margin-top: 0; margin-bottom: 15px; font-size: 1.1em; color: #495057;
+    margin-top: 0; margin-bottom: 15px; font-size: 1.1em; color: #495057; background: none; -webkit-text-fill-color: initial; text-shadow: none;
 }
 .balance-bar-background {
     width: 100%; background-color: #e9ecef; border-radius: 25px;
@@ -416,14 +447,13 @@ button:active {
     color: white; font-weight: bold; font-size: 0.9em;
 }
 
-/* Estilos para Diagnóstico de Desequilíbrio */
 #diagnosticReportContainer {
-    display: none; /* Escondido por padrão */
+    display: none;
     margin-top: 30px; padding: 25px; background-color: #fff9f2;
     border: 1px solid #ffebcc; border-radius: 8px;
 }
 #diagnosticReportContainer h4 {
-    text-align: center; color: #c82333; margin-top: 0; margin-bottom: 20px;
+    text-align: center; color: #c82333; margin-top: 0; margin-bottom: 20px; background: none; -webkit-text-fill-color: initial; text-shadow: none;
 }
 .diagnostic-table {
     width: 100%; border-collapse: collapse; font-size: 0.95em;
