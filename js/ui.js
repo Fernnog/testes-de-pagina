@@ -117,7 +117,7 @@ export function exibirIndiceEquilibrio(justificationData) {
     }
 
     const media = counts.reduce((sum, val) => sum + val, 0) / counts.length;
-    if (media === 0) { // Se ninguém participou, não mostra o índice.
+    if (media === 0) { 
         container.style.display = 'none';
         return;
     }
@@ -126,7 +126,10 @@ export function exibirIndiceEquilibrio(justificationData) {
     const score = Math.max(0, 100 - (desvioPadrao * 30));
 
     container.innerHTML = `
-        <h4>Índice de Equilíbrio da Escala</h4>
+        <h4>
+            Índice de Equilíbrio da Escala
+            <i class="fas fa-info-circle" title="Mede o quão bem distribuídas foram as participações. 100% é um equilíbrio perfeito. Valores baixos indicam que alguns membros participaram muito mais que outros."></i>
+        </h4>
         <div class="balance-bar-background">
             <div class="balance-bar-foreground" style="width: ${score.toFixed(1)}%;" id="balanceBar">
                 ${score.toFixed(1)}%
@@ -143,7 +146,7 @@ export function exibirIndiceEquilibrio(justificationData) {
 
 export function renderJustificationReport(data) {
     const container = document.getElementById('justificationReportContainer');
-    container.innerHTML = '<h4>Relatório de Justificativas</h4>';
+    container.innerHTML = '<h4>Análise de Participação Individual</h4>';
     
     const sortedMembers = Object.entries(data).sort(([, a], [, b]) => b.participations - a.participations);
 
@@ -159,25 +162,24 @@ export function renderJustificationReport(data) {
         else if (stats.participations > 2) { statusClass = 'status-mid'; iconClass = 'fa-check-circle'; }
         else if (stats.participations > 0) { statusClass = 'status-low'; iconClass = 'fa-check'; }
 
-        let justificationText = stats.reasonForAbsence 
-            ? `Não pôde ser escalado(a). Motivo principal: ${stats.reasonForAbsence}`
-            : `Esteve disponível em <strong>${stats.availableDays}</strong> dia(s).`;
-
-        if (stats.participations > 0) {
-            justificationText = `Participou <strong>${stats.participations}</strong> vez(es). ` + justificationText;
-        }
+        let justificationText = stats.participations > 0
+            ? `Esteve disponível em <strong>${stats.availableDays}</strong> dia(s).`
+            : `<strong>Motivo da ausência:</strong> ${stats.reasonForAbsence || 'Não escalado por equilíbrio.'}`;
 
         item.className = `justification-item ${statusClass}`;
         item.innerHTML = `
             <div class="justification-header">
                 <span class="status-badge"><i class="fas ${iconClass}"></i></span>
-                ${nome}
+                ${nome}: <strong>${stats.participations} participações</strong>
             </div>
             <p class="justification-text">${justificationText}</p>
         `;
         list.appendChild(item);
     }
     container.appendChild(list);
+
+    // Reativa o botão de exportar, pois uma escala foi gerada
+    document.getElementById('btn-exportar-xlsx').disabled = false;
 }
 
 export function renderDiagnosticReport(data) {
@@ -206,4 +208,23 @@ export function renderDiagnosticReport(data) {
         </table>
     `;
     container.style.display = 'block';
+}
+
+export function exportarEscalaXLSX() {
+    const listaItens = document.querySelectorAll('#resultadoEscala ul li');
+    if (listaItens.length === 0) {
+        showToast('Não há escala gerada para exportar.', 'warning');
+        return;
+    }
+
+    const wb = XLSX.utils.book_new();
+    const dadosEscala = [['Data', 'Tipo', 'Membros']];
+    listaItens.forEach(li => {
+        const [dataTipo, pessoas] = li.textContent.split(': ');
+        const [data, tipo] = dataTipo.split(' - ');
+        dadosEscala.push([data, tipo, pessoas]);
+    });
+    const wsEscala = XLSX.utils.aoa_to_sheet(dadosEscala);
+    XLSX.utils.book_append_sheet(wb, wsEscala, 'Escala');
+    XLSX.writeFile(wb, 'escala_gerada.xlsx');
 }
