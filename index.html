@@ -179,11 +179,18 @@
             <button type="submit" class="secondary-button">Gerar Escala</button>
         </form>
         <div id="resultadoEscala"></div>
-        <div id="balanceIndexContainer" style="display: none;"></div>
-        <!-- ALTERAÇÃO: Adicionado o contêiner para o relatório de justificativas -->
+        <div id="balanceIndexContainer" style="display: none;">
+            <h4>
+                Índice de Equilíbrio da Escala
+                <i class="fas fa-info-circle" title="Mede o quão bem distribuídas foram as participações. 100% é um equilíbrio perfeito. Valores baixos indicam que alguns membros participaram muito mais que outros."></i>
+            </h4>
+            <div class="balance-bar-background">
+                <div class="balance-bar-foreground" id="balanceBar"></div>
+            </div>
+        </div>
         <div id="justificationReportContainer"></div>
         <div id="diagnosticReportContainer" style="display: none;"></div>
-        <button id="btn-exportar-xlsx" class="secondary-button">Exportar Escala (XLSX)</button>
+        <button id="btn-exportar-xlsx" class="secondary-button" disabled>Exportar Escala (XLSX)</button>
     </div>
 
     <!-- Modal de Suspensão Granular -->
@@ -207,7 +214,6 @@
     <div id="toast-container"></div>
 
     <!-- Scripts do Firebase -->
-    <!-- SEM ALTERAÇÃO: Os scripts já estavam na versão correta de compatibilidade (v9 compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
