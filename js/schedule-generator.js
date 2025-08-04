@@ -1,64 +1,39 @@
-/**
- * js/schedule-generator.js
- * 
- * Módulo responsável por toda a lógica de geração da escala de intercessão.
- * Ele lê os dados da aplicação, aplica as regras de negócio (obrigatórias e relativas)
- * e gera o resultado final na interface do usuário.
- */
-
-// Importa os dados necessários do módulo de gerenciamento de dados.
-import {
-    membros,
-    restricoes,
-    restricoesPermanentes
-} from './data-manager.js';
-
-// Importa as funções de UI necessárias para exibir o resultado e feedback.
-import {
-    exibirIndiceEquilibrio,
-    showToast
-} from './ui.js';
+import { membros, restricoes, restricoesPermanentes } from './data-manager.js';
+import { exibirIndiceEquilibrio, renderJustificationReport, renderDiagnosticReport } from './ui.js';
 
 /**
- * Função utilitária interna para realizar uma seleção aleatória ponderada.
- * Itens com maior peso têm maior probabilidade de serem escolhidos.
- * @param {number[]} weights - Um array de pesos.
- * @returns {number} - O índice do item selecionado.
+ * Seleciona um índice aleatório de um array de pesos.
+ * @param {number[]} weights - Array de pesos.
+ * @returns {number} - O índice selecionado.
  */
 function weightedRandom(weights) {
     let random = Math.random();
     let cumulativeWeight = 0;
     for (let i = 0; i < weights.length; i++) {
         cumulativeWeight += weights[i];
-        if (random < cumulativeWeight) {
-            return i;
-        }
+        if (random < cumulativeWeight) { return i; }
     }
     return weights.length - 1;
 }
 
 /**
- * Seleciona membros disponíveis com uma aleatoriedade ponderada para garantir uma distribuição mais justa.
- * A função penaliza exponencialmente membros que já participaram, aumentando a chance de quem tem menos participações.
- * @param {object[]} membrosDisponiveis - Array de membros aptos para a seleção.
- * @param {number} quantidadeNecessaria - Quantidade de membros a serem selecionados.
- * @param {object} participacoes - Objeto com a contagem de participações de cada membro.
- * @returns {object[]} - Um array com os membros selecionados.
+ * Seleciona membros de forma ponderada, favorecendo quem participou menos.
+ * @param {object[]} membrosDisponiveis - Lista de membros aptos.
+ * @param {number} quantidadeNecessaria - Quantidade de membros a selecionar.
+ * @param {object} participacoes - Objeto com a contagem de participações.
+ * @returns {object[]} - Array com os membros selecionados.
  */
 function selecionarMembrosComAleatoriedade(membrosDisponiveis, quantidadeNecessaria, participacoes) {
     if (membrosDisponiveis.length < quantidadeNecessaria) return [];
 
-    // MELHORIA CENTRAL: O peso é calculado com uma base exponencial.
-    // Isso penaliza drasticamente membros com mais participações, forçando o equilíbrio.
-    // Ex: count 0 -> peso 1; count 1 -> peso 0.2; count 2 -> peso 0.04.
     const pesos = membrosDisponiveis.map(m => {
-        const count = participacoes[m.nome] ?.count || 0;
+        const count = participacoes[m.nome]?.participations || 0;
         return Math.pow(0.2, count);
     });
-
+    
     const somaPesos = pesos.reduce((sum, p) => sum + p, 0);
-    if (somaPesos === 0) return []; // Evita divisão por zero.
-
+    if (somaPesos === 0) return [];
+    
     const pesosNormalizados = pesos.map(p => p / somaPesos);
 
     const selecionados = [];
@@ -68,11 +43,8 @@ function selecionarMembrosComAleatoriedade(membrosDisponiveis, quantidadeNecessa
     while (selecionados.length < quantidadeNecessaria && disponiveis.length > 0) {
         const indiceSorteado = weightedRandom(pesosTemp);
         const membroSelecionado = disponiveis.splice(indiceSorteado, 1)[0];
-        
-        // Remove o peso do membro já selecionado para a próxima iteração
         pesosTemp.splice(indiceSorteado, 1);
         
-        // Renormaliza os pesos restantes para garantir a precisão na próxima seleção (importante para duplas)
         const somaPesosTemp = pesosTemp.reduce((sum, p) => sum + p, 0);
         if (somaPesosTemp > 0) {
             pesosTemp = pesosTemp.map(p => p / somaPesosTemp);
@@ -83,30 +55,89 @@ function selecionarMembrosComAleatoriedade(membrosDisponiveis, quantidadeNecessa
     return selecionados;
 }
 
+/**
+ * Analisa o desequilíbrio e, se necessário, dispara a renderização do diagnóstico.
+ * @param {object} justificationData - Dados de participações e disponibilidade.
+ * @param {object[]} membros - Lista completa de membros.
+ * @param {object[]} restricoes - Lista de restrições temporárias.
+ * @param {object[]} restricoesPermanentes - Lista de restrições permanentes.
+ */
+function analyzeAndDiagnoseImbalance(justificationData, membros, restricoes, restricoesPermanentes) {
+    const availableMembersParticipation = Object.values(justificationData).filter(d => d.availableDays > 0);
+    if (availableMembersParticipation.length < 2) return;
+
+    const counts = availableMembersParticipation.map(d => d.participations);
+    const maxCount = Math.max(...counts);
+    const minCount = Math.min(...counts);
+
+    if (maxCount - minCount > 2) {
+        let mostImpactedShift = 'Não determinado';
+        const memberWithMaxParticipation = Object.values(justificationData).find(d => d.participations === maxCount);
+        if (memberWithMaxParticipation && memberWithMaxParticipation.mostFrequentShift) {
+            mostImpactedShift = memberWithMaxParticipation.mostFrequentShift;
+        }
+
+        const diagnosticData = {
+            shiftType: mostImpactedShift,
+            memberStatus: []
+        };
+
+        membros.forEach(membro => {
+            let status = { text: 'Disponível', class: 'status-available', icon: 'fa-check-circle' };
+
+            const isSuspended = (mostImpactedShift.startsWith('Domingo') || mostImpactedShift === 'Quarta') ? membro.suspensao.cultos : (mostImpactedShift === 'Sábado' ? membro.suspensao.sabado : membro.suspensao.whatsapp);
+            const isRestrictedPerm = restricoesPermanentes.some(r => r.membro === membro.nome && r.diaSemana === mostImpactedShift);
+            const isRestrictedTemp = restricoes.some(r => r.membro === membro.nome);
+
+            if (isRestrictedPerm) {
+                status = { text: 'Restrição Permanente', class: 'status-restricted-perm', icon: 'fa-ban' };
+            } else if (isSuspended) {
+                status = { text: 'Suspenso(a) deste tipo', class: 'status-suspended', icon: 'fa-pause-circle' };
+            } else if (isRestrictedTemp) {
+                status = { text: 'Possui restrição temporária no mês', class: 'status-restricted-temp', icon: 'fa-calendar-times' };
+            }
+
+            diagnosticData.memberStatus.push({ nome: membro.nome, status });
+        });
+        
+        renderDiagnosticReport(diagnosticData);
+    }
+}
 
 /**
- * Função principal que configura o listener do formulário de geração de escala.
- * Deve ser exportada para ser chamada pelo main.js na inicialização.
+ * Configura o listener do formulário de geração de escala.
  */
 export function setupGeradorEscala() {
     document.getElementById('formEscala').addEventListener('submit', (e) => {
         e.preventDefault();
 
-        // Leitura dos parâmetros do formulário
+        // Limpa relatórios anteriores
+        document.getElementById('resultadoEscala').innerHTML = '';
+        document.getElementById('justificationReportContainer').innerHTML = '';
+        document.getElementById('diagnosticReportContainer').style.display = 'none';
+
         const gerarCultos = document.getElementById('escalaCultos').checked;
         const gerarSabado = document.getElementById('escalaSabado').checked;
         const gerarOração = document.getElementById('escalaOração').checked;
         const quantidadeCultos = parseInt(document.getElementById('quantidadeCultos').value);
         const mes = parseInt(document.getElementById('mesEscala').value);
         const ano = parseInt(document.getElementById('anoEscala').value);
-        const resultado = document.getElementById('resultadoEscala');
 
+        const justificationData = {};
+        membros.forEach(m => {
+            justificationData[m.nome] = {
+                participations: 0,
+                availableDays: 0,
+                reasonForAbsence: null,
+                shiftCounts: {},
+                mostFrequentShift: null
+            };
+        });
+
+        const dias = [];
         const inicio = new Date(ano, mes, 1);
         const fim = new Date(ano, mes + 1, 0);
-        resultado.innerHTML = `<h3>Escala Gerada - ${inicio.toLocaleString('pt-BR', { month: 'long' })} ${ano}</h3>`;
 
-        // Monta a lista de dias a serem preenchidos
-        const dias = [];
         for (let d = new Date(inicio); d <= fim; d.setDate(d.getDate() + 1)) {
             const diaSemana = d.toLocaleString('pt-BR', { weekday: 'long' });
             if (gerarCultos) {
@@ -120,95 +151,83 @@ export function setupGeradorEscala() {
             if (gerarOração) dias.push({ data: new Date(d), tipo: 'Oração no WhatsApp', selecionados: [] });
         }
 
-        // Inicializa a estrutura de controle de participações
-        const participacoes = {};
-        membros.forEach(m => {
-            participacoes[m.nome] = { count: 0, lastDate: null };
-        });
-
-        // Loop principal para preencher cada dia da escala
         dias.forEach(dia => {
-            let membrosDisponiveis = membros.filter(m => {
-                // Verificação de suspensão granular
+            membros.forEach(m => {
+                const tipo = dia.tipo;
                 let isSuspended = false;
-                if (['Quarta', 'Domingo Manhã', 'Domingo Noite'].includes(dia.tipo)) isSuspended = m.suspensao.cultos;
+                if (tipo === 'Quarta' || tipo.startsWith('Domingo')) isSuspended = m.suspensao.cultos;
+                else if (tipo === 'Sábado') isSuspended = m.suspensao.sabado;
+                else if (tipo === 'Oração no WhatsApp') isSuspended = m.suspensao.whatsapp;
+
+                const restricaoTemp = restricoes.some(r => r.membro === m.nome && new Date(dia.data) >= new Date(r.inicio) && new Date(dia.data) <= new Date(r.fim));
+                const restricaoPerm = restricoesPermanentes.some(r => r.membro === m.nome && r.diaSemana === tipo);
+
+                if (isSuspended) {
+                    if (!justificationData[m.nome].reasonForAbsence) justificationData[m.nome].reasonForAbsence = 'Suspenso(a) de atividades.';
+                } else if (restricaoTemp) {
+                    if (!justificationData[m.nome].reasonForAbsence) justificationData[m.nome].reasonForAbsence = 'Em período de restrição temporária.';
+                } else if (restricaoPerm) {
+                    if (!justificationData[m.nome].reasonForAbsence) justificationData[m.nome].reasonForAbsence = 'Possui restrição permanente para este tipo de dia.';
+                } else {
+                    justificationData[m.nome].availableDays++;
+                }
+            });
+            
+            let membrosDisponiveis = membros.filter(m => {
+                let isSuspended = false;
+                if (dia.tipo === 'Quarta' || dia.tipo.startsWith('Domingo')) isSuspended = m.suspensao.cultos;
                 else if (dia.tipo === 'Sábado') isSuspended = m.suspensao.sabado;
                 else if (dia.tipo === 'Oração no WhatsApp') isSuspended = m.suspensao.whatsapp;
-
-                // Verificação de restrições temporárias e permanentes
-                const restricaoTemp = restricoes.some(r => r.membro === m.nome && dia.data >= new Date(r.inicio) && dia.data <= new Date(r.fim));
+                const restricaoTemp = restricoes.some(r => r.membro === m.nome && new Date(dia.data) >= new Date(r.inicio) && new Date(dia.data) <= new Date(r.fim));
                 const restricaoPerm = restricoesPermanentes.some(r => r.membro === m.nome && r.diaSemana === dia.tipo);
-                
                 return !isSuspended && !restricaoTemp && !restricaoPerm;
             });
-
-            // Lógica de distanciamento de 3 dias para WhatsApp
-            if (dia.tipo === 'Oração no WhatsApp') {
-                const tresDiasAtras = new Date(dia.data);
-                tresDiasAtras.setDate(tresDiasAtras.getDate() - 3);
-                membrosDisponiveis = membrosDisponiveis.filter(m => {
-                    const lastParticipation = participacoes[m.nome].lastDate;
-                    return !lastParticipation || lastParticipation < tresDiasAtras;
-                });
-            }
-
-            const qtdNecessaria = dia.tipo === 'Oração no WhatsApp' ? 1 : quantidadeCultos;
-            if (membrosDisponiveis.length < qtdNecessaria) return; // Pula para o próximo dia
-
-            let selecionados = [];
-            if (qtdNecessaria === 1) {
-                selecionados = selecionarMembrosComAleatoriedade(membrosDisponiveis, 1, participacoes);
-            } else { // Lógica para duplas, garantindo compatibilidade
-                const primeiro = selecionarMembrosComAleatoriedade(membrosDisponiveis, 1, participacoes)[0];
-                if (!primeiro) return;
-                
-                const membrosCompatíveis = membrosDisponiveis.filter(m =>
-                    m.nome !== primeiro.nome && (m.genero === primeiro.genero || m.conjuge === primeiro.nome || primeiro.conjuge === m.nome)
-                );
-                
-                const segundo = selecionarMembrosComAleatoriedade(membrosCompatíveis, 1, participacoes)[0];
-                if (segundo) selecionados = [primeiro, segundo];
-            }
-
-            // Se a seleção foi bem-sucedida, atualiza os dados
-            if (selecionados.length === qtdNecessaria) {
-                dia.selecionados = selecionados;
-                selecionados.forEach(m => {
-                    participacoes[m.nome].count++;
-                    participacoes[m.nome].lastDate = new Date(dia.data);
-                });
+            
+            const qtdNecessaria = dia.tipo === 'Oração no WhatsApp' ? 1 : (dia.tipo === 'Sábado' ? 1 : quantidadeCultos);
+            if (membrosDisponiveis.length >= qtdNecessaria) {
+                let selecionados = [];
+                if (qtdNecessaria === 1) {
+                    selecionados = selecionarMembrosComAleatoriedade(membrosDisponiveis, 1, justificationData);
+                } else {
+                    const primeiro = selecionarMembrosComAleatoriedade(membrosDisponiveis, 1, justificationData)[0];
+                    if (primeiro) {
+                        const membrosCompatíveis = membrosDisponiveis.filter(m => m.nome !== primeiro.nome && (m.genero === primeiro.genero || m.conjuge === primeiro.nome || primeiro.conjuge === m.nome));
+                        const segundo = selecionarMembrosComAleatoriedade(membrosCompatíveis, 1, justificationData)[0];
+                        if (segundo) selecionados = [primeiro, segundo];
+                    }
+                }
+                if (selecionados.length === qtdNecessaria) {
+                    dia.selecionados = selecionados;
+                }
             }
         });
 
-        // Geração do HTML para a escala e o relatório
-        let escalaHTML = '<ul>';
+        dias.forEach(dia => {
+            dia.selecionados.forEach(membro => {
+                justificationData[membro.nome].participations++;
+                const shiftType = dia.tipo;
+                justificationData[membro.nome].shiftCounts[shiftType] = (justificationData[membro.nome].shiftCounts[shiftType] || 0) + 1;
+            });
+        });
+        
+        for (const memberData of Object.values(justificationData)) {
+            if (Object.keys(memberData.shiftCounts).length > 0) {
+                memberData.mostFrequentShift = Object.entries(memberData.shiftCounts).sort(([, a], [, b]) => b - a)[0][0];
+            }
+        }
+
+        const resultadoContainer = document.getElementById('resultadoEscala');
+        let escalaHTML = `<h3>Escala Gerada - ${inicio.toLocaleString('pt-BR', { month: 'long' })} ${ano}</h3><ul>`;
         dias.forEach(dia => {
             if (dia.selecionados.length > 0) {
                 escalaHTML += `<li>${dia.data.toLocaleDateString('pt-BR')} - ${dia.tipo}: ${dia.selecionados.map(m => m.nome).join(', ')}</li>`;
             }
         });
         escalaHTML += '</ul>';
-        resultado.innerHTML += escalaHTML;
+        resultadoContainer.innerHTML = escalaHTML;
 
-        let relatorio = '<h4>Relatório de Participações</h4>';
-        const participacoesOrdenadas = Object.entries(participacoes).sort(([, a], [, b]) => b.count - a.count);
-        for (const [nome, data] of participacoesOrdenadas) {
-            relatorio += `<p>${nome}: ${data.count} participações</p>`;
-        }
-        resultado.innerHTML += relatorio;
-
-        // Feedback visual para o usuário
-        const diasTotaisGerados = dias.length;
-        const diasPreenchidos = dias.filter(d => d.selecionados.length > 0).length;
-        if (diasPreenchidos < diasTotaisGerados && diasTotaisGerados > 0) {
-            showToast(`Atenção: ${diasTotaisGerados - diasPreenchidos} data(s) não foram preenchidas por falta de membros.`, 'warning');
-        } else if (diasTotaisGerados > 0) {
-            showToast('Escala gerada e todos os horários preenchidos com sucesso!', 'success');
-        } else {
-            showToast('Nenhuma escala foi selecionada para geração.', 'warning');
-        }
-
-        // Exibe o novo Índice de Equilíbrio
-        exibirIndiceEquilibrio(participacoes);
+        exibirIndiceEquilibrio(justificationData);
+        renderJustificationReport(justificationData);
+        analyzeAndDiagnoseImbalance(justificationData, membros, restricoes, restricoesPermanentes);
     });
 }
