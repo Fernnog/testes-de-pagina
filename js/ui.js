@@ -1,5 +1,6 @@
 import { membros, restricoes, restricoesPermanentes } from './data-manager.js';
 
+// --- Funções de atualização de listas (SEM ALTERAÇÕES) ---
 function atualizarListaMembros() {
     const lista = document.getElementById('listaMembros');
     membros.sort((a, b) => a.nome.localeCompare(b.nome));
@@ -83,6 +84,7 @@ export function atualizarTodasAsListas() {
     atualizarListaRestricoesPermanentes();
 }
 
+// --- Funções de UI helpers (SEM ALTERAÇÕES) ---
 export function showTab(tabId) {
     document.querySelectorAll('.tab').forEach(tab => tab.style.display = 'none');
     document.getElementById(tabId).style.display = 'block';
@@ -95,6 +97,10 @@ export function toggleConjuge() {
 
 export function setupUiListeners() {
     document.getElementById('conjugeParticipa').addEventListener('change', toggleConjuge);
+    // ADICIONADO: Listener para fechar o novo modal de análise
+    document.getElementById('btn-fechar-analise').addEventListener('click', () => {
+        document.getElementById('analiseConcentracaoModal').style.display = 'none';
+    });
 }
 
 export function showToast(message, type = 'success') {
@@ -117,7 +123,7 @@ export function exibirIndiceEquilibrio(justificationData) {
     }
 
     const media = counts.reduce((sum, val) => sum + val, 0) / counts.length;
-    if (media === 0) { 
+    if (media === 0) {
         container.style.display = 'none';
         return;
     }
@@ -126,10 +132,7 @@ export function exibirIndiceEquilibrio(justificationData) {
     const score = Math.max(0, 100 - (desvioPadrao * 30));
 
     container.innerHTML = `
-        <h4>
-            Índice de Equilíbrio da Escala
-            <i class="fas fa-info-circle" title="Mede o quão bem distribuídas foram as participações. 100% é um equilíbrio perfeito. Valores baixos indicam que alguns membros participaram muito mais que outros."></i>
-        </h4>
+        <h4>Índice de Equilíbrio da Escala</h4>
         <div class="balance-bar-background">
             <div class="balance-bar-foreground" style="width: ${score.toFixed(1)}%;" id="balanceBar">
                 ${score.toFixed(1)}%
@@ -144,87 +147,53 @@ export function exibirIndiceEquilibrio(justificationData) {
     else bar.style.background = 'linear-gradient(90deg, #28a745, #84fab0)';
 }
 
-export function renderJustificationReport(data) {
-    const container = document.getElementById('justificationReportContainer');
-    container.innerHTML = '<h4>Análise de Participação Individual</h4>';
-    
-    const sortedMembers = Object.entries(data).sort(([, a], [, b]) => b.participations - a.participations);
+// --- Funções de Renderização da Escala e Relatórios (NOVAS E MODIFICADAS) ---
 
-    const list = document.createElement('ul');
-    list.className = 'justification-list';
-
-    for (const [nome, stats] of sortedMembers) {
-        const item = document.createElement('li');
-        let statusClass = 'status-none';
-        let iconClass = 'fa-times-circle';
-
-        if (stats.participations > 4) { statusClass = 'status-high'; iconClass = 'fa-star'; }
-        else if (stats.participations > 2) { statusClass = 'status-mid'; iconClass = 'fa-check-circle'; }
-        else if (stats.participations > 0) { statusClass = 'status-low'; iconClass = 'fa-check'; }
-
-        let justificationText = stats.participations > 0
-            ? `Esteve disponível em <strong>${stats.availableDays}</strong> dia(s).`
-            : `<strong>Motivo da ausência:</strong> ${stats.reasonForAbsence || 'Não escalado por equilíbrio.'}`;
-
-        item.className = `justification-item ${statusClass}`;
-        item.innerHTML = `
-            <div class="justification-header">
-                <span class="status-badge"><i class="fas ${iconClass}"></i></span>
-                ${nome}: <strong>${stats.participations} participações</strong>
+/**
+ * Renderiza a escala gerada em um formato de cards visuais.
+ * @param {Array} dias - O array de dias com os membros selecionados.
+ */
+export function renderEscalaEmCards(dias) {
+    const container = document.getElementById('resultadoEscala');
+    container.innerHTML = dias.map(dia => {
+        if (!dia.selecionados || dia.selecionados.length === 0) return '';
+        return `
+            <div class="escala-card">
+                <div class="escala-card__header">
+                    <h4>${dia.data.toLocaleDateString('pt-BR', { weekday: 'long' })}</h4>
+                    <span>${dia.data.toLocaleDateString('pt-BR')} - ${dia.tipo}</span>
+                </div>
+                <div class="escala-card__body">
+                    ${dia.selecionados.map(m => `<div class="membro-card">${m.nome}</div>`).join('')}
+                </div>
             </div>
-            <p class="justification-text">${justificationText}</p>
         `;
-        list.appendChild(item);
-    }
-    container.appendChild(list);
-
-    // Reativa o botão de exportar, pois uma escala foi gerada
-    document.getElementById('btn-exportar-xlsx').disabled = false;
+    }).join('');
 }
 
-export function renderDiagnosticReport(data) {
-    const container = document.getElementById('diagnosticReportContainer');
-    container.innerHTML = `
-        <h4><i class="fas fa-search-plus"></i> Diagnóstico de Desequilíbrio</h4>
-        <p>A análise detectou uma grande concentração de participações. A tabela abaixo detalha a disponibilidade de todos os membros para o turno mais impactado: <strong>${data.shiftType}</strong>.</p>
-        <table class="diagnostic-table">
-            <thead>
-                <tr>
-                    <th>Membro</th>
-                    <th>Status para este Turno</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${data.memberStatus.map(member => `
-                    <tr>
-                        <td>${member.nome}</td>
-                        <td class="status-cell ${member.status.class}">
-                            <i class="fas ${member.status.icon}"></i>
-                            ${member.status.text}
-                        </td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
-    `;
-    container.style.display = 'block';
+/**
+ * Renderiza o modal com a análise detalhada de concentração por turno.
+ * @param {Object} analise - O objeto contendo os dados da análise.
+ */
+export function renderAnaliseConcentracao(analise) {
+    const body = document.getElementById('analiseConcentracaoBody');
+    body.innerHTML = Object.entries(analise).map(([turno, dados]) => {
+        return `
+            <div class="analise-turno-bloco">
+                <h5>Turno: ${turno}</h5>
+                <p><strong>Total de Membros no Sistema:</strong> ${dados.totalMembros}</p>
+                <p><strong>Membros com Restrição Permanente para este turno:</strong> ${dados.comRestricaoPermanente.length > 0 ? dados.comRestricaoPermanente.join(', ') : 'Nenhum'}</p>
+                <p><strong>Membros Efetivamente Disponíveis para este turno:</strong> ${dados.disponiveis.length}</p>
+                <h6>Distribuição de Participações (entre os disponíveis):</h6>
+                <ul>
+                    ${dados.disponiveis.map(m => `<li><strong>${m.nome}:</strong> ${m.participacoes} participação(ões)</li>`).join('')}
+                </ul>
+            </div>
+        `;
+    }).join('');
+
+    document.getElementById('analiseConcentracaoModal').style.display = 'flex';
 }
 
-export function exportarEscalaXLSX() {
-    const listaItens = document.querySelectorAll('#resultadoEscala ul li');
-    if (listaItens.length === 0) {
-        showToast('Não há escala gerada para exportar.', 'warning');
-        return;
-    }
-
-    const wb = XLSX.utils.book_new();
-    const dadosEscala = [['Data', 'Tipo', 'Membros']];
-    listaItens.forEach(li => {
-        const [dataTipo, pessoas] = li.textContent.split(': ');
-        const [data, tipo] = dataTipo.split(' - ');
-        dadosEscala.push([data, tipo, pessoas]);
-    });
-    const wsEscala = XLSX.utils.aoa_to_sheet(dadosEscala);
-    XLSX.utils.book_append_sheet(wb, wsEscala, 'Escala');
-    XLSX.writeFile(wb, 'escala_gerada.xlsx');
-}
+// A função renderJustificationReport e renderDiagnosticReport foram removidas
+// pois sua lógica foi substituída e aprimorada pela renderAnaliseConcentracao.
