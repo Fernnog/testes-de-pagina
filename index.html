@@ -189,11 +189,14 @@
             </div>
             <button type="submit" class="secondary-button">Gerar Escala</button> <!-- Botão secundário -->
         </form>
-        <div id="resultadoEscala"></div>
+        <div id="resultadoEscala">
+            <!-- NOVO: Container para o Índice de Equilíbrio -->
+            <div id="balanceIndexContainer" style="display: none;"></div>
+        </div>
         <button onclick="exportarEscalaXLSX()" class="secondary-button">Exportar Escala (XLSX)</button> <!-- Botão secundário -->
     </div>
 
-    <!-- Modal de Suspensão Granular (NOVO) -->
+    <!-- Modal de Suspensão Granular -->
     <div id="suspensaoModal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <h3 id="modalTitle">Suspender Membro</h3>
@@ -219,14 +222,15 @@
         </div>
     </div>
 
+    <!-- NOVO: Container para as notificações (Toasts) -->
+    <div id="toast-container"></div>
+
     <!-- Scripts do Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    <script src="script.js"></script>
-    <div id="toast-container"></div>
-
-<!-- Scripts do Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    
+    <!-- ATUALIZADO: Script agora é modular -->
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
