@@ -1,11 +1,8 @@
 import { membros, restricoes, restricoesPermanentes } from './data-manager.js';
-import { exibirIndiceEquilibrio, renderJustificationReport, renderDiagnosticReport } from './ui.js';
+// MODIFICADO: Importa as novas funções de UI
+import { exibirIndiceEquilibrio, renderEscalaEmCards, renderAnaliseConcentracao } from './ui.js';
 
-/**
- * Seleciona um índice aleatório de um array de pesos.
- * @param {number[]} weights - Array de pesos.
- * @returns {number} - O índice selecionado.
- */
+// --- Funções de Lógica de Seleção (SEM ALTERAÇÕES) ---
 function weightedRandom(weights) {
     let random = Math.random();
     let cumulativeWeight = 0;
@@ -16,13 +13,6 @@ function weightedRandom(weights) {
     return weights.length - 1;
 }
 
-/**
- * Seleciona membros de forma ponderada, favorecendo quem participou menos.
- * @param {object[]} membrosDisponiveis - Lista de membros aptos.
- * @param {number} quantidadeNecessaria - Quantidade de membros a selecionar.
- * @param {object} participacoes - Objeto com a contagem de participações.
- * @returns {object[]} - Array com os membros selecionados.
- */
 function selecionarMembrosComAleatoriedade(membrosDisponiveis, quantidadeNecessaria, participacoes) {
     if (membrosDisponiveis.length < quantidadeNecessaria) return [];
 
@@ -55,81 +45,71 @@ function selecionarMembrosComAleatoriedade(membrosDisponiveis, quantidadeNecessa
     return selecionados;
 }
 
+// --- Novas Funções de Análise e Geração ---
+
 /**
- * Analisa o desequilíbrio e, se necessário, dispara a renderização do diagnóstico.
- * @param {object} justificationData - Dados de participações e disponibilidade.
- * @param {object[]} membros - Lista completa de membros.
- * @param {object[]} restricoes - Lista de restrições temporárias.
- * @param {object[]} restricoesPermanentes - Lista de restrições permanentes.
+ * Analisa a concentração de participações para os turnos de Culto.
+ * @param {Array} diasGerados - Array com a escala final gerada.
+ * @param {Array} todosMembros - Array completo de membros cadastrados.
+ * @param {Array} todasRestricoesPerm - Array completo de restrições permanentes.
+ * @returns {Object} - Um objeto com a análise detalhada por turno.
  */
-function analyzeAndDiagnoseImbalance(justificationData, membros, restricoes, restricoesPermanentes) {
-    const availableMembersParticipation = Object.values(justificationData).filter(d => d.availableDays > 0);
-    if (availableMembersParticipation.length < 2) return;
+function analisarConcentracao(diasGerados, todosMembros, todasRestricoesPerm) {
+    const analise = {};
+    const turnosCulto = ['Quarta', 'Domingo Manhã', 'Domingo Noite'];
 
-    const counts = availableMembersParticipation.map(d => d.participations);
-    const maxCount = Math.max(...counts);
-    const minCount = Math.min(...counts);
+    turnosCulto.forEach(turno => {
+        const membrosComRestricao = todasRestricoesPerm
+            .filter(r => r.diaSemana === turno)
+            .map(r => r.membro);
+            
+        const membrosDisponiveis = todosMembros
+            .filter(m => !membrosComRestricao.includes(m.nome))
+            .map(m => ({ nome: m.nome, participacoes: 0 }));
 
-    if (maxCount - minCount > 2) {
-        let mostImpactedShift = 'Não determinado';
-        const memberWithMaxParticipation = Object.values(justificationData).find(d => d.participations === maxCount);
-        if (memberWithMaxParticipation && memberWithMaxParticipation.mostFrequentShift) {
-            mostImpactedShift = memberWithMaxParticipation.mostFrequentShift;
-        }
-
-        const diagnosticData = {
-            shiftType: mostImpactedShift,
-            memberStatus: []
-        };
-
-        membros.forEach(membro => {
-            let status = { text: 'Disponível', class: 'status-available', icon: 'fa-check-circle' };
-
-            const isSuspended = (mostImpactedShift.startsWith('Domingo') || mostImpactedShift === 'Quarta') ? membro.suspensao.cultos : (mostImpactedShift === 'Sábado' ? membro.suspensao.sabado : membro.suspensao.whatsapp);
-            const isRestrictedPerm = restricoesPermanentes.some(r => r.membro === membro.nome && r.diaSemana === mostImpactedShift);
-            const isRestrictedTemp = restricoes.some(r => r.membro === membro.nome);
-
-            if (isRestrictedPerm) {
-                status = { text: 'Restrição Permanente', class: 'status-restricted-perm', icon: 'fa-ban' };
-            } else if (isSuspended) {
-                status = { text: 'Suspenso(a) deste tipo', class: 'status-suspended', icon: 'fa-pause-circle' };
-            } else if (isRestrictedTemp) {
-                status = { text: 'Possui restrição temporária no mês', class: 'status-restricted-temp', icon: 'fa-calendar-times' };
+        diasGerados.forEach(dia => {
+            if (dia.tipo === turno) {
+                dia.selecionados.forEach(selecionado => {
+                    const membro = membrosDisponiveis.find(m => m.nome === selecionado.nome);
+                    if (membro) membro.participacoes++;
+                });
             }
-
-            diagnosticData.memberStatus.push({ nome: membro.nome, status });
         });
-        
-        renderDiagnosticReport(diagnosticData);
-    }
+
+        analise[turno] = {
+            totalMembros: todosMembros.length,
+            comRestricaoPermanente: membrosComRestricao,
+            disponiveis: membrosDisponiveis.sort((a,b) => b.participacoes - a.participacoes)
+        };
+    });
+    return analise;
 }
 
 /**
- * Configura o listener do formulário de geração de escala.
+ * Configura o listener do formulário de geração de escala, agora com a nova lógica.
  */
 export function setupGeradorEscala() {
     document.getElementById('formEscala').addEventListener('submit', (e) => {
         e.preventDefault();
 
-        // MODIFICAÇÃO: A limpeza dos relatórios foi removida daqui e centralizada em main.js
-        // para garantir a ordem correta de execução e evitar código duplicado.
+        // Limpa relatórios e resultados anteriores
+        document.getElementById('resultadoEscala').innerHTML = '';
+        document.getElementById('balanceIndexContainer').style.display = 'none';
+        document.getElementById('balanceIndexContainer').onclick = null; // Limpa listener antigo
 
-        const gerarCultos = document.getElementById('escalaCultos').checked;
-        const gerarSabado = document.getElementById('escalaSabado').checked;
-        const gerarOração = document.getElementById('escalaOração').checked;
+        // MODIFICADO: Pega o tipo de escala do radio button
+        const tipoEscalaSelecionado = document.querySelector('input[name="tipoEscala"]:checked').value;
+        const gerarCultos = tipoEscalaSelecionado === 'cultos';
+        const gerarSabado = tipoEscalaSelecionado === 'sabado';
+        const gerarOração = tipoEscalaSelecionado === 'oracao';
+        
         const quantidadeCultos = parseInt(document.getElementById('quantidadeCultos').value);
         const mes = parseInt(document.getElementById('mesEscala').value);
         const ano = parseInt(document.getElementById('anoEscala').value);
 
         const justificationData = {};
         membros.forEach(m => {
-            justificationData[m.nome] = {
-                participations: 0,
-                availableDays: 0,
-                reasonForAbsence: null,
-                shiftCounts: {},
-                mostFrequentShift: null
-            };
+            justificationData[m.nome] = { participations: 0, availableDays: 0, reasonForAbsence: null };
         });
 
         const dias = [];
@@ -149,28 +129,8 @@ export function setupGeradorEscala() {
             if (gerarOração) dias.push({ data: new Date(d), tipo: 'Oração no WhatsApp', selecionados: [] });
         }
 
+        // --- Lógica principal de geração da escala (SEM GRANDES ALTERAÇÕES) ---
         dias.forEach(dia => {
-            membros.forEach(m => {
-                const tipo = dia.tipo;
-                let isSuspended = false;
-                if (tipo === 'Quarta' || tipo.startsWith('Domingo')) isSuspended = m.suspensao.cultos;
-                else if (tipo === 'Sábado') isSuspended = m.suspensao.sabado;
-                else if (tipo === 'Oração no WhatsApp') isSuspended = m.suspensao.whatsapp;
-
-                const restricaoTemp = restricoes.some(r => r.membro === m.nome && new Date(dia.data) >= new Date(r.inicio) && new Date(dia.data) <= new Date(r.fim));
-                const restricaoPerm = restricoesPermanentes.some(r => r.membro === m.nome && r.diaSemana === tipo);
-
-                if (isSuspended) {
-                    if (!justificationData[m.nome].reasonForAbsence) justificationData[m.nome].reasonForAbsence = 'Suspenso(a) de atividades.';
-                } else if (restricaoTemp) {
-                    if (!justificationData[m.nome].reasonForAbsence) justificationData[m.nome].reasonForAbsence = 'Em período de restrição temporária.';
-                } else if (restricaoPerm) {
-                    if (!justificationData[m.nome].reasonForAbsence) justificationData[m.nome].reasonForAbsence = 'Possui restrição permanente para este tipo de dia.';
-                } else {
-                    justificationData[m.nome].availableDays++;
-                }
-            });
-            
             let membrosDisponiveis = membros.filter(m => {
                 let isSuspended = false;
                 if (dia.tipo === 'Quarta' || dia.tipo.startsWith('Domingo')) isSuspended = m.suspensao.cultos;
@@ -196,36 +156,22 @@ export function setupGeradorEscala() {
                 }
                 if (selecionados.length === qtdNecessaria) {
                     dia.selecionados = selecionados;
+                    selecionados.forEach(m => { justificationData[m.nome].participations++; });
                 }
             }
         });
 
-        dias.forEach(dia => {
-            dia.selecionados.forEach(membro => {
-                justificationData[membro.nome].participations++;
-                const shiftType = dia.tipo;
-                justificationData[membro.nome].shiftCounts[shiftType] = (justificationData[membro.nome].shiftCounts[shiftType] || 0) + 1;
-            });
-        });
+        // --- Renderização e Análise Final (MODIFICADO) ---
+        renderEscalaEmCards(dias);
+        exibirIndiceEquilibrio(justificationData);
         
-        for (const memberData of Object.values(justificationData)) {
-            if (Object.keys(memberData.shiftCounts).length > 0) {
-                memberData.mostFrequentShift = Object.entries(memberData.shiftCounts).sort(([, a], [, b]) => b - a)[0][0];
+        // A análise detalhada só é relevante e será ativada para a escala de Cultos
+        if (gerarCultos) {
+            const relatorioConcentracao = analisarConcentracao(dias, membros, restricoesPermanentes);
+            const balanceContainer = document.getElementById('balanceIndexContainer');
+            if (balanceContainer) {
+                balanceContainer.onclick = () => renderAnaliseConcentracao(relatorioConcentracao);
             }
         }
-
-        const resultadoContainer = document.getElementById('resultadoEscala');
-        let escalaHTML = `<h3>Escala Gerada - ${inicio.toLocaleString('pt-BR', { month: 'long' })} ${ano}</h3><ul>`;
-        dias.forEach(dia => {
-            if (dia.selecionados.length > 0) {
-                escalaHTML += `<li>${dia.data.toLocaleDateString('pt-BR')} - ${dia.tipo}: ${dia.selecionados.map(m => m.nome).join(', ')}</li>`;
-            }
-        });
-        escalaHTML += '</ul>';
-        resultadoContainer.innerHTML = escalaHTML;
-
-        exibirIndiceEquilibrio(justificationData);
-        renderJustificationReport(justificationData);
-        analyzeAndDiagnoseImbalance(justificationData, membros, restricoes, restricoesPermanentes);
     });
 }
