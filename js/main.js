@@ -28,7 +28,7 @@ import {
     atualizarTodasAsListas,
     setupUiListeners,
     showToast,
-    exportarEscalaXLSX // Importa a função de exportação
+    exportarEscalaXLSX // A importação que antes causava o erro
 } from './ui.js';
 
 
@@ -78,6 +78,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Listeners dos Botões de Ação Globais ---
         document.getElementById('btn-exportar-dados').addEventListener('click', exportarDados);
         
+        // Conecta o botão de exportação da escala com a função importada
+        document.getElementById('btn-exportar-xlsx').addEventListener('click', exportarEscalaXLSX);
+
         document.getElementById('btn-importar-dados').addEventListener('click', () => {
             document.getElementById('importarArquivo').click();
         });
@@ -92,17 +95,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     atualizarTodasAsListas();
                     document.getElementById('resultadoEscala').innerHTML = '';
                     document.getElementById('diagnosticReportContainer').innerHTML = '';
-                    // Desativa o botão de exportar ao limpar os dados
-                    document.getElementById('btn-exportar-xlsx').disabled = true; 
                     showToast('Todos os dados foram limpos.', 'success');
                 });
             }
         });
 
         document.getElementById('logout').addEventListener('click', () => handleLogout(auth));
-        
-        // Adiciona o listener para o botão de exportar a escala
-        document.getElementById('btn-exportar-xlsx').addEventListener('click', exportarEscalaXLSX);
 
         // --- Listeners de Submissão de Formulários ---
         document.getElementById('formCadastro').addEventListener('submit', (e) => {
