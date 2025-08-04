@@ -1,6 +1,5 @@
 import { membros, restricoes, restricoesPermanentes } from './data-manager.js';
 
-// --- Funções de atualização de listas (SEM ALTERAÇÕES) ---
 function atualizarListaMembros() {
     const lista = document.getElementById('listaMembros');
     membros.sort((a, b) => a.nome.localeCompare(b.nome));
@@ -84,7 +83,6 @@ export function atualizarTodasAsListas() {
     atualizarListaRestricoesPermanentes();
 }
 
-// --- Funções de UI helpers (SEM ALTERAÇÕES) ---
 export function showTab(tabId) {
     document.querySelectorAll('.tab').forEach(tab => tab.style.display = 'none');
     document.getElementById(tabId).style.display = 'block';
@@ -97,10 +95,6 @@ export function toggleConjuge() {
 
 export function setupUiListeners() {
     document.getElementById('conjugeParticipa').addEventListener('change', toggleConjuge);
-    // ADICIONADO: Listener para fechar o novo modal de análise
-    document.getElementById('btn-fechar-analise').addEventListener('click', () => {
-        document.getElementById('analiseConcentracaoModal').style.display = 'none';
-    });
 }
 
 export function showToast(message, type = 'success') {
@@ -123,7 +117,7 @@ export function exibirIndiceEquilibrio(justificationData) {
     }
 
     const media = counts.reduce((sum, val) => sum + val, 0) / counts.length;
-    if (media === 0) {
+    if (media === 0) { // Se ninguém participou, não mostra o índice.
         container.style.display = 'none';
         return;
     }
@@ -147,53 +141,97 @@ export function exibirIndiceEquilibrio(justificationData) {
     else bar.style.background = 'linear-gradient(90deg, #28a745, #84fab0)';
 }
 
-// --- Funções de Renderização da Escala e Relatórios (NOVAS E MODIFICADAS) ---
+export function renderJustificationReport(data) {
+    const container = document.getElementById('justificationReportContainer');
+    container.innerHTML = '<h4>Relatório de Justificativas</h4>';
+    
+    const sortedMembers = Object.entries(data).sort(([, a], [, b]) => b.participations - a.participations);
 
-/**
- * Renderiza a escala gerada em um formato de cards visuais.
- * @param {Array} dias - O array de dias com os membros selecionados.
- */
-export function renderEscalaEmCards(dias) {
-    const container = document.getElementById('resultadoEscala');
-    container.innerHTML = dias.map(dia => {
-        if (!dia.selecionados || dia.selecionados.length === 0) return '';
-        return `
-            <div class="escala-card">
-                <div class="escala-card__header">
-                    <h4>${dia.data.toLocaleDateString('pt-BR', { weekday: 'long' })}</h4>
-                    <span>${dia.data.toLocaleDateString('pt-BR')} - ${dia.tipo}</span>
-                </div>
-                <div class="escala-card__body">
-                    ${dia.selecionados.map(m => `<div class="membro-card">${m.nome}</div>`).join('')}
-                </div>
+    const list = document.createElement('ul');
+    list.className = 'justification-list';
+
+    for (const [nome, stats] of sortedMembers) {
+        const item = document.createElement('li');
+        let statusClass = 'status-none';
+        let iconClass = 'fa-times-circle';
+
+        if (stats.participations > 4) { statusClass = 'status-high'; iconClass = 'fa-star'; }
+        else if (stats.participations > 2) { statusClass = 'status-mid'; iconClass = 'fa-check-circle'; }
+        else if (stats.participations > 0) { statusClass = 'status-low'; iconClass = 'fa-check'; }
+
+        let justificationText = stats.reasonForAbsence 
+            ? `Não pôde ser escalado(a). Motivo principal: ${stats.reasonForAbsence}`
+            : `Esteve disponível em <strong>${stats.availableDays}</strong> dia(s).`;
+
+        if (stats.participations > 0) {
+            justificationText = `Participou <strong>${stats.participations}</strong> vez(es). ` + justificationText;
+        }
+
+        item.className = `justification-item ${statusClass}`;
+        item.innerHTML = `
+            <div class="justification-header">
+                <span class="status-badge"><i class="fas ${iconClass}"></i></span>
+                ${nome}
             </div>
+            <p class="justification-text">${justificationText}</p>
         `;
-    }).join('');
+        list.appendChild(item);
+    }
+    container.appendChild(list);
 }
 
-/**
- * Renderiza o modal com a análise detalhada de concentração por turno.
- * @param {Object} analise - O objeto contendo os dados da análise.
- */
-export function renderAnaliseConcentracao(analise) {
-    const body = document.getElementById('analiseConcentracaoBody');
-    body.innerHTML = Object.entries(analise).map(([turno, dados]) => {
-        return `
-            <div class="analise-turno-bloco">
-                <h5>Turno: ${turno}</h5>
-                <p><strong>Total de Membros no Sistema:</strong> ${dados.totalMembros}</p>
-                <p><strong>Membros com Restrição Permanente para este turno:</strong> ${dados.comRestricaoPermanente.length > 0 ? dados.comRestricaoPermanente.join(', ') : 'Nenhum'}</p>
-                <p><strong>Membros Efetivamente Disponíveis para este turno:</strong> ${dados.disponiveis.length}</p>
-                <h6>Distribuição de Participações (entre os disponíveis):</h6>
-                <ul>
-                    ${dados.disponiveis.map(m => `<li><strong>${m.nome}:</strong> ${m.participacoes} participação(ões)</li>`).join('')}
-                </ul>
-            </div>
-        `;
-    }).join('');
-
-    document.getElementById('analiseConcentracaoModal').style.display = 'flex';
+export function renderDiagnosticReport(data) {
+    const container = document.getElementById('diagnosticReportContainer');
+    container.innerHTML = `
+        <h4><i class="fas fa-search-plus"></i> Diagnóstico de Desequilíbrio</h4>
+        <p>A análise detectou uma grande concentração de participações. A tabela abaixo detalha a disponibilidade de todos os membros para o turno mais impactado: <strong>${data.shiftType}</strong>.</p>
+        <table class="diagnostic-table">
+            <thead>
+                <tr>
+                    <th>Membro</th>
+                    <th>Status para este Turno</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${data.memberStatus.map(member => `
+                    <tr>
+                        <td>${member.nome}</td>
+                        <td class="status-cell ${member.status.class}">
+                            <i class="fas ${member.status.icon}"></i>
+                            ${member.status.text}
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+    container.style.display = 'block';
 }
 
-// A função renderJustificationReport e renderDiagnosticReport foram removidas
-// pois sua lógica foi substituída e aprimorada pela renderAnaliseConcentracao.
+// ==================================================================
+// == INÍCIO DA CORREÇÃO: Função de exportação restaurada do script.js original ==
+// ==================================================================
+export function exportarEscalaXLSX() {
+    const wb = XLSX.utils.book_new();
+    const dadosEscala = [['Data', 'Tipo', 'Pessoa 1', 'Pessoa 2']];
+    const listaItens = document.querySelectorAll('#resultadoEscala ul li');
+
+    if (listaItens.length === 0) {
+        showToast('Não há uma escala gerada para ser exportada.', 'warning');
+        return;
+    }
+
+    listaItens.forEach(li => {
+        const [dataTipo, pessoas] = li.textContent.split(': ');
+        const [data, tipo] = dataTipo.split(' - ');
+        const nomes = pessoas.split(', ');
+        dadosEscala.push([data, tipo, nomes[0], nomes[1] || '']);
+    });
+    
+    const wsEscala = XLSX.utils.aoa_to_sheet(dadosEscala);
+    XLSX.utils.book_append_sheet(wb, wsEscala, 'Escala');
+    XLSX.writeFile(wb, 'escala.xlsx');
+}
+// ==================================================================
+// == FIM DA CORREÇÃO ==
+// ==================================================================
