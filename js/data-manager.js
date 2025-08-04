@@ -1,48 +1,11 @@
-// js/data-manager.js
+// Arquivo: js/data-manager.js
 
 // --- ESTADO DA APLICAÇÃO ---
 export let membros = [];
 export let restricoes = [];
 export let restricoesPermanentes = [];
 
-// --- FUNÇÕES DE PERSISTÊNCIA (COMUNICAÇÃO COM FIREBASE) ---
-
-export function salvarDados(auth, database) {
-    const user = auth.currentUser;
-    if (!user) return Promise.resolve();
-    const uid = user.uid;
-    return database.ref('users/' + uid).set({
-        membros: membros,
-        restricoes: restricoes,
-        restricoesPermanentes: restricoesPermanentes
-    });
-}
-
-export function carregarDados(auth, database, onDataLoadedCallback) {
-    const user = auth.currentUser;
-    if (!user) return;
-    const uid = user.uid;
-    database.ref('users/' + uid).once('value')
-        .then((snapshot) => {
-            if (snapshot.exists()) {
-                const dados = snapshot.val();
-                membros = (dados.membros || []).map(m => {
-                    if (typeof m.suspensao !== 'object' || m.suspensao === null) {
-                        const isSuspendedOld = !!m.suspenso;
-                        m.suspensao = { cultos: isSuspendedOld, sabado: isSuspendedOld, whatsapp: isSuspendedOld };
-                    }
-                    return m;
-                });
-                restricoes = dados.restricoes || [];
-                restricoesPermanentes = dados.restricoesPermanentes || [];
-            } else {
-                limparDadosGlobais(); // Garante estado limpo se não houver dados no Firebase
-            }
-            onDataLoadedCallback(); // Chama a função de callback para atualizar a UI
-        });
-}
-
-// --- FUNÇÕES DE MANIPULAÇÃO DO ESTADO LOCAL ---
+// --- FUNÇÕES DE MANIPULAÇÃO DO ESTADO LOCAL (CRUD) ---
 
 export function adicionarMembro(membro) {
     membros.push(membro);
@@ -75,7 +38,46 @@ export function limparDadosGlobais() {
 }
 
 
-// --- FUNÇÕES DE IMPORTAÇÃO/EXPORTAÇÃO ---
+// --- FUNÇÕES DE PERSISTÊNCIA DE DADOS (Firebase e Exportação) ---
+
+export function salvarDados(auth, database) {
+    const user = auth.currentUser;
+    if (!user) return Promise.resolve(); // Retorna uma promessa para não quebrar a cadeia .then()
+    const uid = user.uid;
+    return database.ref('users/' + uid).set({
+        membros: membros,
+        restricoes: restricoes,
+        restricoesPermanentes: restricoesPermanentes
+    });
+}
+
+export function carregarDados(auth, database, onDataLoaded) {
+    const user = auth.currentUser;
+    if (!user) return;
+    const uid = user.uid;
+    database.ref('users/' + uid).once('value')
+        .then((snapshot) => {
+            if (snapshot.exists()) {
+                const dados = snapshot.val();
+                membros = (dados.membros || []).map(m => {
+                    if (typeof m.suspensao !== 'object' || m.suspensao === null) {
+                        const isSuspendedOld = !!m.suspenso;
+                        m.suspensao = { cultos: isSuspendedOld, sabado: isSuspendedOld, whatsapp: isSuspendedOld };
+                    }
+                    return m;
+                });
+                restricoes = dados.restricoes || [];
+                restricoesPermanentes = dados.restricoesPermanentes || [];
+            } else {
+                limparDadosGlobais();
+            }
+            onDataLoaded(); // Callback para notificar que os dados foram carregados
+        })
+        .catch((error) => {
+            console.error('Erro ao carregar dados: ', error);
+            onDataLoaded(); // Chama o callback mesmo em caso de erro para a UI não ficar travada
+        });
+}
 
 export function exportarDados() {
     const dados = { membros, restricoes, restricoesPermanentes };
@@ -99,6 +101,7 @@ export function importarDados(event, auth, database) {
             membros = dados.membros || [];
             restricoes = dados.restricoes || [];
             restricoesPermanentes = dados.restricoesPermanentes || [];
+            
             salvarDados(auth, database).then(() => {
                 alert('Dados importados com sucesso! Recarregando para aplicar as mudanças.');
                 window.location.reload();
