@@ -469,7 +469,6 @@ footer {
 .status-suspended { color: #ffc107; }
 .status-restricted-temp { color: #17a2b8; }
 
-/* ALTERAÇÃO: Adicionados estilos para o relatório de justificativas */
 #justificationReportContainer {
     margin-top: 30px;
     padding: 25px;
@@ -521,4 +520,19 @@ footer {
     font-size: 0.9em;
     color: #495057;
     margin: 0;
+}
+
+#balanceIndexContainer h4 i.fa-info-circle {
+    font-size: 0.8em;
+    color: #6c757d;
+    cursor: help;
+}
+
+button:disabled, button[disabled] {
+    border: 1px solid #999999;
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
 }
