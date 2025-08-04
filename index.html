@@ -144,17 +144,17 @@
     <div id="escala" class="tab" style="display: none;">
         <h2>Geração da Escala</h2>
         <form id="formEscala">
-            <label>Escalas a gerar:</label>
+            <label>Selecione a escala a gerar:</label>
             <div class="input-group">
-                <input type="checkbox" id="escalaCultos" checked>
+                <input type="radio" id="escalaCultos" name="tipoEscala" value="cultos" checked>
                 <label for="escalaCultos">Cultos (Quarta, Domingo Manhã e Noite)</label>
             </div>
             <div class="input-group">
-                <input type="checkbox" id="escalaSabado" checked>
+                <input type="radio" id="escalaSabado" name="tipoEscala" value="sabado">
                 <label for="escalaSabado">Reuniões Online (Sábado)</label>
             </div>
             <div class="input-group">
-                <input type="checkbox" id="escalaOração" checked>
+                <input type="radio" id="escalaOração" name="tipoEscala" value="oracao">
                 <label for="escalaOração">Oração no WhatsApp (Diário)</label>
             </div>
             <div class="input-group">
@@ -178,19 +178,10 @@
             </div>
             <button type="submit" class="secondary-button">Gerar Escala</button>
         </form>
-        <div id="resultadoEscala"></div>
-        <div id="balanceIndexContainer" style="display: none;">
-            <h4>
-                Índice de Equilíbrio da Escala
-                <i class="fas fa-info-circle" title="Mede o quão bem distribuídas foram as participações. 100% é um equilíbrio perfeito. Valores baixos indicam que alguns membros participaram muito mais que outros."></i>
-            </h4>
-            <div class="balance-bar-background">
-                <div class="balance-bar-foreground" id="balanceBar"></div>
-            </div>
-        </div>
-        <div id="justificationReportContainer"></div>
+        <div id="resultadoEscala" class="escala-container"></div>
+        <div id="balanceIndexContainer" style="display: none; cursor: pointer;"></div>
         <div id="diagnosticReportContainer" style="display: none;"></div>
-        <button id="btn-exportar-xlsx" class="secondary-button" disabled>Exportar Escala (XLSX)</button>
+        <button id="btn-exportar-xlsx" class="secondary-button">Exportar Escala (XLSX)</button>
     </div>
 
     <!-- Modal de Suspensão Granular -->
@@ -206,6 +197,19 @@
             <div class="modal-actions">
                 <button id="btn-salvar-suspensao" class="secondary-button">Salvar Alterações</button>
                 <button id="btn-cancelar-suspensao">Cancelar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de Análise de Concentração -->
+    <div id="analiseConcentracaoModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Análise de Concentração por Turno</h3>
+                <button id="btn-fechar-analise" class="close-button">×</button>
+            </div>
+            <div id="analiseConcentracaoBody" class="modal-body">
+                <!-- Conteúdo injetado via JS -->
             </div>
         </div>
     </div>
