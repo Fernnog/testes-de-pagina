@@ -1,28 +1,33 @@
-// =================================================================================
-// PONTO DE ENTRADA PRINCIPAL (main.js)
-// Orquestra a aplicação, inicializa o Firebase e configura todos os Event Listeners.
-// =================================================================================
+// Arquivo: js/main.js
+// Responsabilidade: Orquestrar a aplicação, inicializar os módulos e configurar todos os eventos da interface.
 
-// --- Importações dos Módulos ---
+// --- 1. IMPORTAÇÕES DOS MÓDULOS ---
+// Importa as funções necessárias de cada módulo especializado.
+
 import { setupAuthListeners, handleLogout } from './auth.js';
 import { setupGeradorEscala } from './schedule-generator.js';
 import {
-    membros,
-    adicionarMembro, excluirMembro, atualizarSuspensaoMembro,
-    adicionarRestricao, excluirRestricao,
-    adicionarRestricaoPermanente, excluirRestricaoPermanente,
-    carregarDados, salvarDados, limparDadosGlobais,
-    exportarDados, importarDados
+    carregarDados,
+    salvarDados,
+    limparDadosGlobais,
+    exportarDados,
+    importarDados,
+    adicionarMembro,
+    adicionarRestricao,
+    adicionarRestricaoPermanente,
+    membros // Importa o array de membros para validação do cônjuge
 } from './data-manager.js';
 import {
-    showTab, toggleConjuge, showToast,
-    atualizarListaMembros, atualizarSelectMembros,
-    atualizarListaRestricoes, atualizarListaRestricoesPermanentes,
-    abrirModalSuspensao, fecharModalSuspensao
+    showTab,
+    toggleConjuge,
+    atualizarTodasAsListas,
+    setupUiListeners,
+    showToast
 } from './ui.js';
 
+// --- 2. INICIALIZAÇÃO DO FIREBASE ---
+// Configuração e inicialização dos serviços do Firebase. Este é o ponto central de conexão com o back-end.
 
-// --- Inicialização do Firebase ---
 const firebaseConfig = {
     apiKey: "AIzaSyDIXuruqM4M9oA_Rz3PSxVsXM1EEVVbprw",
     authDomain: "escaladeintercessao.firebaseapp.com",
@@ -33,49 +38,47 @@ const firebaseConfig = {
     appId: "1:875628397922:web:219b624120eb9286e5d83b",
     measurementId: "G-9MGZ364KVZ"
 };
+
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const database = firebase.database();
 
-
-// --- Funções de Callback e Orquestração ---
-
-/**
- * Agrupa todas as funções que atualizam a UI para serem chamadas de uma vez.
- */
-function atualizarTodasAsListas() {
-    atualizarListaMembros();
-    atualizarSelectMembros();
-    atualizarListaRestricoes();
-    atualizarListaRestricoesPermanentes();
-}
+// --- 3. FUNÇÕES DE FLUXO PRINCIPAL ---
+// Funções que controlam o fluxo de inicialização e carregamento de dados.
 
 /**
- * Função executada com sucesso após o login de um usuário.
+ * Função chamada após o login bem-sucedido.
+ * Ela aciona o carregamento dos dados do usuário e, ao concluir, atualiza toda a interface.
  */
 function onLoginSuccess() {
     carregarDados(auth, database, () => {
         atualizarTodasAsListas();
-        showToast("Dados carregados com sucesso!", "success");
     });
 }
 
-
-// --- Configuração dos Event Listeners ---
-// Centraliza toda a interatividade da página.
-
+/**
+ * Configura todos os 'event listeners' da aplicação.
+ * Esta função centraliza a lógica que torna a página interativa, ligando os elementos HTML ao JavaScript.
+ */
 function setupEventListeners() {
-    // --- Navegação Principal ---
+    // --- Listeners da Barra de Navegação ---
     document.getElementById('nav-auth').addEventListener('click', () => showTab('auth'));
     document.getElementById('nav-cadastro').addEventListener('click', () => showTab('cadastro'));
     document.getElementById('nav-restricoes').addEventListener('click', () => showTab('restricoes'));
     document.getElementById('nav-restricoes-permanentes').addEventListener('click', () => showTab('restricoesPermanentes'));
     document.getElementById('nav-escala').addEventListener('click', () => showTab('escala'));
 
-    // --- Ações Globais (Exportar, Importar, Limpar) ---
+    // --- Listeners dos Botões de Ação Globais ---
+    document.getElementById('logout').addEventListener('click', () => handleLogout(auth));
     document.getElementById('btn-exportar-dados').addEventListener('click', exportarDados);
-    document.getElementById('btn-importar-dados').addEventListener('click', () => document.getElementById('importarArquivo').click());
-    document.getElementById('importarArquivo').addEventListener('change', (event) => importarDados(event, auth, database));
+    
+    document.getElementById('btn-importar-dados').addEventListener('click', () => {
+        document.getElementById('importarArquivo').click();
+    });
+    document.getElementById('importarArquivo').addEventListener('change', (event) => {
+        importarDados(event, auth, database);
+    });
+
     document.getElementById('btn-limpar-dados').addEventListener('click', () => {
         if (confirm('Tem certeza que deseja limpar todos os dados? Esta ação não pode ser desfeita.')) {
             limparDadosGlobais();
@@ -87,10 +90,7 @@ function setupEventListeners() {
         }
     });
 
-    // --- Autenticação ---
-    document.getElementById('logout').addEventListener('click', () => handleLogout(auth));
-
-    // --- Formulários de Cadastro e Restrição ---
+    // --- Listeners dos Formulários ---
     document.getElementById('formCadastro').addEventListener('submit', (e) => {
         e.preventDefault();
         const nome = document.getElementById('nome').value;
@@ -109,10 +109,10 @@ function setupEventListeners() {
             conjuge: nomeConjuge,
             suspensao: { cultos: false, sabado: false, whatsapp: false }
         });
-
+        
         salvarDados(auth, database).then(atualizarTodasAsListas);
         e.target.reset();
-        toggleConjuge();
+        toggleConjuge(); // Reseta o campo do cônjuge visualmente
     });
 
     document.getElementById('formRestricao').addEventListener('submit', (e) => {
@@ -127,7 +127,8 @@ function setupEventListeners() {
         if (fim < inicio) { alert('A data de fim deve ser posterior à data de início!'); return; }
 
         adicionarRestricao({ membro, inicio: inicio.toISOString(), fim: fim.toISOString() });
-        salvarDados(auth, database).then(atualizarListaRestricoes);
+        
+        salvarDados(auth, database).then(atualizarTodasAsListas);
         e.target.reset();
     });
 
@@ -138,48 +139,18 @@ function setupEventListeners() {
         if (!membro) { alert('Selecione um membro!'); return; }
 
         adicionarRestricaoPermanente({ membro, diaSemana });
-        salvarDados(auth, database).then(atualizarListaRestricoesPermanentes);
+
+        salvarDados(auth, database).then(atualizarTodasAsListas);
         e.target.reset();
     });
-
-    // --- Interatividade da UI (Checkbox, Modal) ---
-    document.getElementById('conjugeParticipa').addEventListener('change', toggleConjuge);
-
-    document.getElementById('btnSalvarSuspensao').addEventListener('click', () => {
-        const index = document.getElementById('membroIndexSuspensao').value;
-        if (index === '') return;
-
-        const novaSuspensao = {
-            cultos: document.getElementById('suspenderCultos').checked,
-            sabado: document.getElementById('suspenderSabado').checked,
-            whatsapp: document.getElementById('suspenderWhatsapp').checked,
-        };
-        
-        atualizarSuspensaoMembro(index, novaSuspensao);
-        salvarDados(auth, database).then(atualizarListaMembros);
-        fecharModalSuspensao();
-    });
     
-    document.getElementById('btnCancelarSuspensao').addEventListener('click', fecharModalSuspensao);
-    
-    // Delegação de eventos para botões na lista de membros (mais eficiente)
-    document.getElementById('listaMembros').addEventListener('click', (e) => {
-        if (e.target.matches('.btn-excluir-membro')) {
-            const index = e.target.dataset.index;
-            if (confirm(`Tem certeza que deseja excluir ${membros[index].nome}?`)) {
-                excluirMembro(index);
-                salvarDados(auth, database).then(atualizarTodasAsListas);
-            }
-        } else if (e.target.matches('.btn-gerenciar-suspensao')) {
-            const index = e.target.dataset.index;
-            abrirModalSuspensao(index);
-        }
-    });
+    // Configura listeners menores e específicos da UI, como o toggle do cônjuge.
+    setupUiListeners();
 }
 
+// --- 4. INICIALIZAÇÃO DA APLICAÇÃO ---
+// Ponto de partida que aciona toda a lógica da aplicação.
 
-// --- Inicialização da Aplicação ---
-// A ordem é importante: primeiro configura a autenticação, depois o resto.
 setupAuthListeners(auth, onLoginSuccess);
-setupGeradorEscala(database, auth); // Passa dependências se o gerador precisar
+setupGeradorEscala();
 setupEventListeners();
