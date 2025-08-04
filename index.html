@@ -180,6 +180,8 @@
         </form>
         <div id="resultadoEscala"></div>
         <div id="balanceIndexContainer" style="display: none;"></div>
+        <!-- ALTERAÇÃO: Adicionado o contêiner para o relatório de justificativas -->
+        <div id="justificationReportContainer"></div>
         <div id="diagnosticReportContainer" style="display: none;"></div>
         <button id="btn-exportar-xlsx" class="secondary-button">Exportar Escala (XLSX)</button>
     </div>
@@ -205,6 +207,7 @@
     <div id="toast-container"></div>
 
     <!-- Scripts do Firebase -->
+    <!-- SEM ALTERAÇÃO: Os scripts já estavam na versão correta de compatibilidade (v9 compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
