@@ -1,46 +1,40 @@
 /**
- * Ponto de Entrada Principal da Aplicação (Orquestrador)
- * 
- * Este arquivo tem as seguintes responsabilidades:
- * 1. Aguardar o carregamento completo da página (DOM).
- * 2. Inicializar a conexão com o Firebase.
- * 3. Importar as funcionalidades dos módulos especializados (auth, ui, data, schedule).
+ * PONTO DE ENTRADA PRINCIPAL DA APLICAÇÃO (main.js)
+ * Responsabilidades:
+ * 1. Importar todos os outros módulos.
+ * 2. Esperar o carregamento da página (DOMContentLoaded).
+ * 3. Inicializar o Firebase.
  * 4. Configurar todos os event listeners (cliques em botões, submissão de formulários).
- * 5. Orquestrar o fluxo de dados entre os módulos (ex: após salvar dados, manda a UI atualizar).
+ * 5. Orquestrar as chamadas entre os diferentes módulos (auth, data, ui, etc.).
  */
 
+// ETAPA 1: As importações DEVEM estar no topo do arquivo, no escopo global.
+import { setupAuthListeners, handleLogout } from './auth.js';
+import { setupGeradorEscala } from './schedule-generator.js';
+import {
+    carregarDados,
+    salvarDados,
+    limparDadosGlobais,
+    exportarDados,
+    importarDados,
+    adicionarMembro,
+    adicionarRestricao,
+    adicionarRestricaoPermanente,
+    membros // Importa o array de membros para validação
+} from './data-manager.js';
+import {
+    showTab,
+    toggleConjuge,
+    atualizarTodasAsListas,
+    setupUiListeners,
+    showToast
+} from './ui.js';
+
+
+// ETAPA 2: O código que interage com a página é envolvido pelo listener DOMContentLoaded.
 document.addEventListener('DOMContentLoaded', () => {
 
-    // 1. IMPORTAÇÕES DE MÓDULOS
-    // Importa apenas as funções necessárias de cada módulo especializado.
-    import {
-        setupAuthListeners,
-        handleLogout
-    } from './auth.js';
-    import {
-        setupGeradorEscala
-    } from './schedule-generator.js';
-    import {
-        carregarDados,
-        salvarDados,
-        limparDadosGlobais,
-        exportarDados,
-        importarDados,
-        membros, // Importa a referência para validação
-        adicionarMembro,
-        adicionarRestricao,
-        adicionarRestricaoPermanente
-    } from './data-manager.js';
-    import {
-        showTab,
-        toggleConjuge,
-        atualizarTodasAsListas,
-        setupUiListeners,
-        showToast
-    } from './ui.js';
-
-    // 2. INICIALIZAÇÃO DO FIREBASE
-    // Configuração do projeto Firebase.
+    // --- INICIALIZAÇÃO DO FIREBASE ---
     const firebaseConfig = {
         apiKey: "AIzaSyDIXuruqM4M9oA_Rz3PSxVsXM1EEVVbprw",
         authDomain: "escaladeintercessao.firebaseapp.com",
@@ -55,11 +49,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const auth = firebase.auth();
     const database = firebase.database();
 
-    // 3. FUNÇÕES ORQUESTRADORAS
+    // --- FUNÇÕES DE ORQUESTRAÇÃO ---
 
     /**
-     * Função executada como callback após um login bem-sucedido.
-     * Carrega os dados do usuário e, ao finalizar, atualiza toda a interface.
+     * Função chamada após um login bem-sucedido.
+     * Carrega os dados do usuário e atualiza toda a interface.
      */
     function onLoginSuccess() {
         carregarDados(auth, database, () => {
@@ -68,10 +62,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Configura todos os event listeners da aplicação.
-     * Esta função centraliza a atribuição de comportamentos aos elementos HTML.
+     * Configura todos os event listeners da aplicação que não são
+     * configurados dentro de outros módulos.
      */
     function setupEventListeners() {
+        
         // --- Listeners da Barra de Navegação ---
         document.getElementById('nav-auth').addEventListener('click', () => showTab('auth'));
         document.getElementById('nav-cadastro').addEventListener('click', () => showTab('cadastro'));
@@ -81,20 +76,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Listeners dos Botões de Ação Globais ---
         document.getElementById('btn-exportar-dados').addEventListener('click', exportarDados);
-
+        
         document.getElementById('btn-importar-dados').addEventListener('click', () => {
             document.getElementById('importarArquivo').click();
         });
         document.getElementById('importarArquivo').addEventListener('change', (event) => {
             importarDados(event, auth, database);
         });
-
+        
         document.getElementById('btn-limpar-dados').addEventListener('click', () => {
             if (confirm('Tem certeza que deseja limpar todos os dados? Esta ação não pode ser desfeita.')) {
                 limparDadosGlobais();
                 salvarDados(auth, database).then(() => {
                     atualizarTodasAsListas();
                     document.getElementById('resultadoEscala').innerHTML = '';
+                    document.getElementById('diagnosticReportContainer').innerHTML = '';
                     showToast('Todos os dados foram limpos.', 'success');
                 });
             }
@@ -121,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 conjuge: nomeConjuge,
                 suspensao: { cultos: false, sabado: false, whatsapp: false }
             });
-
+            
             salvarDados(auth, database).then(atualizarTodasAsListas);
             e.target.reset();
             toggleConjuge();
@@ -132,14 +128,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const membro = document.getElementById('membroRestricao').value;
             const dataInicioStr = document.getElementById('dataInicio').value;
             const dataFimStr = document.getElementById('dataFim').value;
-            const inicio = new Date(dataInicioStr + 'T12:00:00');
+            const inicio = new Date(dataInicioStr + 'T12:00:00'); // Evita problemas de fuso
             const fim = new Date(dataFimStr + 'T12:00:00');
 
             if (!membro) { alert('Selecione um membro!'); return; }
             if (fim < inicio) { alert('A data de fim deve ser posterior à data de início!'); return; }
 
             adicionarRestricao({ membro, inicio: inicio.toISOString(), fim: fim.toISOString() });
-
+            
             salvarDados(auth, database).then(atualizarTodasAsListas);
             e.target.reset();
         });
@@ -156,14 +152,17 @@ document.addEventListener('DOMContentLoaded', () => {
             e.target.reset();
         });
 
-        // Chama a função que configura listeners internos da UI (ex: checkboxes)
-        setupUiListeners();
+        // Listener para limpar relatórios antigos ao gerar uma nova escala
+        document.getElementById('formEscala').addEventListener('submit', () => {
+            document.getElementById('diagnosticReportContainer').style.display = 'none';
+            document.getElementById('justificationReportContainer').innerHTML = '';
+       });
     }
 
-    // 4. INICIALIZAÇÃO DA APLICAÇÃO
-    // Dispara as funções de configuração dos módulos.
+    // --- INICIALIZAÇÃO DA APLICAÇÃO ---
+    // Configura os módulos que precisam de inicialização
     setupAuthListeners(auth, onLoginSuccess);
     setupGeradorEscala();
-    setupEventListeners();
-
+    setupUiListeners(); // Configura listeners internos da UI, como o toggle do cônjuge
+    setupEventListeners(); // Configura todos os listeners principais que orquestram a aplicação
 });
