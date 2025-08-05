@@ -496,6 +496,110 @@ button:active {
 .status-icon.status-restrito-temp { color: #17a2b8; }
 .status-icon.status-suspenso { color: #ffc107; }
 
+
+/* ================ FIM DOS ESTILOS DE ESCALA ================ */
+
+/* ================ NOVOS ESTILOS PARA PAINEL DE DISPONIBILIDADE (P1, P3) ================ */
+
+.disponibilidade-filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 30px;
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.disponibilidade-filtros .input-group {
+    flex-grow: 1;
+    min-width: 250px;
+    margin-top: 0;
+}
+.disponibilidade-filtros .input-group label {
+    background-color: #fff; /* Fundo do label corresponde ao fundo do input */
+}
+.disponibilidade-filtros .input-group input:focus + label {
+    background-color: #fff;
+}
+
+
+.filtro-botoes-grupo {
+    display: flex;
+    gap: 10px;
+}
+
+.filtro-botoes-grupo button {
+    background: #fff;
+    color: #4682b4;
+    border: 2px solid #4682b4;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: auto; /* Sobrescreve a regra geral de 100% para botões */
+}
+
+.filtro-botoes-grupo button:hover {
+    background-color: #e8f0ff;
+    transform: translateY(-2px);
+    box-shadow: none;
+}
+
+.filtro-botoes-grupo button.active {
+    background: linear-gradient(45deg, #6f42c1, #9b59b6);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 10px rgba(111, 66, 193, 0.4);
+}
+
+#disponibilidadeContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.disponibilidade-turno-bloco {
+    margin-bottom: 0;
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #6f42c1;
+}
+
+.disponibilidade-turno-bloco h5 {
+    border-bottom: 2px solid #ffc107;
+    padding-bottom: 8px;
+    margin-top: 0;
+    font-size: 1.2em;
+    color: #6f42c1;
+}
+
+.disponibilidade-turno-bloco ul {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.disponibilidade-turno-bloco ul li {
+    background: none;
+    border: none;
+    padding: 10px 4px;
+    margin: 0;
+    box-shadow: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.disponibilidade-turno-bloco ul li:hover {
+    background-color: #f1f8ff;
+    transform: none;
+}
 /* ================ FIM DOS NOVOS ESTILOS ================ */
 
 
@@ -545,6 +649,9 @@ footer {
     #listaMembros li { gap: 5px; }
     #listaMembros li > div:last-child { flex-direction: row; width: 100%; }
     #listaMembros li > div:last-child button { flex-grow: 1; }
+    .disponibilidade-filtros { flex-direction: column; }
+    .filtro-botoes-grupo { flex-wrap: wrap; justify-content: center; }
+    .filtro-botoes-grupo button { flex-grow: 1; }
 }
 
 /* ===== ESTILOS PARA SUSPENSÃO E MODAL ===== */
