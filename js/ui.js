@@ -1,6 +1,4 @@
 import { membros, restricoes, restricoesPermanentes } from './data-manager.js';
-// <-- ALTERAÇÃO: Importa a nova função de verificação -->
-import { checkMemberAvailability } from './availability.js';
 
 const VISUAL_CONFIG = {
     turnos: {
@@ -11,12 +9,20 @@ const VISUAL_CONFIG = {
         'Oração no WhatsApp':  { classe: 'turno-oracao' }
     },
     status: {
-        disponivel:   { icone: 'fa-check-circle',   classe: 'status-disponivel',    titulo: 'Disponível para este turno' },
-        permanente:   { icone: 'fa-ban',            classe: 'status-restrito-perm', titulo: 'Possui restrição permanente para este turno' },
-        temporaria:   { icone: 'fa-calendar-times', classe: 'status-restrito-temp', titulo: 'Possui restrição temporária (ex: férias) neste dia' },
-        suspenso:     { icone: 'fa-pause-circle',   classe: 'status-suspenso',      titulo: 'Está suspenso desta categoria de escala' }
+        disponivel:   { type: 'fa', value: 'fa-check-circle',   classe: 'status-disponivel',    titulo: 'Disponível para este turno' },
+        permanente:   { type: 'emoji', value: '⛔',              classe: 'status-restrito-perm', titulo: 'Possui restrição permanente para este turno' },
+        temporaria:   { type: 'emoji', value: '🚫',              classe: 'status-restrito-temp', titulo: 'Possui restrição temporária (ex: férias) neste dia' },
+        suspenso:     { type: 'fa', value: 'fa-pause-circle',   classe: 'status-suspenso',      titulo: 'Está suspenso desta categoria de escala' }
     }
 };
+
+function getStatusIconHTML(statusConfig) {
+    if (statusConfig.type === 'emoji') {
+        return `<span class="status-icon status-emoji ${statusConfig.classe}" title="${statusConfig.titulo}">${statusConfig.value}</span>`;
+    }
+    // O padrão continua sendo Font Awesome
+    return `<i class="fas ${statusConfig.value} status-icon ${statusConfig.classe}" title="${statusConfig.titulo}"></i>`;
+}
 
 // --- Armazenamento de estado para manipulação da UI ---
 let escalaAtual = [];
@@ -107,10 +113,7 @@ export function atualizarTodasAsListas() {
 
 export function showTab(tabId) {
     document.querySelectorAll('.tab').forEach(tab => tab.style.display = 'none');
-    const tabToShow = document.getElementById(tabId);
-    if (tabToShow) {
-        tabToShow.style.display = 'block';
-    }
+    document.getElementById(tabId).style.display = 'block';
 }
 
 export function toggleConjuge() {
@@ -154,6 +157,27 @@ export function exibirIndiceEquilibrio(justificationData) {
     else bar.style.background = 'linear-gradient(90deg, #28a745, #84fab0)';
 }
 
+export function exportarEscalaXLSX() {
+    const listaCards = document.querySelectorAll('.escala-card:not(.hidden)');
+    if (listaCards.length === 0) {
+        showToast('Não há escala visível para exportar. Verifique os filtros.', 'warning');
+        return;
+    }
+    const wb = XLSX.utils.book_new();
+    const headers = ['Data', 'Turno', 'Membro 1', 'Membro 2', 'Membro 3'];
+    const dadosEscala = [headers];
+    listaCards.forEach(card => {
+        const data = card.querySelector('.escala-card__header span').textContent.trim();
+        const tipo = card.querySelector('.escala-card__header h4').textContent.trim();
+        const membrosNodes = card.querySelectorAll('.membro-card');
+        const nomes = Array.from(membrosNodes).map(node => node.textContent.trim());
+        dadosEscala.push([data, tipo, ...nomes]);
+    });
+    const wsEscala = XLSX.utils.aoa_to_sheet(dadosEscala);
+    XLSX.utils.book_append_sheet(wb, wsEscala, 'Escala do Mês');
+    XLSX.writeFile(wb, 'escala_gerada.xlsx');
+}
+
 export function setupAnaliseModalListeners() {
     const modal = document.getElementById('analiseConcentracaoModal');
     if (!modal) return;
@@ -165,110 +189,6 @@ export function setupAnaliseModalListeners() {
 // =========================================================
 // SEÇÃO DE CÓDIGO COM AS NOVAS FUNCIONALIDADES E MELHORIAS
 // =========================================================
-
-/**
- * <-- ALTERAÇÃO: Função exportarEscalaXLSX corrigida e aprimorada -->
- * Exporta a escala visível para um arquivo XLSX, com membros em colunas separadas.
- */
-export function exportarEscalaXLSX() {
-    const listaCards = document.querySelectorAll('.escala-card:not(.hidden)');
-    if (listaCards.length === 0) {
-        showToast('Não há escala visível para exportar. Verifique os filtros.', 'warning');
-        return;
-    }
-    const wb = XLSX.utils.book_new();
-    const headers = ['Data', 'Turno', 'Membro 1', 'Membro 2']; // Ajustado para o padrão de 2 membros
-    const dadosEscala = [headers];
-
-    listaCards.forEach(card => {
-        const data = card.querySelector('.escala-card__header span').textContent.trim();
-        const tipo = card.querySelector('.escala-card__header h4').textContent.trim();
-        const membrosNodes = card.querySelectorAll('.membro-card');
-        const nomes = Array.from(membrosNodes).map(node => node.textContent.trim());
-        
-        // Correção principal: espalha os nomes em colunas diferentes
-        dadosEscala.push([data, tipo, ...nomes]);
-    });
-
-    const wsEscala = XLSX.utils.aoa_to_sheet(dadosEscala);
-    XLSX.utils.book_append_sheet(wb, wsEscala, 'Escala do Mês');
-    XLSX.writeFile(wb, 'escala_gerada.xlsx');
-}
-
-/**
- * <-- ALTERAÇÃO: Nova função para renderizar o painel de disponibilidade com filtros -->
- * Gera o conteúdo do painel de disponibilidade geral com base no status de cada membro por turno.
- */
-export function renderDisponibilidadeGeral() {
-    const container = document.getElementById('disponibilidadeContainer');
-    if (!container) return;
-
-    const tab = container.closest('.tab');
-    let filtrosContainer = tab.querySelector('.escala-filtros-container');
-    if (!filtrosContainer) {
-        filtrosContainer = document.createElement('div');
-        filtrosContainer.className = 'escala-filtros-container';
-        container.before(filtrosContainer);
-    }
-    
-    // Renderiza os filtros
-    filtrosContainer.innerHTML = `
-        <button class="active" data-filter="all">Todos</button>
-        <button data-filter="disponivel">Apenas Disponíveis</button>
-        <button data-filter="restrito">Apenas Com Restrição</button>
-    `;
-
-    // Renderiza o conteúdo principal
-    const turnos = ['Quarta', 'Domingo Manhã', 'Domingo Noite', 'Sábado'];
-    let contentHTML = '';
-
-    membros.sort((a, b) => a.nome.localeCompare(b.nome));
-
-    turnos.forEach(turno => {
-        const membrosDoTurnoHTML = membros.map(membro => {
-            // Usa a nova função centralizada para verificar o status
-            const status = checkMemberAvailability(membro, turno);
-            const statusConfig = VISUAL_CONFIG.status[status.type];
-            const statusIcon = `<i class="fas ${statusConfig.icone} status-icon ${statusConfig.classe}" title="${statusConfig.titulo}"></i>`;
-            
-            // Adiciona a classe do status ao <li> para facilitar a filtragem
-            return `<li class="status-item-${status.type}">${membro.nome} ${statusIcon}</li>`;
-        }).join('');
-
-        contentHTML += `
-            <div class="disponibilidade-turno-bloco">
-                <h5>${turno}</h5>
-                <ul>${membrosDoTurnoHTML}</ul>
-            </div>
-        `;
-    });
-    container.innerHTML = contentHTML;
-
-    // Adiciona o listener para os filtros
-    filtrosContainer.addEventListener('click', (e) => {
-        if (e.target.tagName !== 'BUTTON') return;
-
-        filtrosContainer.querySelector('.active').classList.remove('active');
-        e.target.classList.add('active');
-        const filtro = e.target.dataset.filter;
-        
-        tab.querySelectorAll('.disponibilidade-turno-bloco ul li').forEach(li => {
-            let mostrar = false;
-            if (filtro === 'all') {
-                mostrar = true;
-            } else if (filtro === 'disponivel') {
-                mostrar = li.classList.contains('status-item-disponivel');
-            } else if (filtro === 'restrito') {
-                mostrar = li.classList.contains('status-item-suspenso') || li.classList.contains('status-item-permanente');
-            }
-            li.style.display = mostrar ? 'flex' : 'none';
-        });
-    });
-}
-
-// ============================================================
-// === O RESTANTE DO ARQUIVO (DRAG & DROP) PERMANECE O MESMO ===
-// ============================================================
 
 export function renderEscalaEmCards(dias) {
     const container = document.getElementById('resultadoEscala');
@@ -319,7 +239,7 @@ export function renderAnaliseConcentracao(analise) {
     body.innerHTML = Object.entries(analise).map(([turno, dados]) => {
         const listaMembrosHtml = dados.membrosDoTurno.map(membro => {
             const statusConfig = VISUAL_CONFIG.status[membro.status.type] || VISUAL_CONFIG.status.disponivel;
-            const statusIcon = `<i class="fas ${statusConfig.icone} status-icon ${statusConfig.classe}" title="${statusConfig.titulo}"></i>`;
+            const statusIcon = getStatusIconHTML(statusConfig);
             return `
                 <li>
                     <span><strong>${membro.nome}:</strong> ${membro.participacoes} vez(es)</span>
@@ -336,6 +256,78 @@ export function renderAnaliseConcentracao(analise) {
             </div>`;
     }).join('');
     document.getElementById('analiseConcentracaoModal').style.display = 'flex';
+}
+
+export function renderDisponibilidadeGeral() {
+    const container = document.getElementById('disponibilidadeContainer');
+    if (!container) return;
+
+    const turnos = ['Quarta', 'Domingo Manhã', 'Domingo Noite', 'Sábado', 'Oração no WhatsApp'];
+    let contentHTML = `
+        <div style="grid-column: 1 / -1; display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+            <input type="checkbox" id="filtroOcultarDisponiveis" style="width: 18px; height: 18px;">
+            <label for="filtroOcultarDisponiveis" style="font-weight: 500;">Ocultar colunas de membros disponíveis</label>
+        </div>
+    `;
+
+    turnos.forEach(turno => {
+        const listaDisponiveis = [];
+        const listaIndisponiveis = [];
+
+        membros.forEach(membro => {
+            let status = { type: 'disponivel' };
+            let isDisponivel = true;
+            
+            let suspensaoKey;
+            if (turno === 'Sábado') suspensaoKey = 'sabado';
+            else if (turno === 'Oração no WhatsApp') suspensaoKey = 'whatsapp';
+            else suspensaoKey = 'cultos';
+
+            if (membro.suspensao[suspensaoKey]) {
+                status = { type: 'suspenso' };
+                isDisponivel = false;
+            } else if (restricoesPermanentes.some(r => r.membro === membro.nome && r.diaSemana === turno)) {
+                status = { type: 'permanente' };
+                isDisponivel = false;
+            }
+
+            const statusConfig = VISUAL_CONFIG.status[status.type];
+            const statusIcon = getStatusIconHTML(statusConfig);
+            const membroHTML = `<li><span>${membro.nome}</span>${statusIcon}</li>`;
+
+            if (isDisponivel) {
+                listaDisponiveis.push(membroHTML);
+            } else {
+                listaIndisponiveis.push(membroHTML);
+            }
+        });
+
+        contentHTML += `
+            <div class="disponibilidade-turno-bloco">
+                <h5>Turno: ${turno}</h5>
+                <div class="list-container">
+                    <div class="list-wrapper disponiveis">
+                        <h6>Disponíveis (${listaDisponiveis.length})</h6>
+                        <ul>${listaDisponiveis.join('') || '<li>Nenhum membro disponível.</li>'}</ul>
+                    </div>
+                    <div class="list-wrapper indisponiveis">
+                        <h6>Indisponíveis (${listaIndisponiveis.length})</h6>
+                        <ul>${listaIndisponiveis.join('') || '<li>Nenhum membro indisponível.</li>'}</ul>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = contentHTML;
+
+    // Adiciona o listener para o filtro
+    const filtroCheckbox = document.getElementById('filtroOcultarDisponiveis');
+    if (filtroCheckbox) {
+        filtroCheckbox.addEventListener('change', (e) => {
+            container.classList.toggle('hide-available', e.target.checked);
+        });
+    }
 }
 
 export function configurarDragAndDrop(dias, justificationData, restricoes, restricoesPermanentes) {
@@ -356,12 +348,14 @@ export function configurarDragAndDrop(dias, justificationData, restricoes, restr
 
         card.addEventListener('dragend', (e) => {
             e.target.classList.remove('dragging');
+            limparSugestoes();
         });
 
         card.addEventListener('dragover', (e) => {
             e.preventDefault();
             if (!e.target.classList.contains('dragging')) {
                 e.target.classList.add('drag-over');
+                atualizarSugestoesDeTroca(e.target.closest('.escala-card'));
             }
         });
 
@@ -382,30 +376,74 @@ export function configurarDragAndDrop(dias, justificationData, restricoes, restr
     });
 }
 
+function limparSugestoes() {
+    document.querySelectorAll('.membro-card.suggestion').forEach(s => s.classList.remove('suggestion'));
+}
+
+function atualizarSugestoesDeTroca(cardAlvo) {
+    limparSugestoes();
+    const diaAlvo = escalaAtual.find(d => d.id === cardAlvo.dataset.id);
+    if (!diaAlvo) return;
+
+    const membrosDisponiveis = membros.filter(m => {
+        let isSuspended = false;
+        if (diaAlvo.tipo === 'Quarta' || diaAlvo.tipo.startsWith('Domingo')) isSuspended = m.suspensao.cultos;
+        else if (diaAlvo.tipo === 'Sábado') isSuspended = m.suspensao.sabado;
+
+        const diaAtual = new Date(diaAlvo.data); diaAtual.setHours(0, 0, 0, 0);
+        const restricaoTemp = todasAsRestricoes.some(r => {
+            const rInicio = new Date(r.inicio); rInicio.setHours(0,0,0,0);
+            const rFim = new Date(r.fim); rFim.setHours(0,0,0,0);
+            return r.membro === m.nome && diaAtual >= rInicio && diaAtual <= rFim;
+        });
+        const restricaoPerm = todasAsRestricoesPerm.some(r => r.membro === m.nome && r.diaSemana === diaAlvo.tipo);
+        return !isSuspended && !restricaoTemp && !restricaoPerm;
+    });
+
+    const nomesJaNoTurno = diaAlvo.selecionados.map(s => s.nome);
+    const candidatos = membrosDisponiveis.filter(m => !nomesJaNoTurno.includes(m.nome));
+    candidatos.sort((a, b) => (justificationDataAtual[a.nome]?.participations || 0) - (justificationDataAtual[b.nome]?.participations || 0));
+
+    const melhoresCandidatos = candidatos.slice(0, 3).map(c => c.nome);
+    if (melhoresCandidatos.length > 0) {
+        document.querySelectorAll('.membro-card').forEach(card => {
+            if (melhoresCandidatos.includes(card.textContent)) {
+                card.classList.add('suggestion');
+            }
+        });
+    }
+}
+
 function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
     const diaOrigem = escalaAtual.find(d => d.id === cardOrigemId);
     const diaAlvo = escalaAtual.find(d => d.id === cardAlvoId);
     if (!diaOrigem || !diaAlvo) return;
     
+    // Validação de restrições do membro arrastado para o dia alvo
     const membroArrastadoObj = membros.find(m => m.nome === nomeArrastado);
-    const statusNoAlvo = checkMemberAvailability(membroArrastadoObj, diaAlvo.tipo, diaAlvo.data);
-    
-    if (statusNoAlvo.type !== 'disponivel') {
-        showToast(`${nomeArrastado} tem uma restrição (${statusNoAlvo.type}) para este dia e não pode ser escalado.`, 'warning');
+    const diaAlvoData = new Date(diaAlvo.data); diaAlvoData.setHours(0,0,0,0);
+    const temRestricaoTemp = todasAsRestricoes.some(r => r.membro === nomeArrastado && diaAlvoData >= new Date(r.inicio) && diaAlvoData <= new Date(r.fim));
+    const temRestricaoPerm = todasAsRestricoesPerm.some(r => r.membro === nomeArrastado && r.diaSemana === diaAlvo.tipo);
+
+    if (temRestricaoTemp || temRestricaoPerm) {
+        showToast(`${nomeArrastado} tem uma restrição para ${diaAlvo.tipo} neste dia e não pode ser escalado.`, 'warning');
         return;
     }
 
+    // Troca os membros no estado
     const membroAlvoObj = membros.find(m => m.nome === nomeAlvo);
     const indexOrigem = diaOrigem.selecionados.findIndex(m => m.nome === nomeArrastado);
     diaOrigem.selecionados.splice(indexOrigem, 1, membroAlvoObj);
     const indexAlvo = diaAlvo.selecionados.findIndex(m => m.nome === nomeAlvo);
     diaAlvo.selecionados.splice(indexAlvo, 1, membroArrastadoObj);
 
+    // Atualiza as participações se a troca for entre dias diferentes
     if (cardOrigemId !== cardAlvoId) {
         justificationDataAtual[nomeArrastado].participations++;
         justificationDataAtual[nomeAlvo].participations--;
     }
     
+    // Re-renderiza a UI
     renderEscalaEmCards(escalaAtual);
     exibirIndiceEquilibrio(justificationDataAtual);
     configurarDragAndDrop(escalaAtual, justificationDataAtual, todasAsRestricoes, todasAsRestricoesPerm);
