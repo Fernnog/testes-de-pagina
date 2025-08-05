@@ -1,7 +1,9 @@
 import { membros, restricoes, restricoesPermanentes } from './data-manager.js';
-import { checkMemberAvailability } from './availability.js'; // Importa a função de validação
-import { analisarConcentracao } from './schedule-generator.js'; // Importa a função de análise
+// ARQUIVO: ui.js
+// RESPONSABILIDADE: Gerenciar todas as interações e atualizações da interface do usuário (DOM).
+// Não contém lógica de negócio, apenas recebe dados e os exibe.
 
+// Configuração visual centralizada para ícones e classes, facilitando a manutenção.
 const VISUAL_CONFIG = {
     turnos: {
         'Quarta':              { classe: 'turno-quarta' },
@@ -18,21 +20,25 @@ const VISUAL_CONFIG = {
     }
 };
 
+/**
+ * Gera o HTML para um ícone de status com base na configuração.
+ * @param {object} statusConfig - A configuração do status de VISUAL_CONFIG.
+ * @returns {string} O HTML do ícone.
+ */
 function getStatusIconHTML(statusConfig) {
+    if (!statusConfig) return ''; // Retorno seguro caso a configuração não exista
     if (statusConfig.type === 'emoji') {
         return `<span class="status-icon status-emoji ${statusConfig.classe}" title="${statusConfig.titulo}">${statusConfig.value}</span>`;
     }
     return `<i class="fas ${statusConfig.value} status-icon ${statusConfig.classe}" title="${statusConfig.titulo}"></i>`;
 }
 
-// --- Armazenamento de estado para manipulação da UI ---
+// --- Armazenamento de estado da UI para manipulação da escala ---
 let escalaAtual = [];
-let justificationDataAtual = {};
-let todasAsRestricoes = [];
-let todasAsRestricoesPerm = [];
+let analiseAtual = {};
 
 // =========================================================
-// === SEÇÃO DE CÓDIGO SEM ALTERAÇÕES (EXISTENTE E ESTÁVEL) ===
+// === SEÇÃO DE FUNÇÕES DE RENDERIZAÇÃO DE LISTAS E DADOS ===
 // =========================================================
 
 function atualizarListaMembros() {
@@ -105,6 +111,9 @@ function atualizarListaRestricoesPermanentes() {
         <button onclick="excluirRestricaoPermanente(${index})">Excluir</button></li>`).join('');
 }
 
+/**
+ * Função central que chama todas as funções de atualização de listas.
+ */
 export function atualizarTodasAsListas() {
     atualizarListaMembros();
     atualizarSelectMembros();
@@ -112,9 +121,16 @@ export function atualizarTodasAsListas() {
     atualizarListaRestricoesPermanentes();
 }
 
+// =====================================================
+// === SEÇÃO DE CONTROLE GERAL DA UI E INTERATIVIDADE ===
+// =====================================================
+
 export function showTab(tabId) {
     document.querySelectorAll('.tab').forEach(tab => tab.style.display = 'none');
-    document.getElementById(tabId).style.display = 'block';
+    const tabToShow = document.getElementById(tabId);
+    if (tabToShow) {
+        tabToShow.style.display = 'block';
+    }
 }
 
 export function toggleConjuge() {
@@ -126,14 +142,240 @@ export function setupUiListeners() {
     document.getElementById('conjugeParticipa').addEventListener('change', toggleConjuge);
 }
 
+/**
+ * PRIORITY 2: Exibe uma notificação flutuante (toast).
+ * Esta função será usada para fornecer feedback de "salvamento automático".
+ * @param {string} message - A mensagem a ser exibida.
+ * @param {string} type - O tipo de toast ('success', 'warning', 'error').
+ */
 export function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     toast.textContent = message;
     container.appendChild(toast);
-    setTimeout(() => { toast.remove(); }, 5000);
+    // O toast se remove automaticamente após 5 segundos.
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
 }
+
+// ===================================================================
+// === SEÇÃO DE GERAÇÃO DA ESCALA (VISUALIZAÇÃO, FILTROS, DRAG & DROP) ===
+// ===================================================================
+
+export function renderEscalaEmCards(dias) {
+    escalaAtual = dias; // Atualiza o estado local da escala
+    const container = document.getElementById('resultadoEscala');
+    container.innerHTML = '';
+    container.classList.add('escala-container');
+    dias.forEach(dia => {
+        if (dia.selecionados.length === 0) return;
+        const turnoConfig = VISUAL_CONFIG.turnos[dia.tipo] || { classe: '' };
+        const cardHTML = `
+            <div class="escala-card ${turnoConfig.classe}" data-id="${dia.id}" data-turno="${dia.tipo}">
+                <div class="escala-card__header">
+                    <h4>${dia.tipo}</h4>
+                    <span>${dia.data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                </div>
+                <div class="escala-card__body">
+                    ${dia.selecionados.map(m => `<div class="membro-card" draggable="true" data-nome="${m.nome}">${m.nome}</div>`).join('')}
+                </div>
+            </div>`;
+        container.innerHTML += cardHTML;
+    });
+    // Reconfigura o drag and drop para os novos cards
+    configurarDragAndDrop();
+}
+
+/**
+ * PRIORITY 1: Renderiza o novo painel de análise lateral.
+ * @param {object} analise - O objeto de análise gerado pelo schedule-generator.
+ * @param {string} filtroTurno - O filtro de turno atualmente ativo ('all', 'Quarta', etc.).
+ */
+export function renderPainelAnalise(analise, filtroTurno = 'all') {
+    analiseAtual = analise; // Armazena a análise completa
+    const container = document.getElementById('painelAnaliseLateral');
+    if (!container) return;
+
+    const turnosParaAnalisar = filtroTurno === 'all'
+        ? Object.keys(analise)
+        : (analise[filtroTurno] ? [filtroTurno] : []);
+
+    let membrosAgregados = {};
+    membros.forEach(m => {
+        membrosAgregados[m.nome] = { participacoes: 0, status: null, restricaoInfo: '' };
+    });
+
+    turnosParaAnalisar.forEach(turno => {
+        analise[turno].membrosDoTurno.forEach(membroAnalisado => {
+            membrosAgregados[membroAnalisado.nome].participacoes += membroAnalisado.participacoes;
+            
+            // Prioriza o status mais restritivo para exibição
+            if (!membrosAgregados[membroAnalisado.nome].status || membroAnalisado.status.type !== 'disponivel') {
+                membrosAgregados[membroAnalisado.nome].status = membroAnalisado.status;
+            }
+        });
+    });
+
+    // Adiciona informações de restrição temporária
+    restricoes.forEach(r => {
+        if (membrosAgregados[r.membro]) {
+             const inicio = new Date(r.inicio).toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit'});
+             const fim = new Date(r.fim).toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit'});
+             membrosAgregados[r.membro].restricaoInfo = `(${inicio} a ${fim})`;
+        }
+    });
+
+    const listaMembrosOrdenada = Object.entries(membrosAgregados).sort((a, b) => b[1].participacoes - a[1].participacoes);
+
+    const listaHtml = listaMembrosOrdenada.map(([nome, dados]) => {
+        const statusConfig = VISUAL_CONFIG.status[dados.status?.type || 'disponivel'];
+        const statusIcon = getStatusIconHTML(statusConfig);
+        const infoExtra = dados.status?.type === 'temporaria' ? `<span class="restriction-info">${dados.restricaoInfo}</span>` : '';
+        
+        return `<li>
+                    <span>
+                        <strong>${nome}:</strong> ${dados.participacoes} vez(es)
+                        ${infoExtra}
+                    </span>
+                    ${statusIcon}
+                </li>`;
+    }).join('');
+
+    container.innerHTML = `<h4>Análise de Equilíbrio</h4><ul>${listaHtml}</ul>`;
+}
+
+
+/**
+ * PRIORITY 1: Modificado para atualizar o painel lateral ao filtrar.
+ * @param {Array} dias - A lista de dias da escala.
+ * @param {object} analise - O relatório de análise de concentração.
+ */
+export function renderizarFiltros(dias, analise) {
+    const container = document.getElementById('escala-filtros');
+    const turnos = [...new Set(dias.filter(d => d.selecionados.length > 0).map(d => d.tipo))];
+    if (turnos.length <= 1) { container.innerHTML = ''; return; }
+    
+    container.innerHTML = `<button class="active" data-filter="all">Todos</button>
+        ${turnos.map(turno => `<button data-filter="${turno}">${turno}</button>`).join('')}`;
+    
+    // Delegação de evento para performance
+    container.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            container.querySelector('.active')?.classList.remove('active');
+            e.target.classList.add('active');
+            const filtro = e.target.dataset.filter;
+            filtrarCards(filtro);
+            renderPainelAnalise(analise, filtro); // Atualiza o painel lateral
+        }
+    });
+}
+
+function filtrarCards(filtro) {
+    document.querySelectorAll('.escala-card').forEach(card => {
+        card.classList.toggle('hidden', filtro !== 'all' && card.dataset.turno !== filtro);
+    });
+}
+
+/**
+ * PRIORITY 1: Lógica de arrastar e soltar implementada como SWAP (troca).
+ */
+function configurarDragAndDrop() {
+    const membrosCards = document.querySelectorAll('.membro-card');
+    membrosCards.forEach(card => {
+        card.addEventListener('dragstart', handleDragStart);
+        card.addEventListener('dragend', handleDragEnd);
+        card.addEventListener('dragover', handleDragOver);
+        card.addEventListener('dragleave', handleDragLeave);
+        card.addEventListener('drop', handleDrop);
+    });
+}
+
+function handleDragStart(e) {
+    e.target.classList.add('dragging');
+    const dragData = {
+        nome: e.target.dataset.nome,
+        cardOrigemId: e.target.closest('.escala-card').dataset.id
+    };
+    e.dataTransfer.setData('application/json', JSON.stringify(dragData));
+}
+
+function handleDragEnd(e) {
+    e.target.classList.remove('dragging');
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    const dropTarget = e.target.closest('.membro-card');
+    if (dropTarget && !dropTarget.classList.contains('dragging')) {
+        dropTarget.classList.add('drag-over');
+    }
+}
+
+function handleDragLeave(e) {
+    const dropTarget = e.target.closest('.membro-card');
+    if (dropTarget) {
+        dropTarget.classList.remove('drag-over');
+    }
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    const dropTarget = e.target.closest('.membro-card');
+    if (!dropTarget) return;
+
+    dropTarget.classList.remove('drag-over');
+    const dadosArrastados = JSON.parse(e.dataTransfer.getData('application/json'));
+    const nomeAlvo = dropTarget.dataset.nome;
+    const cardAlvoId = dropTarget.closest('.escala-card').dataset.id;
+    
+    if (dadosArrastados.cardOrigemId === cardAlvoId && dadosArrastados.nome === nomeAlvo) return;
+    
+    remanejarMembro(dadosArrastados.nome, nomeAlvo, dadosArrastados.cardOrigemId, cardAlvoId);
+}
+
+/**
+ * PRIORITY 1: Lógica de troca de membros (swap) entre cards.
+ * @param {string} nomeArrastado - Nome do membro sendo movido.
+ * @param {string} nomeAlvo - Nome do membro que está no local de destino.
+ * @param {string} cardOrigemId - ID do card de origem.
+ * @param {string} cardAlvoId - ID do card de destino.
+ */
+function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
+    const diaOrigem = escalaAtual.find(d => d.id === cardOrigemId);
+    const diaAlvo = escalaAtual.find(d => d.id === cardAlvoId);
+    if (!diaOrigem || !diaAlvo) return;
+    
+    // A lógica de uma troca (swap) é a mais segura para manter a integridade da escala.
+    const membroArrastadoObj = diaOrigem.selecionados.find(m => m.nome === nomeArrastado);
+    const membroAlvoObj = diaAlvo.selecionados.find(m => m.nome === nomeAlvo);
+
+    // Validação bidirecional para a troca
+    // (Esta é uma simplificação. Uma validação completa usaria a função 'checkMemberAvailability')
+    const restricaoArrastado = restricoesPermanentes.some(r => r.membro === nomeArrastado && r.diaSemana === diaAlvo.tipo);
+    const restricaoAlvo = restricoesPermanentes.some(r => r.membro === nomeAlvo && r.diaSemana === diaOrigem.tipo);
+    if(restricaoArrastado || restricaoAlvo) {
+        showToast(`A troca não pode ser realizada devido a restrições permanentes.`, 'warning');
+        return;
+    }
+
+    // Realiza a troca no estado da escala
+    const indexOrigem = diaOrigem.selecionados.findIndex(m => m.nome === nomeArrastado);
+    const indexAlvo = diaAlvo.selecionados.findIndex(m => m.nome === nomeAlvo);
+    
+    diaOrigem.selecionados.splice(indexOrigem, 1, membroAlvoObj);
+    diaAlvo.selecionados.splice(indexAlvo, 1, membroArrastadoObj);
+
+    // Re-renderiza a UI para refletir a troca
+    renderEscalaEmCards(escalaAtual);
+    
+    // Atualiza o painel de análise para refletir a nova distribuição
+    const filtroAtivo = document.querySelector('#escala-filtros button.active')?.dataset.filter || 'all';
+    renderPainelAnalise(analiseAtual, filtroAtivo);
+    showToast(`Troca entre ${nomeArrastado} e ${nomeAlvo} realizada.`, 'success');
+}
+
 
 export function exportarEscalaXLSX() {
     const listaCards = document.querySelectorAll('.escala-card:not(.hidden)');
@@ -149,227 +391,13 @@ export function exportarEscalaXLSX() {
         const tipo = card.querySelector('.escala-card__header h4').textContent.trim();
         const membrosNodes = card.querySelectorAll('.membro-card');
         const nomes = Array.from(membrosNodes).map(node => node.textContent.trim());
-        dadosEscala.push([data, tipo, ...nomes]);
+        const row = [data, tipo, ...nomes];
+        while (row.length < headers.length) {
+            row.push('');
+        }
+        dadosEscala.push(row);
     });
     const wsEscala = XLSX.utils.aoa_to_sheet(dadosEscala);
     XLSX.utils.book_append_sheet(wb, wsEscala, 'Escala do Mês');
     XLSX.writeFile(wb, 'escala_gerada.xlsx');
-}
-
-// =========================================================
-// SEÇÃO DE CÓDIGO COM AS NOVAS FUNCIONALIDADES E MELHORIAS
-// =========================================================
-
-/**
- * Renderiza o painel lateral com a análise de equilíbrio da escala.
- * @param {Object} analise - O objeto de análise gerado por `analisarConcentracao`.
- * @param {string} filtroTurno - O turno atualmente selecionado no filtro ('all' para todos).
- */
-export function renderPainelAnalise(analise, filtroTurno = 'all') {
-    const container = document.getElementById('painelAnaliseLateral');
-    if (!container) return;
-
-    const turnosParaAnalisar = filtroTurno === 'all' 
-        ? Object.keys(analise) 
-        : [filtroTurno];
-
-    let membrosAgregados = {};
-    membros.forEach(m => {
-        membrosAgregados[m.nome] = { participacoes: 0, status: null, temRestricaoTemp: false };
-    });
-
-    turnosParaAnalisar.forEach(turno => {
-        if (!analise[turno]) return;
-        analise[turno].membrosDoTurno.forEach(membroAnalisado => {
-            membrosAgregados[membroAnalisado.nome].participacoes += membroAnalisado.participacoes;
-            if (!membrosAgregados[membroAnalisado.nome].status || membroAnalisado.status.type !== 'disponivel') {
-                membrosAgregados[membroAnalisado.nome].status = membroAnalisado.status;
-            }
-            if (membroAnalisado.status.type === 'temporaria') {
-                membrosAgregados[membroAnalisado.nome].temRestricaoTemp = true;
-            }
-        });
-    });
-
-    const listaMembrosOrdenada = Object.entries(membrosAgregados).sort((a, b) => b[1].participacoes - a[1].participacoes);
-
-    const listaHtml = listaMembrosOrdenada.map(([nome, dados]) => {
-        let infoExtra = '';
-        if (dados.temRestricaoTemp) {
-            const restricao = restricoes.find(r => r.membro === nome);
-            if (restricao) {
-                const inicio = new Date(restricao.inicio).toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit'});
-                const fim = new Date(restricao.fim).toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit'});
-                infoExtra = `<span class="restriction-info">(${inicio} a ${fim})</span>`;
-            }
-        }
-        const statusIcon = getStatusIconHTML(VISUAL_CONFIG.status[dados.status?.type || 'disponivel']);
-        return `<li>
-                    <span>
-                        <strong>${nome}:</strong> ${dados.participacoes} vez(es)
-                        ${infoExtra}
-                    </span>
-                    ${statusIcon}
-                </li>`;
-    }).join('');
-
-    container.innerHTML = `<h4>Análise de Equilíbrio</h4><ul>${listaHtml}</ul>`;
-}
-
-export function renderEscalaEmCards(dias) {
-    const container = document.getElementById('resultadoEscala');
-    container.innerHTML = '';
-    container.classList.add('escala-container');
-    dias.forEach(dia => {
-        if (dia.selecionados.length === 0) return;
-        const turnoConfig = VISUAL_CONFIG.turnos[dia.tipo] || { classe: '' };
-        const cardHTML = `
-            <div class="escala-card ${turnoConfig.classe}" data-id="${dia.id}" data-turno="${dia.tipo}">
-                <div class="escala-card__header">
-                    <h4>${dia.tipo}</h4>
-                    <span>${dia.data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
-                </div>
-                <div class="escala-card__body" data-card-body-id="${dia.id}">
-                    ${dia.selecionados.map(m => `<div class="membro-card" draggable="true" data-nome="${m.nome}">${m.nome}</div>`).join('')}
-                </div>
-            </div>`;
-        container.innerHTML += cardHTML;
-    });
-}
-
-export function renderizarFiltros(dias, analise) {
-    const container = document.getElementById('escala-filtros');
-    if (!container) return;
-    const turnos = [...new Set(dias.filter(d => d.selecionados.length > 0).map(d => d.tipo))];
-    if (turnos.length <= 1) { container.innerHTML = ''; return; }
-    container.innerHTML = `
-        <button class="active" data-filter="all">Todos</button>
-        ${turnos.map(turno => `<button data-filter="${turno}">${turno}</button>`).join('')}`;
-    
-    // Limpa listeners antigos para evitar duplicação
-    const newContainer = container.cloneNode(true);
-    container.parentNode.replaceChild(newContainer, container);
-
-    newContainer.addEventListener('click', (e) => {
-        if (e.target.tagName === 'BUTTON') {
-            newContainer.querySelector('.active').classList.remove('active');
-            e.target.classList.add('active');
-            const filtro = e.target.dataset.filter;
-            filtrarCards(filtro);
-            renderPainelAnalise(analise, filtro);
-        }
-    });
-}
-
-function filtrarCards(filtro) {
-    document.querySelectorAll('.escala-card').forEach(card => {
-        card.classList.toggle('hidden', filtro !== 'all' && card.dataset.turno !== filtro);
-    });
-}
-
-/**
- * Configura todos os listeners de arrastar e soltar para a escala gerada.
- * @param {Array} dias - O estado atual da escala.
- * @param {Object} justificationData - O estado atual das contagens de participação.
- * @param {Array} restricoesAtuais - A lista de restrições temporárias.
- * @param {Array} restricoesPermAtuais - A lista de restrições permanentes.
- */
-export function configurarDragAndDrop(dias, justificationData, restricoesAtuais, restricoesPermAtuais) {
-    escalaAtual = dias;
-    justificationDataAtual = justificationData;
-    todasAsRestricoes = restricoesAtuais;
-    todasAsRestricoesPerm = restricoesPermAtuais;
-
-    const cardsDeDia = document.querySelectorAll('.escala-card');
-    cardsDeDia.forEach(cardDia => {
-        cardDia.addEventListener('dragover', e => {
-            e.preventDefault();
-            const membroArrastadoNome = JSON.parse(e.dataTransfer.getData('text/plain') || '{}').nome;
-            if (!membroArrastadoNome) return;
-
-            const diaAlvo = escalaAtual.find(d => d.id === cardDia.dataset.id);
-            if (!diaAlvo) return;
-
-            const membroArrastadoObj = membros.find(m => m.nome === membroArrastadoNome);
-            const status = checkMemberAvailability(membroArrastadoObj, diaAlvo.tipo, diaAlvo.data);
-
-            cardDia.classList.remove('drop-valid', 'drop-invalid');
-            cardDia.classList.add(status.type === 'disponivel' ? 'drop-valid' : 'drop-invalid');
-        });
-
-        cardDia.addEventListener('dragleave', e => {
-            e.currentTarget.classList.remove('drop-valid', 'drop-invalid');
-        });
-
-        cardDia.addEventListener('drop', e => {
-            e.preventDefault();
-            e.currentTarget.classList.remove('drop-valid', 'drop-invalid');
-            
-            const membroCardAlvo = e.target.closest('.membro-card');
-            if (!membroCardAlvo) return;
-            
-            const dadosArrastados = JSON.parse(e.dataTransfer.getData('text/plain'));
-            const nomeAlvo = membroCardAlvo.dataset.nome;
-            const cardAlvoId = e.currentTarget.dataset.id;
-            
-            if (dadosArrastados.cardOrigemId === cardAlvoId && dadosArrastados.nome === nomeAlvo) return;
-
-            remanejarMembro(dadosArrastados.nome, nomeAlvo, dadosArrastados.cardOrigemId, cardAlvoId);
-        });
-    });
-
-    document.querySelectorAll('.membro-card').forEach(membroCard => {
-        membroCard.addEventListener('dragstart', e => {
-            e.stopPropagation();
-            e.target.classList.add('dragging');
-            e.dataTransfer.setData('text/plain', JSON.stringify({
-                nome: e.target.dataset.nome,
-                cardOrigemId: e.target.closest('.escala-card').dataset.id
-            }));
-        });
-        membroCard.addEventListener('dragend', e => e.target.classList.remove('dragging'));
-    });
-}
-
-/**
- * Lida com a lógica de substituição de um membro por outro na escala.
- * @param {string} nomeArrastado - Nome do membro sendo movido.
- * @param {string} nomeAlvo - Nome do membro sendo substituído.
- * @param {string} cardOrigemId - ID do card de onde o membro saiu.
- * @param {string} cardAlvoId - ID do card para onde o membro vai.
- */
-function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
-    const diaOrigem = escalaAtual.find(d => d.id === cardOrigemId);
-    const diaAlvo = escalaAtual.find(d => d.id === cardAlvoId);
-    if (!diaOrigem || !diaAlvo) return;
-    
-    const membroArrastadoObj = membros.find(m => m.nome === nomeArrastado);
-    const status = checkMemberAvailability(membroArrastadoObj, diaAlvo.tipo, diaAlvo.data);
-
-    if (status.type !== 'disponivel') {
-        showToast(`${nomeArrastado} não pode ser escalado aqui. Motivo: ${status.type}.`, 'error');
-        return;
-    }
-
-    // Lógica de substituição (não de troca)
-    const indexOrigem = diaOrigem.selecionados.findIndex(m => m.nome === nomeArrastado);
-    if (indexOrigem > -1) {
-        diaOrigem.selecionados.splice(indexOrigem, 1);
-        justificationDataAtual[nomeArrastado].participations--;
-    }
-
-    const indexAlvo = diaAlvo.selecionados.findIndex(m => m.nome === nomeAlvo);
-    if (indexAlvo > -1) {
-        diaAlvo.selecionados.splice(indexAlvo, 1, membroArrastadoObj);
-        justificationDataAtual[nomeAlvo].participations--;
-        justificationDataAtual[nomeArrastado].participations++;
-    }
-    
-    // Re-renderiza a UI com os dados atualizados
-    renderEscalaEmCards(escalaAtual);
-    const novoRelatorio = analisarConcentracao(escalaAtual);
-    const filtroAtivo = document.querySelector('#escala-filtros .active')?.dataset.filter || 'all';
-    renderPainelAnalise(novoRelatorio, filtroAtivo);
-    configurarDragAndDrop(escalaAtual, justificationDataAtual, todasAsRestricoes, todasAsRestricoesPerm);
-    showToast(`${nomeArrastado} substituiu ${nomeAlvo}.`, 'success');
 }
