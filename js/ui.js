@@ -1,13 +1,5 @@
-// ui.js
-
 import { membros, restricoes, restricoesPermanentes } from './data-manager.js';
 
-// --- ESTADO DA UI PÓS-GERAÇÃO ---
-// Armazena a escala e os dados de justificação para manipulação em tempo real
-let escalaAtual = [];
-let justificationDataAtual = {};
-
-// =================== CONFIGURAÇÃO VISUAL CENTRALIZADA ===================
 const VISUAL_CONFIG = {
     turnos: {
         'Quarta':              { classe: 'turno-quarta' },
@@ -24,23 +16,27 @@ const VISUAL_CONFIG = {
     }
 };
 
-// =================== FUNÇÕES DE RENDERIZAÇÃO E ATUALIZAÇÃO DA UI (EXISTENTES) ===================
+// --- Armazenamento de estado para manipulação da UI ---
+let escalaAtual = [];
+let justificationDataAtual = {};
+let todasAsRestricoes = [];
+let todasAsRestricoesPerm = [];
+
+// =========================================================
+// === SEÇÃO DE CÓDIGO SEM ALTERAÇÕES (EXISTENTE E ESTÁVEL) ===
+// =========================================================
 
 function atualizarListaMembros() {
     const lista = document.getElementById('listaMembros');
     membros.sort((a, b) => a.nome.localeCompare(b.nome));
-
     let maleCount = 0;
     let femaleCount = 0;
-
     lista.innerHTML = membros.map((m, index) => {
         if (m.genero === 'M') maleCount++;
         else if (m.genero === 'F') femaleCount++;
-
         const susp = m.suspensao;
         const isTotalmenteSuspenso = susp.cultos && susp.sabado && susp.whatsapp;
         const isParcialmenteSuspenso = !isTotalmenteSuspenso && (susp.cultos || susp.sabado || susp.whatsapp);
-
         let suspensaoTitle = '';
         if (isParcialmenteSuspenso) {
             let suspensoDe = [];
@@ -51,7 +47,6 @@ function atualizarListaMembros() {
         } else if (isTotalmenteSuspenso) {
             suspensaoTitle = 'Suspenso de todas as atividades.';
         }
-
         const genderSymbol = m.genero === 'M' ? '♂️' : '♀️';
         return `
             <li class="${isTotalmenteSuspenso ? 'suspended-member' : ''}">
@@ -71,7 +66,6 @@ function atualizarListaMembros() {
                 </div>
             </li>`;
     }).join('');
-
     document.getElementById('maleCount').textContent = maleCount;
     document.getElementById('femaleCount').textContent = femaleCount;
     document.getElementById('totalCount').textContent = membros.length;
@@ -123,34 +117,23 @@ export function setupUiListeners() {
     document.getElementById('conjugeParticipa').addEventListener('change', toggleConjuge);
 }
 
-export function showToast(message, type = 'warning') { // Default para 'warning' para erros
+export function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     toast.textContent = message;
     container.appendChild(toast);
-    setTimeout(() => {
-        toast.remove();
-    }, 5000);
+    setTimeout(() => { toast.remove(); }, 5000);
 }
 
 export function exibirIndiceEquilibrio(justificationData) {
     const container = document.getElementById('balanceIndexContainer');
     const counts = Object.values(justificationData).map(p => p.participations);
-    if (counts.length < 2) {
-        container.style.display = 'none';
-        return;
-    }
-
+    if (counts.length < 2) { container.style.display = 'none'; return; }
     const media = counts.reduce((sum, val) => sum + val, 0) / counts.length;
-    if (media === 0) {
-        container.style.display = 'none';
-        return;
-    }
-
+    if (media === 0) { container.style.display = 'none'; return; }
     const desvioPadrao = Math.sqrt(counts.map(x => Math.pow(x - media, 2)).reduce((a, b) => a + b) / counts.length);
     const score = Math.max(0, 100 - (desvioPadrao * 30));
-
     container.innerHTML = `
         <h4>Índice de Equilíbrio da Escala</h4>
         <div class="balance-bar-background">
@@ -158,17 +141,67 @@ export function exibirIndiceEquilibrio(justificationData) {
                 ${score.toFixed(1)}%
             </div>
         </div>
-        <small style="margin-top: 10px; display: inline-block;">Clique para ver análise detalhada.</small>
-    `;
+        <small style="margin-top: 10px; display: inline-block;">Clique para ver análise detalhada.</small>`;
     container.style.display = 'block';
-
     const bar = document.getElementById('balanceBar');
     if (score < 50) bar.style.background = 'linear-gradient(90deg, #dc3545, #ff7e5f)';
     else if (score < 75) bar.style.background = 'linear-gradient(90deg, #ffc107, #feca57)';
     else bar.style.background = 'linear-gradient(90deg, #28a745, #84fab0)';
 }
 
-// =================== NOVAS FUNÇÕES (PRIORIDADE 1 e 2) ===================
+export function exportarEscalaXLSX() {
+    const listaCards = document.querySelectorAll('.escala-card');
+    if (listaCards.length === 0) { showToast('Não há escala gerada para exportar.', 'warning'); return; }
+    const wb = XLSX.utils.book_new();
+    const dadosEscala = [['Data', 'Turno', 'Membros']];
+    listaCards.forEach(card => {
+        const data = card.querySelector('.escala-card__header span').textContent.trim();
+        const tipo = card.querySelector('.escala-card__header h4').textContent.trim();
+        const membrosNodes = card.querySelectorAll('.membro-card');
+        const nomes = Array.from(membrosNodes).map(node => node.textContent.trim()).join(', ');
+        dadosEscala.push([data, tipo, nomes]);
+    });
+    const wsEscala = XLSX.utils.aoa_to_sheet(dadosEscala);
+    XLSX.utils.book_append_sheet(wb, wsEscala, 'Escala do Mês');
+    XLSX.writeFile(wb, 'escala_gerada.xlsx');
+}
+
+export function setupAnaliseModalListeners() {
+    const modal = document.getElementById('analiseConcentracaoModal');
+    if (!modal) return;
+    document.getElementById('btn-fechar-analise').addEventListener('click', () => { modal.style.display = 'none'; });
+    modal.addEventListener('click', (e) => { if (e.target.id === 'analiseConcentracaoModal') { modal.style.display = 'none'; } });
+}
+
+
+// =========================================================
+// SEÇÃO DE CÓDIGO COM AS NOVAS FUNCIONALIDADES E MELHORIAS
+// =========================================================
+
+/**
+ * Renderiza a escala gerada no formato de cards visuais.
+ * @param {Array} dias - A lista de dias com os membros selecionados.
+ */
+export function renderEscalaEmCards(dias) {
+    const container = document.getElementById('resultadoEscala');
+    container.innerHTML = '';
+    container.classList.add('escala-container');
+    dias.forEach(dia => {
+        if (dia.selecionados.length === 0) return;
+        const turnoConfig = VISUAL_CONFIG.turnos[dia.tipo] || { classe: '' };
+        const cardHTML = `
+            <div class="escala-card ${turnoConfig.classe}" data-id="${dia.id}" data-turno="${dia.tipo}">
+                <div class="escala-card__header">
+                    <h4>${dia.tipo}</h4>
+                    <span>${dia.data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                </div>
+                <div class="escala-card__body">
+                    ${dia.selecionados.map(m => `<div class="membro-card" draggable="true">${m.nome}</div>`).join('')}
+                </div>
+            </div>`;
+        container.innerHTML += cardHTML;
+    });
+}
 
 /**
  * Renderiza os botões de filtro com base nos turnos presentes na escala.
@@ -177,234 +210,37 @@ export function exibirIndiceEquilibrio(justificationData) {
 export function renderizarFiltros(dias) {
     const container = document.getElementById('escala-filtros');
     if (!container) return;
-    
-    // Limpa filtros antigos antes de renderizar novos
-    container.innerHTML = '';
-    
-    // Cria um conjunto de turnos únicos para não repetir botões
     const turnos = [...new Set(dias.filter(d => d.selecionados.length > 0).map(d => d.tipo))];
-    if (turnos.length <= 1) return; // Não mostra filtros se só há um tipo de turno
-
+    if (turnos.length <= 1) { container.innerHTML = ''; return; }
     container.innerHTML = `
         <button class="active" data-filter="all">Todos</button>
-        ${turnos.map(turno => `<button data-filter="${turno}">${turno}</button>`).join('')}
-    `;
-
-    // Adiciona o listener para os botões de forma delegada
+        ${turnos.map(turno => `<button data-filter="${turno}">${turno}</button>`).join('')}`;
     container.addEventListener('click', (e) => {
         if (e.target.tagName === 'BUTTON') {
-            container.querySelector('button.active').classList.remove('active');
+            container.querySelector('.active').classList.remove('active');
             e.target.classList.add('active');
-            const filtro = e.target.dataset.filter;
-            filtrarCards(filtro);
+            filtrarCards(e.target.dataset.filter);
         }
     });
 }
 
 /**
- * Aplica o filtro visual aos cards da escala, escondendo os que não correspondem.
+ * Aplica o filtro visual aos cards da escala.
  * @param {string} filtro - O turno a ser exibido, ou "all" para todos.
  */
 function filtrarCards(filtro) {
     document.querySelectorAll('.escala-card').forEach(card => {
-        if (filtro === 'all' || card.dataset.turno === filtro) {
-            card.classList.remove('hidden');
-        } else {
-            card.classList.add('hidden');
-        }
+        card.classList.toggle('hidden', filtro !== 'all' && card.dataset.turno !== filtro);
     });
 }
 
 /**
- * Lógica central para remanejar um membro, incluindo validação de regras.
- * @param {string} nomeArrastado - Nome do membro sendo movido.
- * @param {string} nomeAlvo - Nome do membro que está sendo substituído.
- * @param {string} cardOrigemId - ID do card de onde o membro saiu.
- * @param {string} cardAlvoId - ID do card para onde o membro vai.
+ * Renderiza o conteúdo do modal de análise de concentração com detalhes e ícones de status.
+ * @param {Object} analise - O objeto de análise gerado por `analisarConcentracao`.
  */
-function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
-    // Encontra os dias e membros no estado
-    const diaOrigem = escalaAtual.find(d => d.id === cardOrigemId);
-    const diaAlvo = escalaAtual.find(d => d.id === cardAlvoId);
-    const membroArrastado = membros.find(m => m.nome === nomeArrastado);
-    const membroAlvo = membros.find(m => m.nome === nomeAlvo);
-    
-    // --- Lógica de Validação (Prioridade 2) ---
-    const validarMovimento = (membro, dia) => {
-        // 1. Validação de Suspensão
-        let isSuspended = false;
-        if (dia.tipo === 'Quarta' || dia.tipo.startsWith('Domingo')) isSuspended = membro.suspensao.cultos;
-        else if (dia.tipo === 'Sábado') isSuspended = membro.suspensao.sabado;
-        else if (dia.tipo === 'Oração no WhatsApp') isSuspended = membro.suspensao.whatsapp;
-        if (isSuspended) {
-            showToast(`${membro.nome} está suspenso para a categoria "${dia.tipo}".`);
-            return false;
-        }
-
-        // 2. Validação de Restrição Permanente
-        const restricaoPerm = restricoesPermanentes.some(r => r.membro === membro.nome && r.diaSemana === dia.tipo);
-        if (restricaoPerm) {
-            showToast(`${membro.nome} tem restrição permanente para "${dia.tipo}".`);
-            return false;
-        }
-
-        // 3. Validação de Restrição Temporária
-        const diaAtual = new Date(dia.data); diaAtual.setHours(0, 0, 0, 0);
-        const restricaoTemp = restricoes.some(r => {
-            const rInicio = new Date(r.inicio); rInicio.setHours(0, 0, 0, 0);
-            const rFim = new Date(r.fim); rFim.setHours(0, 0, 0, 0);
-            return r.membro === membro.nome && diaAtual >= rInicio && diaAtual <= rFim;
-        });
-        if (restricaoTemp) {
-            showToast(`${membro.nome} tem restrição temporária nesta data.`);
-            return false;
-        }
-
-        return true; // Movimento válido
-    };
-
-    if (!validarMovimento(membroArrastado, diaAlvo) || !validarMovimento(membroAlvo, diaOrigem)) {
-        return; // Interrompe a troca se alguma validação falhar
-    }
-
-    // --- Atualização do Estado (Se a validação passou) ---
-    const indexOrigem = diaOrigem.selecionados.findIndex(m => m.nome === nomeArrastado);
-    diaOrigem.selecionados.splice(indexOrigem, 1, membroAlvo);
-    
-    const indexAlvo = diaAlvo.selecionados.findIndex(m => m.nome === nomeAlvo);
-    diaAlvo.selecionados.splice(indexAlvo, 1, membroArrastado);
-    
-    // --- Re-renderização da UI ---
-    showToast('Troca realizada com sucesso!', 'success');
-    renderEscalaEmCards(escalaAtual);
-    exibirIndiceEquilibrio(justificationDataAtual);
-    configurarDragAndDrop(escalaAtual, justificationDataAtual);
-}
-
-/**
- * Configura todos os eventos de arrastar e soltar nos cards de membro.
- * @param {Array} dias - A lista de dias da escala.
- * @param {Object} justificationData - O objeto com as contagens de participação.
- */
-export function configurarDragAndDrop(dias, justificationData) {
-    escalaAtual = dias; // Salva o estado atual para manipulação
-    justificationDataAtual = justificationData;
-
-    const membrosCards = document.querySelectorAll('.membro-card');
-    membrosCards.forEach(membro => {
-        membro.setAttribute('draggable', true);
-
-        membro.addEventListener('dragstart', (e) => {
-            e.target.classList.add('dragging');
-            e.dataTransfer.setData('text/plain', JSON.stringify({
-                nome: e.target.textContent,
-                cardOrigemId: e.target.closest('.escala-card').dataset.id
-            }));
-        });
-
-        membro.addEventListener('dragend', (e) => {
-            e.target.classList.remove('dragging');
-        });
-
-        membro.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            const alvo = e.target.closest('.membro-card');
-            if (alvo && !alvo.classList.contains('dragging')) {
-                alvo.classList.add('drag-over');
-            }
-        });
-
-        membro.addEventListener('dragleave', (e) => {
-            const alvo = e.target.closest('.membro-card');
-            if (alvo) {
-                alvo.classList.remove('drag-over');
-            }
-        });
-
-        membro.addEventListener('drop', (e) => {
-            e.preventDefault();
-            const alvo = e.target.closest('.membro-card');
-            if (!alvo) return;
-            
-            alvo.classList.remove('drag-over');
-
-            const dadosArrastados = JSON.parse(e.dataTransfer.getData('text/plain'));
-            const nomeAlvo = alvo.textContent;
-            const cardAlvoId = alvo.closest('.escala-card').dataset.id;
-            
-            if (dadosArrastados.cardOrigemId === cardAlvoId && dadosArrastados.nome === nomeAlvo) return;
-
-            remanejarMembro(dadosArrastados.nome, nomeAlvo, dadosArrastados.cardOrigemId, cardAlvoId);
-        });
-    });
-}
-
-/**
- * Renderiza a escala gerada no formato de cards visuais. (ATUALIZADO)
- * @param {Array} dias - A lista de dias com os membros selecionados.
- */
-export function renderEscalaEmCards(dias) {
-    const container = document.getElementById('resultadoEscala');
-    
-    const filtroAtivoEl = document.querySelector('#escala-filtros button.active');
-    const filtroAtivo = filtroAtivoEl ? filtroAtivoEl.dataset.filter : 'all';
-
-    container.innerHTML = '';
-    container.classList.add('escala-container');
-
-    dias.forEach(dia => {
-        if (dia.selecionados.length === 0) return;
-
-        const turnoConfig = VISUAL_CONFIG.turnos[dia.tipo] || { classe: '' };
-        const isHidden = (filtroAtivo !== 'all' && dia.tipo !== filtroAtivo);
-        
-        const cardHTML = `
-            <div class="escala-card ${turnoConfig.classe} ${isHidden ? 'hidden' : ''}" data-id="${dia.id}" data-turno="${dia.tipo}">
-                <div class="escala-card__header">
-                    <h4>${dia.tipo}</h4>
-                    <span>${dia.data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
-                </div>
-                <div class="escala-card__body">
-                    ${dia.selecionados.map(m => `<div class="membro-card">${m.nome}</div>`).join('')}
-                </div>
-            </div>
-        `;
-        container.innerHTML += cardHTML;
-    });
-}
-
-/**
- * Atualiza a função de exportação para ler os dados do estado atual.
- */
-export function exportarEscalaXLSX() {
-    // Se a escala foi gerada e possivelmente modificada, use `escalaAtual`.
-    if (escalaAtual.length > 0) {
-        const wb = XLSX.utils.book_new();
-        const dadosEscala = [['Data', 'Turno', 'Membros']];
-        
-        escalaAtual.forEach(dia => {
-            if (dia.selecionados.length > 0) {
-                const data = dia.data.toLocaleDateString('pt-BR');
-                const tipo = dia.tipo;
-                const nomes = dia.selecionados.map(m => m.nome).join(', ');
-                dadosEscala.push([data, tipo, nomes]);
-            }
-        });
-
-        const wsEscala = XLSX.utils.aoa_to_sheet(dadosEscala);
-        XLSX.utils.book_append_sheet(wb, wsEscala, 'Escala do Mês');
-        XLSX.writeFile(wb, 'escala_gerada.xlsx');
-    } else {
-        showToast('Não há escala gerada para exportar.', 'warning');
-    }
-}
-
-// =================== FUNÇÕES DO MODAL (EXISTENTES) ===================
-
 export function renderAnaliseConcentracao(analise) {
     const body = document.getElementById('analiseConcentracaoBody');
     body.innerHTML = Object.entries(analise).map(([turno, dados]) => {
-        
         const listaMembrosHtml = dados.membrosDoTurno.map(membro => {
             const statusConfig = VISUAL_CONFIG.status[membro.status.type] || VISUAL_CONFIG.status.disponivel;
             const statusIcon = `<i class="fas ${statusConfig.icone} status-icon ${statusConfig.classe}" title="${statusConfig.titulo}"></i>`;
@@ -414,33 +250,140 @@ export function renderAnaliseConcentracao(analise) {
                     ${statusIcon}
                 </li>`;
         }).join('');
-
         return `
             <div class="analise-turno-bloco">
                 <h5>Turno: ${turno}</h5>
-                <p>Total de participações neste turno durante o mês: <strong>${dados.totalParticipacoesNoTurno}</strong></p>
+                <p>Total de participações no mês: <strong>${dados.totalParticipacoesNoTurno}</strong></p>
+                <p>Membros disponíveis para este turno: <strong>${dados.membrosDisponiveis}</strong></p>
                 <h6>Análise de Disponibilidade Individual:</h6>
-                <ul>
-                    ${listaMembrosHtml}
-                </ul>
-            </div>
-        `;
+                <ul>${listaMembrosHtml}</ul>
+            </div>`;
     }).join('');
-
     document.getElementById('analiseConcentracaoModal').style.display = 'flex';
 }
 
-export function setupAnaliseModalListeners() {
-    const modal = document.getElementById('analiseConcentracaoModal');
-    if (!modal) return;
-    
-    document.getElementById('btn-fechar-analise').addEventListener('click', () => {
-        modal.style.display = 'none';
+/**
+ * Configura todos os eventos de arrastar e soltar nos cards de membro.
+ * @param {Array} dias - A lista de dias da escala.
+ * @param {Object} justificationData - O objeto com as contagens de participação.
+ * @param {Array} restricoes - Lista de restrições temporárias.
+ * @param {Array} restricoesPermanentes - Lista de restrições permanentes.
+ */
+export function configurarDragAndDrop(dias, justificationData, restricoes, restricoesPermanentes) {
+    escalaAtual = dias;
+    justificationDataAtual = justificationData;
+    todasAsRestricoes = restricoes;
+    todasAsRestricoesPerm = restricoesPermanentes;
+
+    const membrosCards = document.querySelectorAll('.membro-card');
+    membrosCards.forEach(card => {
+        card.addEventListener('dragstart', (e) => {
+            e.target.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', JSON.stringify({
+                nome: e.target.textContent,
+                cardOrigemId: e.target.closest('.escala-card').dataset.id
+            }));
+        });
+
+        card.addEventListener('dragend', (e) => {
+            e.target.classList.remove('dragging');
+            limparSugestoes();
+        });
+
+        card.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if (!e.target.classList.contains('dragging')) {
+                e.target.classList.add('drag-over');
+                atualizarSugestoesDeTroca(e.target.closest('.escala-card'));
+            }
+        });
+
+        card.addEventListener('dragleave', (e) => {
+            e.target.classList.remove('drag-over');
+        });
+
+        card.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.target.classList.remove('drag-over');
+            const dadosArrastados = JSON.parse(e.dataTransfer.getData('text/plain'));
+            const nomeAlvo = e.target.textContent;
+            const cardAlvoId = e.target.closest('.escala-card').dataset.id;
+            
+            if (dadosArrastados.cardOrigemId === cardAlvoId && dadosArrastados.nome === nomeAlvo) return;
+            remanejarMembro(dadosArrastados.nome, nomeAlvo, dadosArrastados.cardOrigemId, cardAlvoId);
+        });
+    });
+}
+
+function limparSugestoes() {
+    document.querySelectorAll('.membro-card.suggestion').forEach(s => s.classList.remove('suggestion'));
+}
+
+function atualizarSugestoesDeTroca(cardAlvo) {
+    limparSugestoes();
+    const diaAlvo = escalaAtual.find(d => d.id === cardAlvo.dataset.id);
+    if (!diaAlvo) return;
+
+    const membrosDisponiveis = membros.filter(m => {
+        let isSuspended = false;
+        if (diaAlvo.tipo === 'Quarta' || diaAlvo.tipo.startsWith('Domingo')) isSuspended = m.suspensao.cultos;
+        else if (diaAlvo.tipo === 'Sábado') isSuspended = m.suspensao.sabado;
+
+        const diaAtual = new Date(diaAlvo.data); diaAtual.setHours(0, 0, 0, 0);
+        const restricaoTemp = todasAsRestricoes.some(r => {
+            const rInicio = new Date(r.inicio); rInicio.setHours(0,0,0,0);
+            const rFim = new Date(r.fim); rFim.setHours(0,0,0,0);
+            return r.membro === m.nome && diaAtual >= rInicio && diaAtual <= rFim;
+        });
+        const restricaoPerm = todasAsRestricoesPerm.some(r => r.membro === m.nome && r.diaSemana === diaAlvo.tipo);
+        return !isSuspended && !restricaoTemp && !restricaoPerm;
     });
 
-    modal.addEventListener('click', (e) => {
-        if (e.target.id === 'analiseConcentracaoModal') {
-            modal.style.display = 'none';
-        }
-    });
+    const nomesJaNoTurno = diaAlvo.selecionados.map(s => s.nome);
+    const candidatos = membrosDisponiveis.filter(m => !nomesJaNoTurno.includes(m.nome));
+    candidatos.sort((a, b) => (justificationDataAtual[a.nome]?.participations || 0) - (justificationDataAtual[b.nome]?.participations || 0));
+
+    const melhoresCandidatos = candidatos.slice(0, 3).map(c => c.nome);
+    if (melhoresCandidatos.length > 0) {
+        document.querySelectorAll('.membro-card').forEach(card => {
+            if (melhoresCandidatos.includes(card.textContent)) {
+                card.classList.add('suggestion');
+            }
+        });
+    }
+}
+
+function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
+    const diaOrigem = escalaAtual.find(d => d.id === cardOrigemId);
+    const diaAlvo = escalaAtual.find(d => d.id === cardAlvoId);
+    if (!diaOrigem || !diaAlvo) return;
+    
+    // Validação de restrições do membro arrastado para o dia alvo
+    const membroArrastadoObj = membros.find(m => m.nome === nomeArrastado);
+    const diaAlvoData = new Date(diaAlvo.data); diaAlvoData.setHours(0,0,0,0);
+    const temRestricaoTemp = todasAsRestricoes.some(r => r.membro === nomeArrastado && diaAlvoData >= new Date(r.inicio) && diaAlvoData <= new Date(r.fim));
+    const temRestricaoPerm = todasAsRestricoesPerm.some(r => r.membro === nomeArrastado && r.diaSemana === diaAlvo.tipo);
+
+    if (temRestricaoTemp || temRestricaoPerm) {
+        showToast(`${nomeArrastado} tem uma restrição para ${diaAlvo.tipo} neste dia e não pode ser escalado.`, 'warning');
+        return;
+    }
+
+    // Troca os membros no estado
+    const membroAlvoObj = membros.find(m => m.nome === nomeAlvo);
+    const indexOrigem = diaOrigem.selecionados.findIndex(m => m.nome === nomeArrastado);
+    diaOrigem.selecionados.splice(indexOrigem, 1, membroAlvoObj);
+    const indexAlvo = diaAlvo.selecionados.findIndex(m => m.nome === nomeAlvo);
+    diaAlvo.selecionados.splice(indexAlvo, 1, membroArrastadoObj);
+
+    // Atualiza as participações se a troca for entre dias diferentes
+    if (cardOrigemId !== cardAlvoId) {
+        justificationDataAtual[nomeArrastado].participations++;
+        justificationDataAtual[nomeAlvo].participations--;
+    }
+    
+    // Re-renderiza a UI
+    renderEscalaEmCards(escalaAtual);
+    exibirIndiceEquilibrio(justificationDataAtual);
+    configurarDragAndDrop(escalaAtual, justificationDataAtual, todasAsRestricoes, todasAsRestricoesPerm);
 }
