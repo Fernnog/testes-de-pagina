@@ -3,16 +3,20 @@
  * Responsabilidades:
  * 1. Importar todos os outros módulos.
  * 2. Esperar o carregamento da página (DOMContentLoaded).
- * 3. Inicializar o Firebase e gerenciar o estado de autenticação.
+ * 3. Inicializar o Firebase.
  * 4. Configurar todos os event listeners (cliques em botões, submissão de formulários).
- * 5. Orquestrar as chamadas entre os diferentes módulos (data, ui, etc.).
+ * 5. Orquestrar as chamadas entre os diferentes módulos (auth, data, ui, etc.).
  */
 
-// ETAPA 1: Importações
+// ETAPA 1: As importações DEVEM estar no topo do arquivo, no escopo global.
+import { setupAuthListeners, handleLogout } from './auth.js';
 import { setupGeradorEscala } from './schedule-generator.js';
 import {
     carregarDados,
     salvarDados,
+    limparDadosGlobais,
+    exportarDados,
+    importarDados,
     adicionarMembro,
     adicionarRestricao,
     adicionarRestricaoPermanente,
@@ -25,7 +29,8 @@ import {
     setupUiListeners,
     showToast,
     exportarEscalaXLSX,
-    renderDisponibilidadeGeral
+    setupAnaliseModalListeners,
+    renderDisponibilidadeGeral // <-- ALTERAÇÃO: Importa a nova função
 } from './ui.js';
 
 
@@ -60,12 +65,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Configura todos os event listeners da aplicação.
+     * Configura todos os event listeners da aplicação que não são
+     * configurados dentro de outros módulos.
      */
     function setupEventListeners() {
         
-        // --- Listeners da Barra de Navegação (versão simplificada) ---
+        // --- Listeners da Barra de Navegação ---
+        document.getElementById('nav-auth').addEventListener('click', () => showTab('auth'));
         document.getElementById('nav-cadastro').addEventListener('click', () => showTab('cadastro'));
+        // <-- ALTERAÇÃO: Adicionado listener para o novo painel -->
         document.getElementById('nav-disponibilidade').addEventListener('click', () => {
             showTab('disponibilidade');
             renderDisponibilidadeGeral();
@@ -74,8 +82,31 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('nav-restricoes-permanentes').addEventListener('click', () => showTab('restricoesPermanentes'));
         document.getElementById('nav-escala').addEventListener('click', () => showTab('escala'));
 
+        // --- Listeners dos Botões de Ação Globais ---
+        document.getElementById('btn-exportar-dados').addEventListener('click', exportarDados);
+        
         // Listener do botão de exportar a escala XLSX
         document.getElementById('btn-exportar-xlsx').addEventListener('click', exportarEscalaXLSX);
+
+        document.getElementById('btn-importar-dados').addEventListener('click', () => {
+            document.getElementById('importarArquivo').click();
+        });
+        document.getElementById('importarArquivo').addEventListener('change', (event) => {
+            importarDados(event, auth, database);
+        });
+        
+        document.getElementById('btn-limpar-dados').addEventListener('click', () => {
+            if (confirm('Tem certeza que deseja limpar todos os dados? Esta ação não pode ser desfeita.')) {
+                limparDadosGlobais();
+                salvarDados(auth, database).then(() => {
+                    atualizarTodasAsListas();
+                    document.getElementById('resultadoEscala').innerHTML = '';
+                    showToast('Todos os dados foram limpos.', 'success');
+                });
+            }
+        });
+
+        document.getElementById('logout').addEventListener('click', () => handleLogout(auth));
 
         // --- Listeners de Submissão de Formulários ---
         document.getElementById('formCadastro').addEventListener('submit', (e) => {
@@ -133,26 +164,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- INICIALIZAÇÃO DA APLICAÇÃO ---
-    
-    // Listener de Estado de Autenticação (ponto central de controle)
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            // Usuário está logado, pode usar a aplicação
-            onLoginSuccess(); // Dispara o carregamento de dados e atualização da UI
-        } else {
-            // Usuário está deslogado. Como a UI de login foi removida,
-            // instruímos o usuário a fazer login pelo console do Firebase.
-            document.body.innerHTML = `
-                <div style="padding: 40px; text-align: center; font-family: sans-serif;">
-                    <h1>Acesso Restrito</h1>
-                    <p>Por favor, faça login através do console do Firebase para continuar.</p>
-                </div>
-            `;
-        }
-    });
-
     // Configura os módulos que precisam de inicialização
+    setupAuthListeners(auth, onLoginSuccess);
     setupGeradorEscala();
     setupUiListeners(); 
+    setupAnaliseModalListeners();
     setupEventListeners(); 
 });

@@ -1,5 +1,3 @@
-// Arquivo: ui.js (Versão Completa e Corrigida)
-
 import { membros, restricoes, restricoesPermanentes } from './data-manager.js';
 
 const VISUAL_CONFIG = {
@@ -22,13 +20,19 @@ function getStatusIconHTML(statusConfig) {
     if (statusConfig.type === 'emoji') {
         return `<span class="status-icon status-emoji ${statusConfig.classe}" title="${statusConfig.titulo}">${statusConfig.value}</span>`;
     }
+    // O padrão continua sendo Font Awesome
     return `<i class="fas ${statusConfig.value} status-icon ${statusConfig.classe}" title="${statusConfig.titulo}"></i>`;
 }
 
+// --- Armazenamento de estado para manipulação da UI ---
 let escalaAtual = [];
 let justificationDataAtual = {};
 let todasAsRestricoes = [];
 let todasAsRestricoesPerm = [];
+
+// =========================================================
+// === SEÇÃO DE CÓDIGO SEM ALTERAÇÕES (EXISTENTE E ESTÁVEL) ===
+// =========================================================
 
 function atualizarListaMembros() {
     const lista = document.getElementById('listaMembros');
@@ -181,6 +185,11 @@ export function setupAnaliseModalListeners() {
     modal.addEventListener('click', (e) => { if (e.target.id === 'analiseConcentracaoModal') { modal.style.display = 'none'; } });
 }
 
+
+// =========================================================
+// SEÇÃO DE CÓDIGO COM AS NOVAS FUNCIONALIDADES E MELHORIAS
+// =========================================================
+
 export function renderEscalaEmCards(dias) {
     const container = document.getElementById('resultadoEscala');
     container.innerHTML = '';
@@ -312,6 +321,7 @@ export function renderDisponibilidadeGeral() {
 
     container.innerHTML = contentHTML;
 
+    // Adiciona o listener para o filtro
     const filtroCheckbox = document.getElementById('filtroOcultarDisponiveis');
     if (filtroCheckbox) {
         filtroCheckbox.addEventListener('change', (e) => {
@@ -320,7 +330,6 @@ export function renderDisponibilidadeGeral() {
     }
 }
 
-// ▼▼▼ CORREÇÃO APLICADA AQUI ▼▼▼
 export function configurarDragAndDrop(dias, justificationData, restricoes, restricoesPermanentes) {
     escalaAtual = dias;
     justificationDataAtual = justificationData;
@@ -410,6 +419,7 @@ function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
     const diaAlvo = escalaAtual.find(d => d.id === cardAlvoId);
     if (!diaOrigem || !diaAlvo) return;
     
+    // Validação de restrições do membro arrastado para o dia alvo
     const membroArrastadoObj = membros.find(m => m.nome === nomeArrastado);
     const diaAlvoData = new Date(diaAlvo.data); diaAlvoData.setHours(0,0,0,0);
     const temRestricaoTemp = todasAsRestricoes.some(r => r.membro === nomeArrastado && diaAlvoData >= new Date(r.inicio) && diaAlvoData <= new Date(r.fim));
@@ -420,17 +430,20 @@ function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
         return;
     }
 
+    // Troca os membros no estado
     const membroAlvoObj = membros.find(m => m.nome === nomeAlvo);
     const indexOrigem = diaOrigem.selecionados.findIndex(m => m.nome === nomeArrastado);
     diaOrigem.selecionados.splice(indexOrigem, 1, membroAlvoObj);
     const indexAlvo = diaAlvo.selecionados.findIndex(m => m.nome === nomeAlvo);
     diaAlvo.selecionados.splice(indexAlvo, 1, membroArrastadoObj);
 
+    // Atualiza as participações se a troca for entre dias diferentes
     if (cardOrigemId !== cardAlvoId) {
         justificationDataAtual[nomeArrastado].participations++;
         justificationDataAtual[nomeAlvo].participations--;
     }
     
+    // Re-renderiza a UI
     renderEscalaEmCards(escalaAtual);
     exibirIndiceEquilibrio(justificationDataAtual);
     configurarDragAndDrop(escalaAtual, justificationDataAtual, todasAsRestricoes, todasAsRestricoesPerm);
