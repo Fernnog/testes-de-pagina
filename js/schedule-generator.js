@@ -1,8 +1,7 @@
 import { membros, restricoes, restricoesPermanentes } from './data-manager.js';
-import { exibirIndiceEquilibrio, renderEscalaEmCards, renderAnaliseConcentracao, renderizarFiltros, configurarDragAndDrop, showToast } from './ui.js';
+import { exibirIndiceEquilibrio, renderEscalaEmCards, renderAnaliseConcentracao, renderizarFiltros, configurarDragAndDrop } from './ui.js';
 
 // --- Funções de Lógica de Seleção ---
-
 function weightedRandom(weights) {
     let random = Math.random();
     let cumulativeWeight = 0;
@@ -18,7 +17,7 @@ function selecionarMembrosComAleatoriedade(membrosDisponiveis, quantidadeNecessa
 
     const pesos = membrosDisponiveis.map(m => {
         const count = participacoes[m.nome]?.participations || 0;
-        return Math.pow(0.2, count);
+        return Math.pow(0.2, count); 
     });
     
     const somaPesos = pesos.reduce((sum, p) => sum + p, 0);
@@ -33,6 +32,7 @@ function selecionarMembrosComAleatoriedade(membrosDisponiveis, quantidadeNecessa
     }
     
     const pesosNormalizados = pesos.map(p => p / somaPesos);
+
     const selecionados = [];
     const disponiveis = [...membrosDisponiveis];
     let pesosTemp = [...pesosNormalizados];
@@ -46,12 +46,20 @@ function selecionarMembrosComAleatoriedade(membrosDisponiveis, quantidadeNecessa
         if (somaPesosTemp > 0) {
             pesosTemp = pesosTemp.map(p => p / somaPesosTemp);
         }
+
         selecionados.push(membroSelecionado);
     }
     return selecionados;
 }
 
-
+/**
+ * Analisa a concentração de participações para os turnos de Culto, incluindo contagem de membros disponíveis.
+ * @param {Array} diasGerados - Array com a escala final gerada.
+ * @param {Array} todosMembros - Array completo de membros cadastrados.
+ * @param {Array} todasRestricoes - Array de restrições temporárias.
+ * @param {Array} todasRestricoesPerm - Array de restrições permanentes.
+ * @returns {Object} - Um objeto com a análise detalhada por turno.
+ */
 function analisarConcentracao(diasGerados, todosMembros, todasRestricoes, todasRestricoesPerm) {
     const analise = {};
     const turnosCulto = ['Quarta', 'Domingo Manhã', 'Domingo Noite'];
@@ -59,15 +67,24 @@ function analisarConcentracao(diasGerados, todosMembros, todasRestricoes, todasR
     turnosCulto.forEach(turno => {
         const membrosDoTurno = [];
         let totalParticipacoesNoTurno = 0;
+        let membrosDisponiveisCount = 0; // Contador para membros disponíveis
 
         todosMembros.forEach(membro => {
+            // Diagnostica o status do membro para este turno específico
             let status = { type: 'disponivel' };
+            
             if (membro.suspensao.cultos) {
                 status = { type: 'suspenso' };
             } 
             else if (todasRestricoesPerm.some(r => r.membro === membro.nome && r.diaSemana === turno)) {
                 status = { type: 'permanente' };
             }
+
+            // Conta o membro se seu status for 'disponível'
+            if (status.type === 'disponivel') {
+                membrosDisponiveisCount++;
+            }
+
             const participacoes = diasGerados.filter(d => d.tipo === turno && d.selecionados.some(s => s.nome === membro.nome)).length;
             totalParticipacoesNoTurno += participacoes;
 
@@ -77,9 +94,10 @@ function analisarConcentracao(diasGerados, todosMembros, todasRestricoes, todasR
                 status: status
             });
         });
-
+        
         analise[turno] = {
             totalParticipacoesNoTurno: totalParticipacoesNoTurno,
+            membrosDisponiveis: membrosDisponiveisCount, // Adiciona a nova contagem
             membrosDoTurno: membrosDoTurno.sort((a, b) => b.participacoes - a.participacoes)
         };
     });
@@ -88,7 +106,7 @@ function analisarConcentracao(diasGerados, todosMembros, todasRestricoes, todasR
 
 
 /**
- * Configura o listener do formulário de geração de escala, orquestrando todo o processo.
+ * Configura o listener do formulário de geração de escala.
  */
 export function setupGeradorEscala() {
     document.getElementById('formEscala').addEventListener('submit', (e) => {
@@ -149,7 +167,7 @@ export function setupGeradorEscala() {
 
         // --- LÓGICA PRINCIPAL DE GERAÇÃO DA ESCALA ---
         dias.forEach(dia => {
-             let membrosDisponiveis = membros.filter(m => {
+            let membrosDisponiveis = membros.filter(m => {
                 let isSuspended = false;
                 if (dia.tipo === 'Quarta' || dia.tipo.startsWith('Domingo')) isSuspended = m.suspensao.cultos;
                 else if (dia.tipo === 'Sábado') isSuspended = m.suspensao.sabado;
@@ -197,7 +215,7 @@ export function setupGeradorEscala() {
         // --- Renderização e Análise Final ---
         renderEscalaEmCards(dias);
         renderizarFiltros(dias);
-        configurarDragAndDrop(dias, justificationData);
+        configurarDragAndDrop(dias, justificationData, restricoes, restricoesPermanentes);
         exibirIndiceEquilibrio(justificationData);
         
         if (gerarCultos) {
