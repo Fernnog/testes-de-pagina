@@ -326,7 +326,7 @@ button:active {
 
 .member-list-summary p { margin: 5px 0; }
 
-/* ================ NOVOS ESTILOS PARA ESCALA EM CARDS E DIAGNÓSTICO (PRIORIDADE 1 e 2) ================ */
+/* ================ ESTILOS PARA ESCALA EM CARDS, FILTROS E DRAG & DROP ================ */
 
 /* Container para a grade de cards da escala */
 .escala-container {
@@ -334,8 +334,8 @@ button:active {
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 20px;
     padding: 20px 0;
-    background: none; /* Garante que não haja fundo branco no container */
-    box-shadow: none; /* Garante que não haja sombra no container */
+    background: none;
+    box-shadow: none;
 }
 
 /* Estilo individual de cada card de escala */
@@ -347,6 +347,7 @@ button:active {
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    transition: opacity 0.4s ease, transform 0.4s ease; /* Para o filtro */
 }
 
 /* Cores das bordas superiores para cada turno */
@@ -355,7 +356,6 @@ button:active {
 .escala-card.turno-domingo-noite { border-top-color: #6f42c1; }
 .escala-card.turno-sabado { border-top-color: #28a745; }
 .escala-card.turno-oracao { border-top-color: #fd7e14; }
-
 
 /* Cabeçalho do card (Tipo do turno e data) */
 .escala-card__header {
@@ -368,7 +368,7 @@ button:active {
     margin: 0;
     color: #af4d00;
     font-size: 1.1em;
-    text-transform: capitalize; /* Garante "Quarta", "Domingo", etc. */
+    text-transform: capitalize;
 }
 
 .escala-card__header span {
@@ -385,7 +385,7 @@ button:active {
     flex-wrap: wrap;
     gap: 10px;
     justify-content: flex-start;
-    flex-grow: 1; /* Faz o corpo crescer para preencher o card */
+    flex-grow: 1;
 }
 
 /* Estilo para o nome de cada membro dentro do card */
@@ -397,7 +397,67 @@ button:active {
     font-weight: 500;
     color: #0366d6;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    flex-grow: 1; /* Faz os cards de membro ocuparem o espaço disponível */
+    flex-grow: 1;
+    cursor: grab; /* Indica que o item é arrastável */
+    transition: all 0.2s ease-in-out;
+}
+
+.membro-card:active {
+    cursor: grabbing;
+}
+
+/* Feedback visual para o membro sendo arrastado */
+.membro-card.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+/* Feedback visual para o local onde o membro pode ser solto */
+.membro-card.drag-over {
+    border: 2px dashed #28a745;
+    background-color: #e6ffed;
+}
+
+/* Container para os botões de filtro */
+.escala-filtros-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 25px;
+    margin-top: 20px; /* Espaçamento */
+}
+
+/* Estilo dos botões de filtro */
+.escala-filtros-container button {
+    background: #fff;
+    color: #4682b4;
+    border: 2px solid #4682b4;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.escala-filtros-container button:hover {
+    background-color: #e8f0ff;
+    transform: translateY(-2px);
+    box-shadow: none; /* Remove o hover padrão */
+}
+
+/* Estilo para o botão de filtro ativo */
+.escala-filtros-container button.active {
+    background: linear-gradient(45deg, #ff4500, #ff8c00);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 10px rgba(255, 69, 0, 0.3);
+}
+
+/* Ocultar cards que não correspondem ao filtro */
+.escala-card.hidden {
+    display: none;
 }
 
 /* Seção para os títulos principais da aba de Geração */
@@ -418,9 +478,9 @@ button:active {
     padding: 8px 4px;
     margin: 0;
     box-shadow: none;
-    display: flex; /* Habilita flexbox para alinhar itens */
-    justify-content: space-between; /* Coloca o nome à esquerda e o ícone à direita */
-    align-items: center; /* Alinha verticalmente */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     border-bottom: 1px solid #f0f0f0;
 }
 
@@ -520,6 +580,7 @@ footer {
 }
 .toast.success { background: linear-gradient(45deg, #28a745, #34d058); }
 .toast.warning { background: linear-gradient(45deg, #ffc107, #ffdb58); color: #343a40; }
+.toast.error { background: linear-gradient(45deg, #dc3545, #c82333); } /* Novo para validação */
 @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
 @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; transform: translateX(100%); } }
 
