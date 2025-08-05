@@ -178,16 +178,13 @@
             </div>
             <button type="submit" class="secondary-button">Gerar Escala</button>
         </form>
+        
+        <!-- INSERÇÃO DA MELHORIA: Container para os botões de filtro -->
+        <div id="escala-filtros" class="escala-filtros-container"></div>
+        
+        <div id="resultadoEscala" class="escala-container"></div>
         <div id="balanceIndexContainer" style="display: none; cursor: pointer;"></div>
         <div id="diagnosticReportContainer" style="display: none;"></div>
-        
-        <!-- INÍCIO DA ALTERAÇÃO: Adição do container para os filtros -->
-        <div id="escala-filtros-container" class="escala-filtros-container">
-            <!-- Os botões de filtro serão injetados aqui pelo JavaScript -->
-        </div>
-        <!-- FIM DA ALTERAÇÃO -->
-
-        <div id="resultadoEscala" class="escala-container"></div>
         <button id="btn-exportar-xlsx" class="secondary-button">Exportar Escala (XLSX)</button>
     </div>
 
