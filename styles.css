@@ -502,6 +502,83 @@ button:active {
 .status-icon.status-restrito-temp { color: #17a2b8; }
 .status-icon.status-suspenso { color: #ffc107; }
 
+/* ================ NOVOS ESTILOS PARA PAINEL DE DISPONIBILIDADE ================ */
+
+#disponibilidadeContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.disponibilidade-turno-bloco {
+    margin-bottom: 0;
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #6f42c1;
+}
+
+.disponibilidade-turno-bloco h5 {
+    border-bottom: 2px solid #ffc107;
+    padding-bottom: 8px;
+    margin-top: 0;
+    font-size: 1.2em;
+    color: #6f42c1;
+}
+
+.disponibilidade-turno-bloco .list-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 15px;
+}
+
+.disponibilidade-turno-bloco .list-wrapper {
+    flex: 1;
+    min-width: 250px;
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.disponibilidade-turno-bloco .list-wrapper h6 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #343a40;
+    font-size: 1.1em;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 8px;
+}
+
+.list-wrapper.disponiveis h6 { color: #28a745; }
+.list-wrapper.indisponiveis h6 { color: #dc3545; }
+
+.disponibilidade-turno-bloco .list-wrapper ul {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.disponibilidade-turno-bloco ul li {
+    background: none;
+    border: none;
+    padding: 10px 4px;
+    margin: 0;
+    box-shadow: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.disponibilidade-turno-bloco ul li:hover {
+    background-color: #f1f8ff;
+    transform: none;
+}
+
+
 /* ================ FIM DOS NOVOS ESTILOS ================ */
 
 
@@ -535,10 +612,10 @@ footer {
     margin-top: 20px;
     border-radius: 8px 8px 0 0;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-    display: flex; /* NOVO */
-    flex-direction: column; /* NOVO */
-    align-items: center; /* NOVO */
-    gap: 15px; /* NOVO */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
 }
 
 /* ===== NOVOS ESTILOS PARA LEGENDA DE ÍCONES (Prioridade 2) ===== */
