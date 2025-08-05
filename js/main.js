@@ -28,7 +28,9 @@ import {
     atualizarTodasAsListas,
     setupUiListeners,
     showToast,
-    exportarEscalaXLSX // A importação que antes causava o erro
+    exportarEscalaXLSX,
+    // ADICIONADO: Importação da nova função para inicializar o modal.
+    setupAnaliseModalListeners
 } from './ui.js';
 
 
@@ -78,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Listeners dos Botões de Ação Globais ---
         document.getElementById('btn-exportar-dados').addEventListener('click', exportarDados);
         
-        // Conecta o botão de exportação da escala com a função importada
+        // Listener do botão de exportar a escala XLSX
         document.getElementById('btn-exportar-xlsx').addEventListener('click', exportarEscalaXLSX);
 
         document.getElementById('btn-importar-dados').addEventListener('click', () => {
@@ -168,5 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupAuthListeners(auth, onLoginSuccess);
     setupGeradorEscala();
     setupUiListeners(); // Configura listeners internos da UI, como o toggle do cônjuge
+    // ADICIONADO: Chamada para configurar os eventos do novo modal de análise.
+    setupAnaliseModalListeners();
     setupEventListeners(); // Configura todos os listeners principais que orquestram a aplicação
 });
