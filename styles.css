@@ -347,20 +347,8 @@ button:active {
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    transition: opacity 0.4s ease, transform 0.4s ease, border 0.3s; /* Para o filtro e drag-over */
+    transition: opacity 0.4s ease, transform 0.4s ease; /* Para o filtro */
 }
-
-/* NOVO: Estilos para validação de Drag & Drop (Prioridade 2) */
-.escala-card.drag-over-valid {
-    border: 2px dashed #28a745;
-    background-color: #e6ffed;
-}
-
-.escala-card.drag-over-invalid {
-    border: 2px dashed #dc3545;
-    background-color: #ffeef0;
-}
-
 
 /* Cores das bordas superiores para cada turno */
 .escala-card.turno-quarta { border-top-color: #17a2b8; }
@@ -483,6 +471,19 @@ button:active {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+/* Estilo para a lista de membros no modal de análise de concentração */
+.analise-turno-bloco ul li {
+    background: none;
+    border: none;
+    padding: 8px 4px;
+    margin: 0;
+    box-shadow: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+}
+
 /* Estilo base para os ícones de status */
 .status-icon {
     font-size: 1.2em;
@@ -501,71 +502,7 @@ button:active {
 .status-icon.status-restrito-temp { color: #17a2b8; }
 .status-icon.status-suspenso { color: #ffc107; }
 
-/* ================ NOVOS ESTILOS PARA LAYOUT DA ESCALA E PAINEL LATERAL ================ */
-
-#escala-wrapper {
-    display: flex;
-    flex-wrap: wrap; /* Permite que o painel vá para baixo em telas menores */
-    gap: 30px;
-    margin-top: 25px;
-}
-
-#escala-main-content {
-    flex: 3; /* Ocupa a maior parte do espaço */
-    min-width: 400px;
-}
-
-.painel-analise-lateral {
-    flex: 1; /* Ocupa o espaço restante */
-    min-width: 300px;
-    background-color: #f8f9fa;
-    padding: 20px;
-    border-radius: 8px;
-    border-left: 4px solid #17a2b8;
-    align-self: flex-start; /* Alinha o painel ao topo do wrapper */
-    max-height: 80vh; /* Altura máxima com scroll */
-    overflow-y: auto;
-}
-
-.painel-analise-lateral h4 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    border-bottom: 2px solid #ffc107;
-    padding-bottom: 10px;
-    color: #2c3e50;
-    font-size: 1.3em;
-}
-
-.painel-analise-lateral ul {
-    list-style: none;
-    padding: 0;
-}
-
-.painel-analise-lateral li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 5px;
-    border-bottom: 1px solid #e9ecef;
-    background: none;
-    box-shadow: none;
-    transition: background-color 0.2s;
-}
-
-.painel-analise-lateral li:hover {
-    background-color: #e8f0ff;
-    transform: none;
-}
-
-.painel-analise-lateral li .restriction-info {
-    font-size: 0.85em;
-    color: #6c757d;
-    margin-left: 8px;
-    font-style: italic;
-}
-
-
-/* ================ ESTILOS PARA PAINEL DE DISPONIBILIDADE ================ */
+/* ================ NOVOS ESTILOS PARA PAINEL DE DISPONIBILIDADE ================ */
 
 #disponibilidadeContainer {
     display: grid;
@@ -681,7 +618,7 @@ footer {
     gap: 15px;
 }
 
-/* ===== ESTILOS PARA LEGENDA DE ÍCONES ===== */
+/* ===== NOVOS ESTILOS PARA LEGENDA DE ÍCONES (Prioridade 2) ===== */
 .icon-legend {
     background: rgba(255, 255, 255, 0.15);
     padding: 10px 20px;
@@ -728,6 +665,8 @@ footer {
 .icon-legend .status-icon {
     margin-left: 0;
 }
+/* ===== FIM DOS NOVOS ESTILOS DE LEGENDA ===== */
+
 
 /* Responsividade */
 @media (max-width: 768px) {
@@ -765,7 +704,7 @@ footer {
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
 .modal-actions button { width: auto; }
 
-/* ===== ESTILOS PARA FEEDBACK DE NOTIFICAÇÃO ===== */
+/* ===== ESTILOS PARA FEEDBACK E DIAGNÓSTICO ===== */
 #toast-container {
     position: fixed; top: 20px; right: 20px; z-index: 2000;
     display: flex; flex-direction: column; gap: 10px;
@@ -781,3 +720,97 @@ footer {
 .toast.error { background: linear-gradient(45deg, #dc3545, #c82333); } /* Novo para validação */
 @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
 @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; transform: translateX(100%); } }
+
+#balanceIndexContainer {
+    margin: 25px 0; padding: 20px; background-color: #f8f9fa;
+    border-radius: 8px; text-align: center;
+}
+#balanceIndexContainer h4 {
+    margin-top: 0; margin-bottom: 15px; font-size: 1.1em; color: #495057; background: none; -webkit-text-fill-color: initial; text-shadow: none;
+}
+.balance-bar-background {
+    width: 100%; background-color: #e9ecef; border-radius: 25px;
+    height: 25px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+.balance-bar-foreground {
+    height: 100%; border-radius: 25px; background: linear-gradient(90deg, #28a745, #84fab0);
+    width: 0%; transition: width 1s ease-in-out, background-color 1s ease;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: bold; font-size: 0.9em;
+}
+
+#diagnosticReportContainer {
+    display: none;
+    margin-top: 30px; padding: 25px; background-color: #fff9f2;
+    border: 1px solid #ffebcc; border-radius: 8px;
+}
+#diagnosticReportContainer h4 {
+    text-align: center; color: #c82333; margin-top: 0; margin-bottom: 20px; background: none; -webkit-text-fill-color: initial; text-shadow: none;
+}
+.diagnostic-table {
+    width: 100%; border-collapse: collapse; font-size: 0.95em;
+}
+.diagnostic-table th, .diagnostic-table td {
+    padding: 12px; text-align: left; border-bottom: 1px solid #ffebcc;
+}
+.diagnostic-table th { background-color: #fff0db; font-weight: bold; }
+.diagnostic-table tr:hover { background-color: #fff5e8; }
+.status-cell .fas { margin-right: 8px; font-size: 1.1em; }
+.status-available { color: #28a745; }
+.status-restricted-perm { color: #dc3545; }
+.status-suspended { color: #ffc107; }
+.status-restricted-temp { color: #17a2b8; }
+
+/* ===== ESTILOS PARA O NOVO MODAL DE ANÁLISE ===== */
+#analiseConcentracaoModal .modal-content {
+    max-width: 700px; /* Um pouco maior para caber a análise */
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    font-size: 2.5rem;
+    font-weight: 300;
+    line-height: 1;
+    color: #6c757d;
+    cursor: pointer;
+    box-shadow: none;
+    padding: 0 10px;
+}
+.close-button:hover {
+    color: #dc3545;
+    transform: none; /* remove o efeito de hover padrão de botões */
+}
+
+.modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.analise-turno-bloco { 
+    margin-bottom: 25px; 
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    border-left: 4px solid #17a2b8;
+}
+.analise-turno-bloco h5 { 
+    border-bottom: 2px solid #ffc107; 
+    padding-bottom: 8px;
+    margin-top: 0;
+    font-size: 1.2em;
+}
+.analise-turno-bloco h6 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #343a40;
+}

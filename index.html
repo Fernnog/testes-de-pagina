@@ -16,12 +16,45 @@
         <h2>GERADOR DE ESCALA DA INTERCESSÃO</h2>
     </header>
     <nav>
+        <button id="nav-auth"><i class="fas fa-lock"></i> Autenticação</button>
         <button id="nav-cadastro"><i class="fas fa-user-plus"></i> Cadastro de Membros</button>
         <button id="nav-disponibilidade"><i class="fas fa-tasks"></i> Disponibilidade</button> 
         <button id="nav-restricoes"><i class="fas fa-calendar-times"></i> Períodos de Restrição</button>
         <button id="nav-restricoes-permanentes"><i class="fas fa-ban"></i> Restrições Permanentes</button>
         <button id="nav-escala"><i class="fas fa-calendar-check"></i> Geração da Escala</button>
+        <button id="btn-exportar-dados"><i class="fas fa-download"></i> Exportar Dados (JSON)</button>
+        <input type="file" id="importarArquivo" accept=".json" style="display:none;">
+        <button id="btn-importar-dados"><i class="fas fa-upload"></i> Importar Dados (JSON)</button>
+        <button id="btn-limpar-dados"><i class="fas fa-trash"></i> Limpar Dados</button>
     </nav>
+
+    <!-- Aba de Autenticação -->
+    <div id="auth" class="tab">
+        <h2>Autenticação</h2>
+        <form id="formRegistro">
+            <div class="input-group">
+                <input type="email" id="emailRegistro" required placeholder=" ">
+                <label for="emailRegistro">E-mail</label>
+            </div>
+            <div class="input-group">
+                <input type="password" id="senhaRegistro" required placeholder=" ">
+                <label for="senhaRegistro">Senha</label>
+            </div>
+            <button type="submit" class="secondary-button">Registrar</button>
+        </form>
+        <form id="formLogin">
+            <div class="input-group">
+                <input type="email" id="emailLogin" required placeholder=" ">
+                <label for="emailLogin">E-mail</label>
+            </div>
+            <div class="input-group">
+                <input type="password" id="senhaLogin" required placeholder=" ">
+                <label for="senhaLogin">Senha</label>
+            </div>
+            <button type="submit" class="secondary-button">Login</button>
+        </form>
+        <button id="logout" style="display:none;">Logout</button>
+    </div>
 
     <!-- Aba Cadastro de Membros -->
     <div id="cadastro" class="tab" style="display: none;">
@@ -147,18 +180,11 @@
             <button type="submit" class="secondary-button">Gerar Escala</button>
         </form>
         
-        <!-- Wrapper para o novo layout de duas colunas -->
-        <div id="escala-wrapper">
-            <div id="escala-main-content">
-                <div id="escala-filtros" class="escala-filtros-container"></div>
-                <div id="resultadoEscala" class="escala-container"></div>
-            </div>
-            <!-- Container para o novo painel de análise lateral -->
-            <div id="painelAnaliseLateral" class="painel-analise-lateral">
-                <!-- Conteúdo será injetado pelo JavaScript -->
-            </div>
-        </div>
-
+        <div id="escala-filtros" class="escala-filtros-container"></div>
+        
+        <div id="resultadoEscala" class="escala-container"></div>
+        <div id="balanceIndexContainer" style="display: none; cursor: pointer;"></div>
+        <div id="diagnosticReportContainer" style="display: none;"></div>
         <button id="btn-exportar-xlsx" class="secondary-button">Exportar Escala (XLSX)</button>
     </div>
 
@@ -184,6 +210,19 @@
             <div class="modal-actions">
                 <button id="btn-salvar-suspensao" class="secondary-button">Salvar Alterações</button>
                 <button id="btn-cancelar-suspensao">Cancelar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de Análise de Concentração -->
+    <div id="analiseConcentracaoModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Análise de Concentração por Turno</h3>
+                <button id="btn-fechar-analise" class="close-button">×</button>
+            </div>
+            <div id="analiseConcentracaoBody" class="modal-body">
+                <!-- Conteúdo injetado via JS -->
             </div>
         </div>
     </div>
