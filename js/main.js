@@ -29,8 +29,8 @@ import {
     setupUiListeners,
     showToast,
     exportarEscalaXLSX,
-    // ADICIONADO: Importação da nova função para inicializar o modal.
-    setupAnaliseModalListeners
+    setupAnaliseModalListeners,
+    renderDisponibilidadeGeral // <-- ALTERAÇÃO: Importa a nova função
 } from './ui.js';
 
 
@@ -73,6 +73,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Listeners da Barra de Navegação ---
         document.getElementById('nav-auth').addEventListener('click', () => showTab('auth'));
         document.getElementById('nav-cadastro').addEventListener('click', () => showTab('cadastro'));
+        // <-- ALTERAÇÃO: Adicionado listener para o novo painel -->
+        document.getElementById('nav-disponibilidade').addEventListener('click', () => {
+            showTab('disponibilidade');
+            renderDisponibilidadeGeral();
+        });
         document.getElementById('nav-restricoes').addEventListener('click', () => showTab('restricoes'));
         document.getElementById('nav-restricoes-permanentes').addEventListener('click', () => showTab('restricoesPermanentes'));
         document.getElementById('nav-escala').addEventListener('click', () => showTab('escala'));
@@ -96,7 +101,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 salvarDados(auth, database).then(() => {
                     atualizarTodasAsListas();
                     document.getElementById('resultadoEscala').innerHTML = '';
-                    // CORRIGIDO: Removida a referência ao diagnosticReportContainer que também causaria erro.
                     showToast('Todos os dados foram limpos.', 'success');
                 });
             }
@@ -157,16 +161,13 @@ document.addEventListener('DOMContentLoaded', () => {
             salvarDados(auth, database).then(atualizarTodasAsListas);
             e.target.reset();
         });
-
-        // CORREÇÃO: O listener problemático que estava aqui foi removido.
     }
 
     // --- INICIALIZAÇÃO DA APLICAÇÃO ---
     // Configura os módulos que precisam de inicialização
     setupAuthListeners(auth, onLoginSuccess);
     setupGeradorEscala();
-    setupUiListeners(); // Configura listeners internos da UI, como o toggle do cônjuge
-    // ADICIONADO: Chamada para configurar os eventos do novo modal de análise.
+    setupUiListeners(); 
     setupAnaliseModalListeners();
-    setupEventListeners(); // Configura todos os listeners principais que orquestram a aplicação
+    setupEventListeners(); 
 });
