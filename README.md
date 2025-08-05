@@ -2,46 +2,84 @@
 
 ![Logotipo Escala de Intercessores](image/logo.png)
 
-**Escala de Intercessores** é uma aplicação web desenvolvida para facilitar a gestão e geração de escalas de intercessão para grupos religiosos. Com uma interface intuitiva e um design visual inspirado em um tema ardente e espiritual, a aplicação permite o cadastro de membros, gerenciamento de restrições (temporárias e permanentes), suspensões granulares e a criação de escalas mensais com distribuição inteligente.
+**Escala de Intercessores** é uma aplicação web robusta, projetada para simplificar e otimizar a gestão de escalas de intercessão. Com uma interface intuitiva e um poderoso motor de geração, a ferramenta vai além de um simples agendador, incorporando regras de negócio complexas para criar escalas justas, equilibradas e que respeitam as particularidades de cada membro.
 
-## 📋 Funcionalidades
+O sistema permite um gerenciamento detalhado dos participantes, incluindo restrições e suspensões granulares, culminando na geração de escalas mensais através de um clique, com distribuição inteligente e relatórios de análise aprofundados.
 
-- **Cadastro de Membros**: Registre membros com informações como nome, gênero e cônjuge (se aplicável).
-- **Gerenciamento de Suspensão**: Suspenda membros de forma total ou parcial (apenas de cultos, reuniões online ou oração no WhatsApp), mantendo o histórico sem precisar excluí-los para ausências temporárias.
-- **Períodos de Restrição**: Defina períodos em que membros não podem participar da escala, com tratamento correto de datas para evitar problemas de fuso horário.
-- **Restrições Permanentes**: Registre dias da semana em que membros têm restrições fixas.
-- **Geração de Escala Inteligente**: Crie escalas mensais para:
-  - Cultos (Quarta, Domingo Manhã e Noite).
-  - Reuniões Online (Sábado).
-  - Oração no WhatsApp (Diário), com uma distribuição inteligente que busca espaçar as participações de um mesmo membro por pelo menos 3 dias, garantindo um rodízio mais justo.
-- **Exportação e Importação de Dados**:
-  - Exporte todos os dados (membros, restrições e suspensões) em formato JSON.
-  - Exporte a escala gerada em formato XLSX para fácil compartilhamento.
-  - Importe dados salvos em JSON, com retrocompatibilidade para atualizar estruturas de dados antigas.
-- **Relatório de Participações**: Visualize a quantidade de participações de cada membro na escala gerada.
-- **Limpeza de Dados**: Opção para limpar todos os dados armazenados com confirmação.
+## 📋 Funcionalidades Detalhadas
+
+A aplicação é dividida em módulos que cobrem todo o ciclo de vida da gestão de uma escala:
+
+### Gestão de Pessoas e Disponibilidade
+- **Cadastro de Membros:** Registre membros com informações essenciais como nome, gênero e cônjuge (se aplicável), formando a base para todas as operações.
+- **Gerenciamento de Suspensão Granular:** Suspenda membros de forma total ou parcial (apenas de cultos, reuniões online ou oração no WhatsApp). Esta funcionalidade permite gerenciar ausências temporárias sem a necessidade de remover o membro, mantendo o histórico intacto.
+- **Restrições Temporárias:** Defina períodos específicos (ex: férias, viagens) em que um membro não pode ser escalado. O sistema trata as datas corretamente para evitar problemas de fuso horário.
+- **Restrições Permanentes:** Registre dias da semana ou turnos fixos (ex: "Todo Domingo à Noite") em que um membro nunca está disponível.
+
+### Geração Inteligente de Escala
+- **Geração Mensal Automatizada:** Crie escalas completas para um mês inteiro com um único comando, cobrindo:
+  - **Cultos:** Quarta, Domingo Manhã e Noite.
+  - **Reuniões Online:** Sábado.
+  - **Oração no WhatsApp:** Diariamente.
+- **Motor de Distribuição Inteligente:** O coração da aplicação, que utiliza um sistema de pesos para garantir que a distribuição seja a mais justa possível, priorizando membros que participaram menos.
+- **Regras de Alocação de Duplas:** Ao gerar escalas com duas pessoas, o sistema busca ativamente formar pares compatíveis (mesmo gênero ou cônjuges) para promover um ambiente mais confortável, antes de considerar outras opções.
+
+### Interatividade, Análise e Compartilhamento
+- **Edição da Escala com Drag & Drop:** Após a geração, a escala pode ser ajustada manualmente. Arraste um membro de um card para outro para realizar trocas. O sistema valida a troca em tempo real, impedindo movimentos que violem as restrições do membro.
+- **Painel de Disponibilidade Geral:** Uma visão completa que mostra, para cada turno, o status de todos os membros (Disponível, Suspenso, Restrição Permanente), ajudando no planejamento estratégico.
+- **Análise de Concentração:** Um relatório detalhado que mostra, por turno, a quantidade de participações de cada membro, quantos estão disponíveis e o motivo da indisponibilidade dos demais.
+- **Índice de Equilíbrio:** Um medidor visual que calcula e exibe um percentual de quão equilibrada a escala gerada está, ajudando a identificar rapidamente qualquer desbalanceamento.
+- **Exportação e Importação de Dados:**
+  - **JSON:** Exporte e importe todos os dados da aplicação (membros, restrições, suspensões) para backup ou migração.
+  - **XLSX:** Exporte a escala finalizada em um arquivo Excel limpo e organizado, com cada membro em sua própria coluna para facilitar o compartilhamento e a manipulação dos dados.
+
+---
+
+## 🧠 O Motor da Escala: Regras e Lógica de Distribuição
+
+Para garantir que as escalas sejam justas e funcionais, o sistema opera com uma hierarquia clara de regras. A cada dia a ser preenchido, o motor executa as seguintes verificações:
+
+### 1. Regras de Exclusão (Obrigatórias)
+Estas são as regras "inquebráveis". Se um membro se encaixar em qualquer uma delas para um determinado dia e turno, ele é **imediatamente removido** da lista de candidatos para aquela vaga.
+
+- **✅ Suspensão:** O sistema verifica se o membro está suspenso para a categoria da vaga (Cultos, Sábado ou WhatsApp). Se estiver, ele é excluído.
+- **✅ Restrição Permanente:** O sistema verifica se o membro possui uma restrição permanente para aquele turno (ex: "Domingo Noite"). Se possuir, ele é excluído.
+- **✅ Restrição Temporária:** O sistema verifica se a data da vaga está dentro de um período de restrição temporária (ex: férias) cadastrado para o membro. Se estiver, ele é excluído.
+
+Apenas os membros que passam por todos esses filtros são considerados "disponíveis".
+
+### 2. Regras de Agrupamento (Preferenciais)
+Quando a escala exige duplas, o sistema aplica uma lógica preferencial para formar os pares, após um primeiro membro ser selecionado.
+
+- **🤝 Compatibilidade de Duplas:** O sistema busca o segundo membro em um grupo prioritário composto por:
+  - Pessoas do mesmo gênero do primeiro membro selecionado.
+  - O cônjuge do primeiro membro selecionado.
+- **Fallback:** Caso nenhum membro compatível seja encontrado no grupo de disponíveis, o sistema quebra essa regra preferencial e seleciona qualquer outra pessoa disponível para garantir que a vaga seja preenchida.
+
+### 3. Regras de Distribuição e Seleção (Justiça)
+Para escolher quem será escalado dentre os "disponíveis", o sistema utiliza algoritmos para promover a justiça e a rotação.
+
+- **⚖️ Sistema de Pesos:** A chance de um membro ser escalado é **inversamente proporcional** ao número de vezes que ele já participou na escala atual. Na prática, isso significa que **membros com menos participações têm prioridade máxima** para serem selecionados.
+- **🔄 Distanciamento Mínimo (Oração no WhatsApp):** Para a escala diária de Oração no WhatsApp, uma regra adicional é aplicada: um membro que foi escalado não pode ser selecionado novamente nos próximos **3 dias**, garantindo uma rotação mais eficaz e evitando sobrecarga.
+
+---
 
 ## 🎨 Design e Estilo
+O design da aplicação foi inspirado no logotipo, com um tema ardente e espiritual. As melhorias visuais incluem:
+- **Paleta de Cores Ardente:** Gradientes de laranja e vermelho para refletir fervor e paixão.
+- **Feedback Visual Claro:** Uso de ícones, cores e emojis (⛔, 🚫) para indicar rapidamente o status de um membro (disponível, restrito, suspenso).
+- **Componentes Interativos:** Botões modernos, campos de formulário que reagem ao foco e animações sutis que melhoram a experiência do usuário.
+- **Layouts Organizados:** Uso de cards e painéis com colunas (Disponíveis vs. Indisponíveis) para apresentar informações complexas de forma clara e digerível.
 
-O design da aplicação foi inspirado no logotipo, que reflete um tema ardente e espiritual com tons de laranja e vermelho. As melhorias visuais incluem:
-
-- **Paleta de Cores Ardente**: Uso de gradientes laranja-vermelho em botões, bordas e fundo para refletir o fervor espiritual.
-- **Botões Modernos**: Botões com gradientes, efeitos de brilho, elevação e feedback ao clicar, diferenciados por função.
-- **Animações Sutis**: Efeitos de slide nas abas, brilho pulsante no logotipo e transições suaves em elementos interativos.
-- **Tipografia Impactante**: Títulos com gradientes e sombras para maior legibilidade e destaque.
-- **Feedback Visual Aprimorado**: Campos de entrada, caixas de seleção e itens de lista com efeitos de brilho e hover. Indicadores visuais para membros suspensos (ícone de pausa, texto riscado e dicas de ferramenta) para uma gestão clara e rápida.
-- **Modais Intuitivos**: Uso de janelas modais para ações complexas, como o gerenciamento granular de suspensões, mantendo a interface principal limpa.
-- **Rodapé Temático**: Um rodapé com gradiente ardente para reforçar o branding.
+---
 
 ## 🚀 Como Usar
 
 ### Pré-requisitos
-
 - Um navegador web moderno (Chrome, Firefox, Edge, etc.).
-- Conexão com a internet para carregar dependências externas (Firebase, Font Awesome, Google Fonts e XLSX).
+- Conexão com a internet para carregar dependências externas (Firebase, Font Awesome, etc.).
 
 ### Instalação
-
 1.  Clone o repositório para sua máquina local:
     ```bash
     git clone https://github.com/seu-usuario/escala-de-intercessores.git
