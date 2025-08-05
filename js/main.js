@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 salvarDados(auth, database).then(() => {
                     atualizarTodasAsListas();
                     document.getElementById('resultadoEscala').innerHTML = '';
-                    document.getElementById('diagnosticReportContainer').innerHTML = '';
+                    // CORRIGIDO: Removida a referência ao diagnosticReportContainer que também causaria erro.
                     showToast('Todos os dados foram limpos.', 'success');
                 });
             }
@@ -158,11 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.target.reset();
         });
 
-        // Listener para limpar relatórios antigos ao gerar uma nova escala
-        document.getElementById('formEscala').addEventListener('submit', () => {
-            document.getElementById('diagnosticReportContainer').style.display = 'none';
-            document.getElementById('justificationReportContainer').innerHTML = '';
-       });
+        // CORREÇÃO: O listener problemático que estava aqui foi removido.
     }
 
     // --- INICIALIZAÇÃO DA APLICAÇÃO ---
