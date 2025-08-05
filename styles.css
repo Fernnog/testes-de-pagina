@@ -326,46 +326,69 @@ button:active {
 
 .member-list-summary p { margin: 5px 0; }
 
-/* Relatório de participações e Layout de Cards */
-#resultadoEscala {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
+/* ================ NOVOS ESTILOS PARA ESCALA EM CARDS E DIAGNÓSTICO (PRIORIDADE 1 e 2) ================ */
 
+/* Container para a grade de cards da escala */
 .escala-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 20px;
     padding: 20px 0;
-    background: none; /* sobrescreve o fundo branco */
-    box-shadow: none; /* sobrescreve a sombra */
+    background: none; /* Garante que não haja fundo branco no container */
+    box-shadow: none; /* Garante que não haja sombra no container */
 }
 
+/* Estilo individual de cada card de escala */
 .escala-card {
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    border-top: 5px solid #ff8c00;
-    overflow: hidden; /* Garante que os cantos arredondados funcionem */
+    border-top: 5px solid; /* A cor será definida pela classe do turno */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
+
+/* Cores das bordas superiores para cada turno */
+.escala-card.turno-quarta { border-top-color: #17a2b8; }
+.escala-card.turno-domingo-manha { border-top-color: #ffc107; }
+.escala-card.turno-domingo-noite { border-top-color: #6f42c1; }
+.escala-card.turno-sabado { border-top-color: #28a745; }
+.escala-card.turno-oracao { border-top-color: #fd7e14; }
+
+
+/* Cabeçalho do card (Tipo do turno e data) */
 .escala-card__header {
     padding: 15px;
     background-color: #fff9f2;
     border-bottom: 1px solid #ffebcc;
 }
-.escala-card__header h4 { margin: 0; color: #af4d00; font-size: 1.1em; }
-.escala-card__header span { font-size: 0.9em; color: #6c757d; }
 
+.escala-card__header h4 {
+    margin: 0;
+    color: #af4d00;
+    font-size: 1.1em;
+    text-transform: capitalize; /* Garante "Quarta", "Domingo", etc. */
+}
+
+.escala-card__header span {
+    font-size: 0.9em;
+    color: #6c757d;
+    display: block;
+    margin-top: 4px;
+}
+
+/* Corpo do card (onde ficam os nomes dos membros) */
 .escala-card__body {
     padding: 15px;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     justify-content: flex-start;
+    flex-grow: 1; /* Faz o corpo crescer para preencher o card */
 }
 
+/* Estilo para o nome de cada membro dentro do card */
 .membro-card {
     background-color: #f1f8ff;
     padding: 10px 15px;
@@ -374,9 +397,10 @@ button:active {
     font-weight: 500;
     color: #0366d6;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    flex-grow: 1; /* Faz os cards ocuparem o espaço */
+    flex-grow: 1; /* Faz os cards de membro ocuparem o espaço disponível */
 }
 
+/* Seção para os títulos principais da aba de Geração */
 #resultadoEscala h3, #resultadoEscala h4 {
     color: #2c3e50;
     margin-bottom: 20px;
@@ -387,9 +411,33 @@ button:active {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-#resultadoEscala ul { margin: 0; }
-#resultadoEscala ul li { background-color: #f8f9fa; padding: 10px; }
-#resultadoEscala p { margin: 5px 0; color: #1a3850; }
+/* Estilo para a lista de membros no modal de análise de concentração */
+.analise-turno-bloco ul li {
+    background: none;
+    border: none;
+    padding: 8px 4px;
+    margin: 0;
+    box-shadow: none;
+    display: flex; /* Habilita flexbox para alinhar itens */
+    justify-content: space-between; /* Coloca o nome à esquerda e o ícone à direita */
+    align-items: center; /* Alinha verticalmente */
+    border-bottom: 1px solid #f0f0f0;
+}
+
+/* Estilo base para os ícones de status */
+.status-icon {
+    font-size: 1.2em;
+    margin-left: 15px;
+}
+
+/* Cores específicas para cada ícone de status */
+.status-icon.status-disponivel { color: #28a745; }
+.status-icon.status-restrito-perm { color: #dc3545; }
+.status-icon.status-restrito-temp { color: #17a2b8; }
+.status-icon.status-suspenso { color: #ffc107; }
+
+/* ================ FIM DOS NOVOS ESTILOS ================ */
+
 
 /* Botão de exportar XLSX */
 #btn-exportar-xlsx {
@@ -567,11 +615,4 @@ footer {
     margin-top: 20px;
     margin-bottom: 10px;
     color: #343a40;
-}
-.analise-turno-bloco ul li {
-    background: none;
-    border: none;
-    padding: 4px 0;
-    margin: 0;
-    box-shadow: none;
 }
