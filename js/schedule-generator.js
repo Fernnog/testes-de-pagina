@@ -1,8 +1,8 @@
 import { membros, restricoes, restricoesPermanentes } from './data-manager.js';
-import { renderEscalaEmCards, renderPainelAnalise, renderizarFiltros, configurarDragAndDrop } from './ui.js';
+import { exibirIndiceEquilibrio, renderEscalaEmCards, renderAnaliseConcentracao, renderizarFiltros, configurarDragAndDrop } from './ui.js';
 import { checkMemberAvailability } from './availability.js';
 
-// --- Funções de Lógica de Seleção (SEM ALTERAÇÕES) ---
+// --- Funções de Lógica de Seleção ---
 function weightedRandom(weights) {
     let random = Math.random();
     let cumulativeWeight = 0;
@@ -18,11 +18,13 @@ function selecionarMembrosComAleatoriedade(membrosDisponiveis, quantidadeNecessa
 
     const pesos = membrosDisponiveis.map(m => {
         const count = participacoes[m.nome]?.participations || 0;
+        // Peso decai exponencialmente com o número de participações, priorizando fortemente quem tem menos.
         return Math.pow(0.2, count);
     });
 
     const somaPesos = pesos.reduce((sum, p) => sum + p, 0);
     if (somaPesos === 0) {
+        // Fallback para seleção aleatória simples se todos tiverem o mesmo peso (ou peso 0)
         const selecionados = [];
         const disponiveis = [...membrosDisponiveis];
         while (selecionados.length < quantidadeNecessaria && disponiveis.length > 0) {
@@ -44,6 +46,7 @@ function selecionarMembrosComAleatoriedade(membrosDisponiveis, quantidadeNecessa
         pesosTemp.splice(indiceSorteado, 1);
         const somaPesosTemp = pesosTemp.reduce((sum, p) => sum + p, 0);
         if (somaPesosTemp > 0) {
+            // Renormaliza os pesos para a próxima seleção
             pesosTemp = pesosTemp.map(p => p / somaPesosTemp);
         }
 
@@ -54,19 +57,23 @@ function selecionarMembrosComAleatoriedade(membrosDisponiveis, quantidadeNecessa
 
 /**
  * Analisa a concentração de participações para os turnos.
+ * Esta é uma função INTERNA do módulo e não é exportada.
  * @param {Array} diasGerados - Array com a escala final gerada.
  * @returns {Object} - Um objeto com a análise detalhada por turno.
  */
 function analisarConcentracao(diasGerados) {
     const analise = {};
-    const todosOsTurnos = [...new Set(diasGerados.map(d => d.tipo))];
+    // Analisa todos os turnos presentes na escala gerada
+    const turnosNaEscala = [...new Set(diasGerados.map(d => d.tipo))];
 
-    todosOsTurnos.forEach(turno => {
+    turnosNaEscala.forEach(turno => {
         const membrosDoTurno = [];
         let totalParticipacoesNoTurno = 0;
         let membrosDisponiveisCount = 0;
 
         membros.forEach(membro => {
+            // A verificação de status usa a função centralizada de availability.js
+            // A data é null aqui porque a análise é geral para o turno (desconsidera restrições temporárias).
             const status = checkMemberAvailability(membro, turno, null);
 
             if (status.type === 'disponivel') {
@@ -99,16 +106,24 @@ export function setupGeradorEscala() {
     document.getElementById('formEscala').addEventListener('submit', (e) => {
         e.preventDefault();
 
-        // Limpa a UI de resultados anteriores
+        // Limpa a UI antes de gerar a nova escala
         const resultadoContainer = document.getElementById('resultadoEscala');
+        const balanceContainer = document.getElementById('balanceIndexContainer');
         const filtrosContainer = document.getElementById('escala-filtros');
-        const painelAnaliseContainer = document.getElementById('painelAnaliseLateral');
         
-        resultadoContainer.innerHTML = '';
-        filtrosContainer.innerHTML = '';
-        painelAnaliseContainer.innerHTML = '';
+        if (resultadoContainer) {
+            resultadoContainer.innerHTML = '';
+            resultadoContainer.classList.remove('escala-container');
+        }
+        if (filtrosContainer) {
+            filtrosContainer.innerHTML = '';
+        }
+        if (balanceContainer) {
+            balanceContainer.style.display = 'none';
+            balanceContainer.onclick = null;
+        }
 
-        // Coleta os parâmetros do formulário
+        // Obtém os parâmetros do formulário
         const tipoEscalaSelecionado = document.querySelector('input[name="tipoEscala"]:checked').value;
         const gerarCultos = tipoEscalaSelecionado === 'cultos';
         const gerarSabado = tipoEscalaSelecionado === 'sabado';
@@ -118,19 +133,20 @@ export function setupGeradorEscala() {
         const mes = parseInt(document.getElementById('mesEscala').value);
         const ano = parseInt(document.getElementById('anoEscala').value);
 
-        // Prepara estruturas de dados para a geração
+        // Inicializa a estrutura de dados para contagem de participações
         const justificationData = {};
         membros.forEach(m => {
             justificationData[m.nome] = { participations: 0 };
         });
 
+        // Gera a lista de dias a serem preenchidos
         const dias = [];
         const inicio = new Date(ano, mes, 1);
         const fim = new Date(ano, mes + 1, 0);
         let uniqueIdCounter = 0;
 
         for (let d = new Date(inicio); d <= fim; d.setDate(d.getDate() + 1)) {
-            const diaSemana = d.getDay();
+            const diaSemana = d.getDay(); // 0=Domingo, 3=Quarta, 6=Sábado
             const diaInfoBase = { data: new Date(d), selecionados: [], id: `dia-${uniqueIdCounter++}` };
 
             if (gerarCultos) {
@@ -144,8 +160,9 @@ export function setupGeradorEscala() {
             if (gerarOração) dias.push({ ...diaInfoBase, tipo: 'Oração no WhatsApp' });
         }
 
-        // Motor de geração da escala
+        // Itera sobre cada dia para selecionar os membros
         dias.forEach(dia => {
+            // A lógica de filtro complexa foi substituída por uma única chamada à função centralizada.
             const membrosDisponiveis = membros.filter(m => {
                 const status = checkMemberAvailability(m, dia.tipo, dia.data);
                 return status.type === 'disponivel';
@@ -157,13 +174,14 @@ export function setupGeradorEscala() {
                 let selecionados = [];
                 if (qtdNecessaria === 1) {
                     selecionados = selecionarMembrosComAleatoriedade(membrosDisponiveis, 1, justificationData);
-                } else {
+                } else { // Lógica para duplas
                     const primeiro = selecionarMembrosComAleatoriedade(membrosDisponiveis, 1, justificationData)[0];
                     if (primeiro) {
                         const membrosCompatíveis = membrosDisponiveis.filter(m => 
                             m.nome !== primeiro.nome && 
                             (m.genero === primeiro.genero || m.conjuge === primeiro.nome || primeiro.conjuge === m.nome)
                         );
+                        // Se houver membros compatíveis, usa-os. Senão, usa qualquer outro disponível.
                         const poolParaSegundo = membrosCompatíveis.length > 0 ? membrosCompatíveis : membrosDisponiveis.filter(m => m.nome !== primeiro.nome);
                         const segundo = selecionarMembrosComAleatoriedade(poolParaSegundo, 1, justificationData)[0];
                         if (segundo) selecionados = [primeiro, segundo];
@@ -176,14 +194,20 @@ export function setupGeradorEscala() {
             }
         });
 
-        // **NOVO FLUXO DE RENDERIZAÇÃO DA UI**
-        // 1. Analisa a escala gerada
-        const relatorioConcentracao = analisarConcentracao(dias);
-        
-        // 2. Renderiza os componentes da UI com os dados gerados e analisados
+        // Renderiza o resultado na UI
         renderEscalaEmCards(dias);
-        renderizarFiltros(dias, relatorioConcentracao); // Passa o relatório para o listener do filtro
-        renderPainelAnalise(relatorioConcentracao, 'all'); // Exibe a análise inicial completa
+        renderizarFiltros(dias);
         configurarDragAndDrop(dias, justificationData, restricoes, restricoesPermanentes);
+        exibirIndiceEquilibrio(justificationData);
+        
+        // Se for escala de cultos, também mostra o painel de análise detalhada
+        if (gerarCultos) {
+            const relatorioConcentracao = analisarConcentracao(dias);
+            const balanceContainerElem = document.getElementById('balanceIndexContainer');
+            if (balanceContainerElem) {
+                // Ao clicar no índice, o modal com a análise é exibido
+                balanceContainerElem.onclick = () => renderAnaliseConcentracao(relatorioConcentracao);
+            }
+        }
     });
 }
