@@ -1,5 +1,24 @@
 import { membros, restricoes, restricoesPermanentes } from './data-manager.js';
 
+// =================== CONFIGURAÇÃO VISUAL CENTRALIZADA (PRIORIDADE 2) ===================
+const VISUAL_CONFIG = {
+    turnos: {
+        'Quarta':              { classe: 'turno-quarta' },
+        'Domingo Manhã':       { classe: 'turno-domingo-manha' },
+        'Domingo Noite':       { classe: 'turno-domingo-noite' },
+        'Sábado':              { classe: 'turno-sabado' },
+        'Oração no WhatsApp':  { classe: 'turno-oracao' }
+    },
+    status: {
+        disponivel:   { icone: 'fa-check-circle',   classe: 'status-disponivel',    titulo: 'Disponível para este turno' },
+        permanente:   { icone: 'fa-ban',            classe: 'status-restrito-perm', titulo: 'Possui restrição permanente para este turno' },
+        temporaria:   { icone: 'fa-calendar-times', classe: 'status-restrito-temp', titulo: 'Possui restrição temporária (ex: férias) neste dia' },
+        suspenso:     { icone: 'fa-pause-circle',   classe: 'status-suspenso',      titulo: 'Está suspenso desta categoria de escala' }
+    }
+};
+// =======================================================================================
+
+
 function atualizarListaMembros() {
     const lista = document.getElementById('listaMembros');
     membros.sort((a, b) => a.nome.localeCompare(b.nome));
@@ -132,6 +151,7 @@ export function exibirIndiceEquilibrio(justificationData) {
                 ${score.toFixed(1)}%
             </div>
         </div>
+        <small style="margin-top: 10px; display: inline-block;">Clique para ver análise detalhada.</small>
     `;
     container.style.display = 'block';
 
@@ -141,132 +161,67 @@ export function exibirIndiceEquilibrio(justificationData) {
     else bar.style.background = 'linear-gradient(90deg, #28a745, #84fab0)';
 }
 
-export function renderJustificationReport(data) {
-    const container = document.getElementById('justificationReportContainer');
-    container.innerHTML = '<h4>Relatório de Justificativas</h4>';
-    
-    const sortedMembers = Object.entries(data).sort(([, a], [, b]) => b.participations - a.participations);
 
-    const list = document.createElement('ul');
-    list.className = 'justification-list';
+// ====================== FUNÇÕES NOVAS OU ATUALIZADAS (PRIORIDADE 1) ======================
 
-    for (const [nome, stats] of sortedMembers) {
-        const item = document.createElement('li');
-        let statusClass = 'status-none';
-        let iconClass = 'fa-times-circle';
-
-        if (stats.participations > 4) { statusClass = 'status-high'; iconClass = 'fa-star'; }
-        else if (stats.participations > 2) { statusClass = 'status-mid'; iconClass = 'fa-check-circle'; }
-        else if (stats.participations > 0) { statusClass = 'status-low'; iconClass = 'fa-check'; }
-
-        let justificationText = stats.reasonForAbsence 
-            ? `Não pôde ser escalado(a). Motivo principal: ${stats.reasonForAbsence}`
-            : `Esteve disponível em <strong>${stats.availableDays}</strong> dia(s).`;
-
-        if (stats.participations > 0) {
-            justificationText = `Participou <strong>${stats.participations}</strong> vez(es). ` + justificationText;
-        }
-
-        item.className = `justification-item ${statusClass}`;
-        item.innerHTML = `
-            <div class="justification-header">
-                <span class="status-badge"><i class="fas ${iconClass}"></i></span>
-                ${nome}
-            </div>
-            <p class="justification-text">${justificationText}</p>
-        `;
-        list.appendChild(item);
-    }
-    container.appendChild(list);
-}
-
-export function renderDiagnosticReport(data) {
-    const container = document.getElementById('diagnosticReportContainer');
-    container.innerHTML = `
-        <h4><i class="fas fa-search-plus"></i> Diagnóstico de Desequilíbrio</h4>
-        <p>A análise detectou uma grande concentração de participações. A tabela abaixo detalha a disponibilidade de todos os membros para o turno mais impactado: <strong>${data.shiftType}</strong>.</p>
-        <table class="diagnostic-table">
-            <thead>
-                <tr>
-                    <th>Membro</th>
-                    <th>Status para este Turno</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${data.memberStatus.map(member => `
-                    <tr>
-                        <td>${member.nome}</td>
-                        <td class="status-cell ${member.status.class}">
-                            <i class="fas ${member.status.icon}"></i>
-                            ${member.status.text}
-                        </td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
-    `;
-    container.style.display = 'block';
-}
-
-// --- Funções da Prioridade 1 ---
-
-// RESTAURADO: Função de exportação que estava faltando e causava o erro de importação.
-export function exportarEscalaXLSX() {
-    const listaItens = document.querySelectorAll('.escala-card');
-    if (listaItens.length === 0) {
-        showToast('Não há escala gerada para exportar.', 'warning');
-        return;
-    }
-
-    const wb = XLSX.utils.book_new();
-    const dadosEscala = [['Data', 'Tipo', 'Membros']];
-    
-    document.querySelectorAll('.escala-card').forEach(card => {
-        const data = card.querySelector('.escala-card__header span').textContent.split(' - ')[0];
-        const tipo = card.querySelector('.escala-card__header span').textContent.split(' - ')[1];
-        const membrosNodes = card.querySelectorAll('.membro-card');
-        const nomes = Array.from(membrosNodes).map(node => node.textContent).join(', ');
-        dadosEscala.push([data, tipo, nomes]);
-    });
-
-    const wsEscala = XLSX.utils.aoa_to_sheet(dadosEscala);
-    XLSX.utils.book_append_sheet(wb, wsEscala, 'Escala');
-    XLSX.writeFile(wb, 'escala_cultos.xlsx');
-}
-
-
-// ADICIONADO E EXPORTADO: Nova função para renderizar a escala em formato de cards.
+/**
+ * Renderiza a escala gerada no formato de cards visuais.
+ * @param {Array} dias - A lista de dias com os membros selecionados.
+ */
 export function renderEscalaEmCards(dias) {
     const container = document.getElementById('resultadoEscala');
-    container.innerHTML = dias.map(dia => {
-        if (dia.selecionados.length === 0) return '';
-        return `
-            <div class="escala-card">
+    
+    // Limpa o conteúdo anterior e adiciona a classe de container de grid
+    container.innerHTML = '';
+    container.classList.add('escala-container');
+
+    dias.forEach(dia => {
+        if (dia.selecionados.length === 0) return;
+
+        const turnoConfig = VISUAL_CONFIG.turnos[dia.tipo] || { classe: '' };
+        
+        const cardHTML = `
+            <div class="escala-card ${turnoConfig.classe}">
                 <div class="escala-card__header">
-                    <h4>${dia.data.toLocaleDateString('pt-BR', { weekday: 'long' })}</h4>
-                    <span>${dia.data.toLocaleDateString('pt-BR')} - ${dia.tipo}</span>
+                    <h4>${dia.tipo}</h4>
+                    <span>${dia.data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
                 </div>
                 <div class="escala-card__body">
                     ${dia.selecionados.map(m => `<div class="membro-card">${m.nome}</div>`).join('')}
                 </div>
             </div>
         `;
-    }).join('');
+        container.innerHTML += cardHTML;
+    });
 }
 
-
-// ADICIONADO E EXPORTADO: Nova função para renderizar o modal com a análise detalhada por turno.
+/**
+ * Renderiza o conteúdo do modal de análise de concentração com detalhes e ícones de status.
+ * @param {Object} analise - O objeto de análise gerado por `analisarConcentracao`.
+ */
 export function renderAnaliseConcentracao(analise) {
     const body = document.getElementById('analiseConcentracaoBody');
     body.innerHTML = Object.entries(analise).map(([turno, dados]) => {
+        
+        const listaMembrosHtml = dados.membrosDoTurno.map(membro => {
+            const statusConfig = VISUAL_CONFIG.status[membro.status.type] || VISUAL_CONFIG.status.disponivel;
+
+            const statusIcon = `<i class="fas ${statusConfig.icone} status-icon ${statusConfig.classe}" title="${statusConfig.titulo}"></i>`;
+
+            return `
+                <li>
+                    <span><strong>${membro.nome}:</strong> ${membro.participacoes} vez(es)</span>
+                    ${statusIcon}
+                </li>`;
+        }).join('');
+
         return `
             <div class="analise-turno-bloco">
                 <h5>Turno: ${turno}</h5>
-                <p><strong>Membros Efetivamente Disponíveis:</strong> ${dados.disponiveis.length} de ${dados.totalMembros} no sistema.</p>
-                <p><small>(${dados.comRestricaoPermanente.length} membro(s) possuem restrição permanente para este turno)</small></p>
-                <h6>Distribuição de Participações (Apenas Disponíveis):</h6>
+                <p>Total de participações neste turno durante o mês: <strong>${dados.totalParticipacoesNoTurno}</strong></p>
+                <h6>Análise de Disponibilidade Individual:</h6>
                 <ul>
-                    ${dados.disponiveis.map(m => `<li><strong>${m.nome}:</strong> ${m.participacoes} vez(es)</li>`).join('')}
+                    ${listaMembrosHtml}
                 </ul>
             </div>
         `;
@@ -275,16 +230,46 @@ export function renderAnaliseConcentracao(analise) {
     document.getElementById('analiseConcentracaoModal').style.display = 'flex';
 }
 
+/**
+ * Atualiza a função de exportação para ler os dados da nova estrutura de cards.
+ */
+export function exportarEscalaXLSX() {
+    const listaCards = document.querySelectorAll('.escala-card');
+    if (listaCards.length === 0) {
+        showToast('Não há escala gerada para exportar.', 'warning');
+        return;
+    }
 
-// ADICIONADO E EXPORTADO: Nova função para configurar os listeners do novo modal.
-export function setupAnaliseModalListeners() {
-    document.getElementById('btn-fechar-analise').addEventListener('click', () => {
-        document.getElementById('analiseConcentracaoModal').style.display = 'none';
+    const wb = XLSX.utils.book_new();
+    const dadosEscala = [['Data', 'Turno', 'Membros']];
+    
+    listaCards.forEach(card => {
+        const data = card.querySelector('.escala-card__header span').textContent.trim();
+        const tipo = card.querySelector('.escala-card__header h4').textContent.trim();
+        const membrosNodes = card.querySelectorAll('.membro-card');
+        const nomes = Array.from(membrosNodes).map(node => node.textContent.trim()).join(', ');
+        dadosEscala.push([data, tipo, nomes]);
     });
-    // Fecha o modal se clicar na área escura (overlay)
-    document.getElementById('analiseConcentracaoModal').addEventListener('click', (e) => {
+
+    const wsEscala = XLSX.utils.aoa_to_sheet(dadosEscala);
+    XLSX.utils.book_append_sheet(wb, wsEscala, 'Escala do Mês');
+    XLSX.writeFile(wb, 'escala_gerada.xlsx');
+}
+
+/**
+ * Configura os listeners do modal de análise de concentração.
+ */
+export function setupAnaliseModalListeners() {
+    const modal = document.getElementById('analiseConcentracaoModal');
+    if (!modal) return;
+    
+    document.getElementById('btn-fechar-analise').addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    modal.addEventListener('click', (e) => {
         if (e.target.id === 'analiseConcentracaoModal') {
-            document.getElementById('analiseConcentracaoModal').style.display = 'none';
+            modal.style.display = 'none';
         }
     });
 }
