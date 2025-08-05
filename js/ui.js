@@ -208,30 +208,83 @@ export function renderDiagnosticReport(data) {
     container.style.display = 'block';
 }
 
-// ==================================================================
-// == INÍCIO DA CORREÇÃO: Função de exportação restaurada do script.js original ==
-// ==================================================================
-export function exportarEscalaXLSX() {
-    const wb = XLSX.utils.book_new();
-    const dadosEscala = [['Data', 'Tipo', 'Pessoa 1', 'Pessoa 2']];
-    const listaItens = document.querySelectorAll('#resultadoEscala ul li');
+// --- Funções da Prioridade 1 ---
 
+// RESTAURADO: Função de exportação que estava faltando e causava o erro de importação.
+export function exportarEscalaXLSX() {
+    const listaItens = document.querySelectorAll('.escala-card');
     if (listaItens.length === 0) {
-        showToast('Não há uma escala gerada para ser exportada.', 'warning');
+        showToast('Não há escala gerada para exportar.', 'warning');
         return;
     }
 
-    listaItens.forEach(li => {
-        const [dataTipo, pessoas] = li.textContent.split(': ');
-        const [data, tipo] = dataTipo.split(' - ');
-        const nomes = pessoas.split(', ');
-        dadosEscala.push([data, tipo, nomes[0], nomes[1] || '']);
-    });
+    const wb = XLSX.utils.book_new();
+    const dadosEscala = [['Data', 'Tipo', 'Membros']];
     
+    document.querySelectorAll('.escala-card').forEach(card => {
+        const data = card.querySelector('.escala-card__header span').textContent.split(' - ')[0];
+        const tipo = card.querySelector('.escala-card__header span').textContent.split(' - ')[1];
+        const membrosNodes = card.querySelectorAll('.membro-card');
+        const nomes = Array.from(membrosNodes).map(node => node.textContent).join(', ');
+        dadosEscala.push([data, tipo, nomes]);
+    });
+
     const wsEscala = XLSX.utils.aoa_to_sheet(dadosEscala);
     XLSX.utils.book_append_sheet(wb, wsEscala, 'Escala');
-    XLSX.writeFile(wb, 'escala.xlsx');
+    XLSX.writeFile(wb, 'escala_cultos.xlsx');
 }
-// ==================================================================
-// == FIM DA CORREÇÃO ==
-// ==================================================================
+
+
+// ADICIONADO E EXPORTADO: Nova função para renderizar a escala em formato de cards.
+export function renderEscalaEmCards(dias) {
+    const container = document.getElementById('resultadoEscala');
+    container.innerHTML = dias.map(dia => {
+        if (dia.selecionados.length === 0) return '';
+        return `
+            <div class="escala-card">
+                <div class="escala-card__header">
+                    <h4>${dia.data.toLocaleDateString('pt-BR', { weekday: 'long' })}</h4>
+                    <span>${dia.data.toLocaleDateString('pt-BR')} - ${dia.tipo}</span>
+                </div>
+                <div class="escala-card__body">
+                    ${dia.selecionados.map(m => `<div class="membro-card">${m.nome}</div>`).join('')}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+
+// ADICIONADO E EXPORTADO: Nova função para renderizar o modal com a análise detalhada por turno.
+export function renderAnaliseConcentracao(analise) {
+    const body = document.getElementById('analiseConcentracaoBody');
+    body.innerHTML = Object.entries(analise).map(([turno, dados]) => {
+        return `
+            <div class="analise-turno-bloco">
+                <h5>Turno: ${turno}</h5>
+                <p><strong>Membros Efetivamente Disponíveis:</strong> ${dados.disponiveis.length} de ${dados.totalMembros} no sistema.</p>
+                <p><small>(${dados.comRestricaoPermanente.length} membro(s) possuem restrição permanente para este turno)</small></p>
+                <h6>Distribuição de Participações (Apenas Disponíveis):</h6>
+                <ul>
+                    ${dados.disponiveis.map(m => `<li><strong>${m.nome}:</strong> ${m.participacoes} vez(es)</li>`).join('')}
+                </ul>
+            </div>
+        `;
+    }).join('');
+
+    document.getElementById('analiseConcentracaoModal').style.display = 'flex';
+}
+
+
+// ADICIONADO E EXPORTADO: Nova função para configurar os listeners do novo modal.
+export function setupAnaliseModalListeners() {
+    document.getElementById('btn-fechar-analise').addEventListener('click', () => {
+        document.getElementById('analiseConcentracaoModal').style.display = 'none';
+    });
+    // Fecha o modal se clicar na área escura (overlay)
+    document.getElementById('analiseConcentracaoModal').addEventListener('click', (e) => {
+        if (e.target.id === 'analiseConcentracaoModal') {
+            document.getElementById('analiseConcentracaoModal').style.display = 'none';
+        }
+    });
+}
