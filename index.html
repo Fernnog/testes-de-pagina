@@ -18,8 +18,7 @@
     <nav>
         <button id="nav-auth"><i class="fas fa-lock"></i> Autenticação</button>
         <button id="nav-cadastro"><i class="fas fa-user-plus"></i> Cadastro de Membros</button>
-        <!-- BOTÃO NOVO (PRIORIDADE 1) -->
-        <button id="nav-disponibilidade"><i class="fas fa-tasks"></i> Disponibilidade</button>
+        <button id="nav-disponibilidade"><i class="fas fa-tasks"></i> Disponibilidade</button> 
         <button id="nav-restricoes"><i class="fas fa-calendar-times"></i> Períodos de Restrição</button>
         <button id="nav-restricoes-permanentes"><i class="fas fa-ban"></i> Restrições Permanentes</button>
         <button id="nav-escala"><i class="fas fa-calendar-check"></i> Geração da Escala</button>
@@ -189,23 +188,10 @@
         <button id="btn-exportar-xlsx" class="secondary-button">Exportar Escala (XLSX)</button>
     </div>
 
-    <!-- PAINEL NOVO (PRIORIDADE 1 e 3) -->
+    <!-- Aba de Disponibilidade -->
     <div id="disponibilidade" class="tab" style="display: none;">
         <h2>Visão Geral de Disponibilidade</h2>
         <p>Este painel mostra o status de cada membro para os principais turnos, desconsiderando restrições temporárias (como férias).</p>
-        
-        <div class="disponibilidade-filtros">
-            <div class="input-group">
-                <input type="text" id="filtroNomeDisponibilidade" placeholder=" ">
-                <label for="filtroNomeDisponibilidade">Buscar por nome...</label>
-            </div>
-            <div class="filtro-botoes-grupo">
-                <button data-filter="all" class="active">Todos</button>
-                <button data-filter="disponivel">Apenas Disponíveis</button>
-                <button data-filter="indisponivel">Apenas Indisponíveis</button>
-            </div>
-        </div>
-
         <div id="disponibilidadeContainer">
             <!-- O conteúdo será gerado dinamicamente pelo JavaScript -->
         </div>
@@ -243,6 +229,17 @@
 
     <!-- Container para Notificações Toast -->
     <div id="toast-container"></div>
+
+    <!-- Rodapé -->
+    <footer>
+        <p>© 2024 Escala de Intercessores</p>
+        <div id="icon-legend" style="font-size: 0.9em; margin-top: 10px; opacity: 0.8;">
+            <span><i class="fas fa-check-circle" style="color: #28a745;"></i> Disponível</span> |
+            <span style="margin-left: 10px;">⛔ Restrição Permanente</span> |
+            <span style="margin-left: 10px;">🚫 Restrição Temporária</span> |
+            <span style="margin-left: 10px;"><i class="fas fa-pause-circle" style="color: #ffc107;"></i> Suspenso</span>
+        </div>
+    </footer>
 
     <!-- Scripts do Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
