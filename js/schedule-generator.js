@@ -1,7 +1,9 @@
 import { membros, restricoes, restricoesPermanentes } from './data-manager.js';
 import { exibirIndiceEquilibrio, renderEscalaEmCards, renderAnaliseConcentracao, renderizarFiltros, configurarDragAndDrop } from './ui.js';
+// NOVA IMPORTAÇÃO: Importa a função centralizada de verificação.
+import { checkMemberAvailability } from './availability.js';
 
-// --- Funções de Lógica de Seleção ---
+// --- Funções de Lógica de Seleção (SEM ALTERAÇÕES) ---
 function weightedRandom(weights) {
     let random = Math.random();
     let cumulativeWeight = 0;
@@ -17,20 +19,20 @@ function selecionarMembrosComAleatoriedade(membrosDisponiveis, quantidadeNecessa
 
     const pesos = membrosDisponiveis.map(m => {
         const count = participacoes[m.nome]?.participations || 0;
-        return Math.pow(0.2, count); 
+        return Math.pow(0.2, count);
     });
-    
+
     const somaPesos = pesos.reduce((sum, p) => sum + p, 0);
     if (somaPesos === 0) {
         const selecionados = [];
         const disponiveis = [...membrosDisponiveis];
-        while(selecionados.length < quantidadeNecessaria && disponiveis.length > 0) {
+        while (selecionados.length < quantidadeNecessaria && disponiveis.length > 0) {
             const i = Math.floor(Math.random() * disponiveis.length);
             selecionados.push(disponiveis.splice(i, 1)[0]);
         }
         return selecionados;
     }
-    
+
     const pesosNormalizados = pesos.map(p => p / somaPesos);
 
     const selecionados = [];
@@ -40,7 +42,7 @@ function selecionarMembrosComAleatoriedade(membrosDisponiveis, quantidadeNecessa
     while (selecionados.length < quantidadeNecessaria && disponiveis.length > 0) {
         const indiceSorteado = weightedRandom(pesosTemp);
         const membroSelecionado = disponiveis.splice(indiceSorteado, 1)[0];
-        
+
         pesosTemp.splice(indiceSorteado, 1);
         const somaPesosTemp = pesosTemp.reduce((sum, p) => sum + p, 0);
         if (somaPesosTemp > 0) {
@@ -53,34 +55,24 @@ function selecionarMembrosComAleatoriedade(membrosDisponiveis, quantidadeNecessa
 }
 
 /**
- * Analisa a concentração de participações para os turnos de Culto, incluindo contagem de membros disponíveis.
+ * Analisa a concentração de participações para os turnos de Culto.
  * @param {Array} diasGerados - Array com a escala final gerada.
- * @param {Array} todosMembros - Array completo de membros cadastrados.
- * @param {Array} todasRestricoes - Array de restrições temporárias.
- * @param {Array} todasRestricoesPerm - Array de restrições permanentes.
  * @returns {Object} - Um objeto com a análise detalhada por turno.
  */
-function analisarConcentracao(diasGerados, todosMembros, todasRestricoes, todasRestricoesPerm) {
+function analisarConcentracao(diasGerados) {
     const analise = {};
     const turnosCulto = ['Quarta', 'Domingo Manhã', 'Domingo Noite'];
 
     turnosCulto.forEach(turno => {
         const membrosDoTurno = [];
         let totalParticipacoesNoTurno = 0;
-        let membrosDisponiveisCount = 0; // Contador para membros disponíveis
+        let membrosDisponiveisCount = 0;
 
-        todosMembros.forEach(membro => {
-            // Diagnostica o status do membro para este turno específico
-            let status = { type: 'disponivel' };
-            
-            if (membro.suspensao.cultos) {
-                status = { type: 'suspenso' };
-            } 
-            else if (todasRestricoesPerm.some(r => r.membro === membro.nome && r.diaSemana === turno)) {
-                status = { type: 'permanente' };
-            }
+        membros.forEach(membro => {
+            // MODIFICAÇÃO: A verificação de status agora usa a função centralizada.
+            // A data é null aqui porque a análise é geral para o turno, ignorando restrições temporárias.
+            const status = checkMemberAvailability(membro, turno, null);
 
-            // Conta o membro se seu status for 'disponível'
             if (status.type === 'disponivel') {
                 membrosDisponiveisCount++;
             }
@@ -94,16 +86,15 @@ function analisarConcentracao(diasGerados, todosMembros, todasRestricoes, todasR
                 status: status
             });
         });
-        
+
         analise[turno] = {
             totalParticipacoesNoTurno: totalParticipacoesNoTurno,
-            membrosDisponiveis: membrosDisponiveisCount, // Adiciona a nova contagem
+            membrosDisponiveis: membrosDisponiveisCount,
             membrosDoTurno: membrosDoTurno.sort((a, b) => b.participacoes - a.participacoes)
         };
     });
     return analise;
 }
-
 
 /**
  * Configura o listener do formulário de geração de escala.
@@ -112,7 +103,6 @@ export function setupGeradorEscala() {
     document.getElementById('formEscala').addEventListener('submit', (e) => {
         e.preventDefault();
 
-        // --- LÓGICA DE LIMPEZA CENTRALIZADA ---
         const resultadoContainer = document.getElementById('resultadoEscala');
         const balanceContainer = document.getElementById('balanceIndexContainer');
         const filtrosContainer = document.getElementById('escala-filtros');
@@ -129,7 +119,6 @@ export function setupGeradorEscala() {
             balanceContainer.onclick = null;
         }
 
-        // --- COLETA DE DADOS DO FORMULÁRIO ---
         const tipoEscalaSelecionado = document.querySelector('input[name="tipoEscala"]:checked').value;
         const gerarCultos = tipoEscalaSelecionado === 'cultos';
         const gerarSabado = tipoEscalaSelecionado === 'sabado';
@@ -144,7 +133,6 @@ export function setupGeradorEscala() {
             justificationData[m.nome] = { participations: 0 };
         });
 
-        // --- PREPARAÇÃO DOS DIAS DA ESCALA ---
         const dias = [];
         const inicio = new Date(ano, mes, 1);
         const fim = new Date(ano, mes + 1, 0);
@@ -165,26 +153,12 @@ export function setupGeradorEscala() {
             if (gerarOração) dias.push({ ...diaInfoBase, tipo: 'Oração no WhatsApp' });
         }
 
-        // --- LÓGICA PRINCIPAL DE GERAÇÃO DA ESCALA ---
         dias.forEach(dia => {
-            let membrosDisponiveis = membros.filter(m => {
-                let isSuspended = false;
-                if (dia.tipo === 'Quarta' || dia.tipo.startsWith('Domingo')) isSuspended = m.suspensao.cultos;
-                else if (dia.tipo === 'Sábado') isSuspended = m.suspensao.sabado;
-                else if (dia.tipo === 'Oração no WhatsApp') isSuspended = m.suspensao.whatsapp;
-
-                const diaAtual = new Date(dia.data);
-                diaAtual.setHours(0, 0, 0, 0);
-
-                const restricaoTemp = restricoes.some(r => {
-                    const rInicio = new Date(r.inicio); rInicio.setHours(0, 0, 0, 0);
-                    const rFim = new Date(r.fim); rFim.setHours(0, 0, 0, 0);
-                    return r.membro === m.nome && diaAtual >= rInicio && diaAtual <= rFim;
-                });
-
-                const restricaoPerm = restricoesPermanentes.some(r => r.membro === m.nome && r.diaSemana === dia.tipo);
-                
-                return !isSuspended && !restricaoTemp && !restricaoPerm;
+            // MODIFICAÇÃO PRINCIPAL: A lógica de filtro complexa foi substituída
+            // por uma única chamada à função centralizada.
+            const membrosDisponiveis = membros.filter(m => {
+                const status = checkMemberAvailability(m, dia.tipo, dia.data);
+                return status.type === 'disponivel';
             });
             
             const qtdNecessaria = dia.tipo === 'Oração no WhatsApp' ? 1 : (dia.tipo === 'Sábado' ? 1 : quantidadeCultos);
@@ -212,14 +186,13 @@ export function setupGeradorEscala() {
             }
         });
 
-        // --- Renderização e Análise Final ---
         renderEscalaEmCards(dias);
         renderizarFiltros(dias);
         configurarDragAndDrop(dias, justificationData, restricoes, restricoesPermanentes);
         exibirIndiceEquilibrio(justificationData);
         
         if (gerarCultos) {
-            const relatorioConcentracao = analisarConcentracao(dias, membros, restricoes, restricoesPermanentes);
+            const relatorioConcentracao = analisarConcentracao(dias);
             if (balanceContainer) {
                 balanceContainer.onclick = () => renderAnaliseConcentracao(relatorioConcentracao);
             }
