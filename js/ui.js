@@ -1,6 +1,6 @@
 // js/ui.js
 
-import { membros, restricoes, restricoesPermanentes } from './data-manager.js';
+import { membros, restricoes, restricoesPermanentes, escalasSalvas } from './data-manager.js';
 import { saoCompativeis } from './schedule-generator.js'; // <-- NOVA IMPORTAÇÃO
 
 // =========================================================
@@ -31,7 +31,7 @@ function getStatusIconHTML(statusConfig) {
 }
 
 // Armazenamento de estado para manipulação da UI
-let escalaAtual = [];
+export let escalaAtual = [];
 let justificationDataAtual = {};
 let todasAsRestricoes = [];
 let todasAsRestricoesPerm = [];
@@ -111,11 +111,57 @@ function atualizarListaRestricoesPermanentes() {
         <button onclick="window.excluirRestricaoPermanente(${index})">Excluir</button></li>`).join('');
 }
 
+// NOVA FUNÇÃO
+function atualizarListaEscalasSalvas() {
+    const lista = document.getElementById('listaEscalasSalvas');
+    if (!lista) return;
+
+    escalasSalvas.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+    
+    lista.innerHTML = escalasSalvas.map(escala => `
+        <li data-id="${escala.id}">
+            <span>${escala.nome}</span>
+            <div>
+                <button class="secondary-button" data-action="load">Carregar</button>
+                <button class="secondary-button" data-action="rename">Renomear</button>
+                <button data-action="delete">Excluir</button>
+            </div>
+        </li>
+    `).join('');
+}
+
 export function atualizarTodasAsListas() {
     atualizarListaMembros();
     atualizarSelectMembros();
     atualizarListaRestricoes();
     atualizarListaRestricoesPermanentes();
+    atualizarListaEscalasSalvas(); // CHAMADA ADICIONADA
+}
+
+// NOVA FUNÇÃO EXPORTADA
+export function abrirModalAcaoEscala(action, escalaId = null, escalaNome = '') {
+    const modal = document.getElementById('escalaActionModal');
+    const title = document.getElementById('escalaModalTitle');
+    const body = document.getElementById('escalaModalBody');
+    document.getElementById('escalaModalAction').value = action;
+    document.getElementById('escalaModalId').value = escalaId;
+
+    if (action === 'save' || action === 'rename') {
+        title.textContent = action === 'save' ? 'Salvar Escala' : 'Renomear Escala';
+        const defaultName = (action === 'save')
+            ? `Escala de ${new Date().toLocaleDateString('pt-BR')}`
+            : escalaNome;
+        body.innerHTML = `
+            <div class="input-group">
+                <input type="text" id="escalaModalInputName" value="${defaultName}" required placeholder=" ">
+                <label for="escalaModalInputName">Nome da Escala</label>
+            </div>`;
+    } else if (action === 'delete') {
+        title.textContent = 'Confirmar Exclusão';
+        body.innerHTML = `<p>Você tem certeza que deseja excluir a escala "<strong>${escalaNome}</strong>"? Esta ação não pode ser desfeita.</p>`;
+    }
+
+    modal.style.display = 'flex';
 }
 
 export function showTab(tabId) {
