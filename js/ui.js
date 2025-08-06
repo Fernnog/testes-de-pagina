@@ -1,4 +1,7 @@
-// js/ui.js
+// ARQUIVO: ui.js (Versão Completa)
+// DESCRIÇÃO: As funções 'renderAnaliseConcentracao' e 'remanejarMembro' foram atualizadas.
+// 1. 'renderAnaliseConcentracao' agora exibe um painel consolidado quando o filtro "Todos" está ativo.
+// 2. 'remanejarMembro' agora executa uma substituição direta em vez de uma troca mútua.
 
 import { membros, restricoes, restricoesPermanentes } from './data-manager.js';
 
@@ -168,13 +171,6 @@ export function exportarEscalaXLSX() {
 // === SEÇÃO DE FUNÇÕES NOVAS OU MODIFICADAS PARA AS NOVAS FUNCIONALIDADES ===
 // =========================================================================
 
-/**
- * NOVA FUNÇÃO PRIVADA: Lógica de análise de concentração.
- * Duplicada de schedule-generator.js para evitar dependências circulares e atender
- * à solicitação de modificar apenas este arquivo.
- * @param {Array} diasGerados - Array com a escala final gerada.
- * @returns {Object} - Um objeto com a análise detalhada por turno.
- */
 function _analisarConcentracao(diasGerados) {
     const analise = {};
     const turnosCulto = ['Quarta', 'Domingo Manhã', 'Domingo Noite'];
@@ -219,49 +215,74 @@ function _analisarConcentracao(diasGerados) {
     return analise;
 }
 
-/**
- * FUNÇÃO MODIFICADA: Renderiza o painel de análise de concentração.
- * Agora renderiza em um painel fixo e reage a filtros.
- * @param {string} filtro - O turno a ser exibido ('all', 'Quarta', etc.).
- */
 export function renderAnaliseConcentracao(filtro = 'all') {
     const container = document.getElementById('diagnosticReportContainer');
     if (!container) return;
 
     const analise = _analisarConcentracao(escalaAtual);
-    const turnosParaRenderizar = (filtro === 'all') ? Object.keys(analise) : [filtro];
-    
-    let contentHTML = turnosParaRenderizar
-        .filter(turno => analise[turno]) // Garante que o turno existe na análise
-        .map(turno => {
-            const dados = analise[turno];
-            const listaMembrosHtml = dados.membrosDoTurno.map(membro => {
-                const statusConfig = VISUAL_CONFIG.status[membro.status.type];
-                const statusIcon = getStatusIconHTML(statusConfig);
-                return `
-                    <li>
-                        <span><strong>${membro.nome}:</strong> ${membro.participacoes} vez(es)</span>
-                        ${statusIcon}
-                    </li>`;
-            }).join('');
-            return `
-                <div class="analise-turno-bloco">
-                    <h5>Análise: ${turno}</h5>
-                    <p>Total de participações: <strong>${dados.totalParticipacoesNoTurno}</strong> | Membros disponíveis: <strong>${dados.membrosDisponiveis}</strong></p>
-                    <ul>${listaMembrosHtml || '<li>Nenhuma análise disponível.</li>'}</ul>
-                </div>`;
-        }).join('');
+    let contentHTML = '';
 
-    container.innerHTML = contentHTML ? `<div class="analysis-content">${contentHTML}</div>` : '';
+    if (filtro === 'all') {
+        // Lógica para a visão consolidada
+        const participacoesGlobais = {};
+        membros.forEach(m => {
+            participacoesGlobais[m.nome] = 0;
+        });
+
+        escalaAtual.forEach(dia => {
+            dia.selecionados.forEach(membro => {
+                if (participacoesGlobais[membro.nome] !== undefined) {
+                    participacoesGlobais[membro.nome]++;
+                }
+            });
+        });
+
+        const listaMembrosHtml = Object.entries(participacoesGlobais)
+            .sort(([, a], [, b]) => b - a) // Ordena por número de participações
+            .map(([nome, count]) => `<li><span><strong>${nome}:</strong> ${count} vez(es)</span></li>`)
+            .join('');
+
+        contentHTML = `
+            <div class="analysis-content">
+                <div class="analise-turno-bloco">
+                    <h5>Análise Global Consolidada</h5>
+                    <p>Total de participações de cada membro em todos os turnos.</p>
+                    <ul>${listaMembrosHtml}</ul>
+                </div>
+            </div>`;
+
+    } else {
+        // Lógica existente para filtros específicos
+        const turnosParaRenderizar = [filtro];
+        contentHTML = turnosParaRenderizar
+            .filter(turno => analise[turno])
+            .map(turno => {
+                const dados = analise[turno];
+                const listaMembrosHtml = dados.membrosDoTurno.map(membro => {
+                    const statusConfig = VISUAL_CONFIG.status[membro.status.type];
+                    const statusIcon = getStatusIconHTML(statusConfig);
+                    return `
+                        <li>
+                            <span><strong>${membro.nome}:</strong> ${membro.participacoes} vez(es)</span>
+                            ${statusIcon}
+                        </li>`;
+                }).join('');
+                return `
+                    <div class="analise-turno-bloco">
+                        <h5>Análise: ${turno}</h5>
+                        <p>Total de participações: <strong>${dados.totalParticipacoesNoTurno}</strong> | Membros disponíveis: <strong>${dados.membrosDisponiveis}</strong></p>
+                        <ul>${listaMembrosHtml || '<li>Nenhuma análise disponível.</li>'}</ul>
+                    </div>`;
+            }).join('');
+        
+        contentHTML = contentHTML ? `<div class="analysis-content">${contentHTML}</div>` : '';
+    }
+
+    container.innerHTML = contentHTML;
     container.style.display = contentHTML ? 'block' : 'none';
 }
 
 
-/**
- * FUNÇÃO MODIFICADA: Exibe o índice de equilíbrio da escala.
- * O texto foi ajustado para refletir a nova ação de rolagem.
- * @param {object} justificationData - Dados de participação dos membros.
- */
 export function exibirIndiceEquilibrio(justificationData) {
     justificationDataAtual = justificationData;
     const container = document.getElementById('balanceIndexContainer');
@@ -287,17 +308,13 @@ export function exibirIndiceEquilibrio(justificationData) {
 }
 
 
-/**
- * FUNÇÃO MODIFICADA: Renderiza a escala gerada em formato de cards.
- * @param {Array} dias - A lista de dias da escala gerada.
- */
 export function renderEscalaEmCards(dias) {
-    escalaAtual = dias; // Atualiza o estado global
+    escalaAtual = dias;
     const container = document.getElementById('resultadoEscala');
     container.innerHTML = '';
     container.classList.add('escala-container');
     dias.forEach(dia => {
-        if (dia.selecionados.length === 0) return;
+        // Renderiza o card mesmo que esteja temporariamente sem selecionados
         const turnoConfig = VISUAL_CONFIG.turnos[dia.tipo] || { classe: '' };
         const cardHTML = `
             <div class="escala-card ${turnoConfig.classe}" data-id="${dia.id}" data-turno="${dia.tipo}">
@@ -313,11 +330,6 @@ export function renderEscalaEmCards(dias) {
     });
 }
 
-/**
- * FUNÇÃO MODIFICADA: Renderiza os botões de filtro e adiciona a lógica para
- * atualizar o painel de análise.
- * @param {Array} dias - A lista de dias da escala gerada.
- */
 export function renderizarFiltros(dias) {
     const container = document.getElementById('escala-filtros');
     if (!container) return;
@@ -327,7 +339,6 @@ export function renderizarFiltros(dias) {
         <button class="active" data-filter="all">Todos</button>
         ${turnos.map(turno => `<button data-filter="${turno}">${turno}</button>`).join('')}`;
     
-    // Remove listener antigo para evitar duplicação
     const newContainer = container.cloneNode(true);
     container.parentNode.replaceChild(newContainer, container);
 
@@ -337,10 +348,7 @@ export function renderizarFiltros(dias) {
             e.target.classList.add('active');
             const filtroSelecionado = e.target.dataset.filter;
             
-            // Filtra os cards da escala
             filtrarCards(filtroSelecionado);
-            
-            // ATUALIZAÇÃO: Re-renderiza a análise com base no novo filtro
             renderAnaliseConcentracao(filtroSelecionado);
         }
     });
@@ -352,9 +360,6 @@ function filtrarCards(filtro) {
     });
 }
 
-/**
- * NOVA FUNCIONALIDADE: Renderiza o painel de Visão Geral de Disponibilidade.
- */
 export function renderDisponibilidadeGeral() {
     const container = document.getElementById('disponibilidadeContainer');
     if (!container) return;
@@ -422,10 +427,11 @@ function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
     const diaOrigem = escalaAtual.find(d => d.id === cardOrigemId);
     const diaAlvo = escalaAtual.find(d => d.id === cardAlvoId);
     if (!diaOrigem || !diaAlvo) return;
-    
+
     const membroArrastadoObj = membros.find(m => m.nome === nomeArrastado);
     if (!membroArrastadoObj) return;
 
+    // 1. Validar se o membro arrastado pode ir para o card de destino
     const diaAlvoData = new Date(diaAlvo.data); diaAlvoData.setHours(0,0,0,0);
     const temRestricaoTemp = todasAsRestricoes.some(r => r.membro === nomeArrastado && diaAlvoData >= new Date(r.inicio) && diaAlvoData <= new Date(r.fim));
     const temRestricaoPerm = todasAsRestricoesPerm.some(r => r.membro === nomeArrastado && r.diaSemana === diaAlvo.tipo);
@@ -435,27 +441,30 @@ function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
         return;
     }
 
-    const membroAlvoObj = membros.find(m => m.nome === nomeAlvo);
-    const indexOrigem = diaOrigem.selecionados.findIndex(m => m.nome === nomeArrastado);
-    diaOrigem.selecionados.splice(indexOrigem, 1, membroAlvoObj);
-    const indexAlvo = diaAlvo.selecionados.findIndex(m => m.nome === nomeAlvo);
-    diaAlvo.selecionados.splice(indexAlvo, 1, membroArrastadoObj);
+    // 2. Localizar os membros e seus índices nos arrays da escala
+    const indexArrastadoOrigem = diaOrigem.selecionados.findIndex(m => m.nome === nomeArrastado);
+    const indexAlvoDestino = diaAlvo.selecionados.findIndex(m => m.nome === nomeAlvo);
 
-    if (cardOrigemId !== cardAlvoId) {
-        if(justificationDataAtual[nomeArrastado]) justificationDataAtual[nomeArrastado].participations++;
-        if(justificationDataAtual[nomeAlvo]) justificationDataAtual[nomeAlvo].participations--;
+    // 3. Executar a substituição no card de destino
+    diaAlvo.selecionados.splice(indexAlvoDestino, 1, membroArrastadoObj);
+
+    // 4. Remover o membro arrastado do card de origem
+    diaOrigem.selecionados.splice(indexArrastadoOrigem, 1);
+
+    // 5. Atualizar contagem de participações: o substituído perde uma, o arrastado mantém a sua.
+    if (justificationDataAtual[nomeAlvo]) {
+        justificationDataAtual[nomeAlvo].participations--;
     }
-    
-    // Re-renderiza toda a UI relevante
+
+    // 6. Re-renderizar toda a UI relevante para refletir a mudança
     renderEscalaEmCards(escalaAtual);
     exibirIndiceEquilibrio(justificationDataAtual);
     configurarDragAndDrop(escalaAtual, justificationDataAtual, todasAsRestricoes, todasAsRestricoesPerm);
     
-    // ATUALIZAÇÃO: Atualiza a análise para refletir a troca
     const filtroAtivo = document.querySelector('#escala-filtros button.active')?.dataset.filter || 'all';
     renderAnaliseConcentracao(filtroAtivo);
 
-    showToast(`Troca entre ${nomeArrastado} e ${nomeAlvo} realizada.`, 'success');
+    showToast(`${nomeAlvo} foi substituído por ${nomeArrastado}.`, 'success');
 }
 
 
@@ -496,7 +505,7 @@ export function configurarDragAndDrop(dias, justificationData, restricoes, restr
             const nomeAlvo = e.target.dataset.nome;
             const cardAlvoId = e.target.closest('.escala-card').dataset.id;
             
-            if (cardOrigemId === cardAlvoId && nomeArrastado === nomeAlvo) return;
+            if (nomeArrastado === nomeAlvo) return;
             
             remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId);
         });
