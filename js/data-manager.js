@@ -1,4 +1,6 @@
-// Arquivo: js/data-manager.js
+// ARQUIVO: data-manager.js (Versão Completa)
+// DESCRIÇÃO: As funções 'limparDadosGlobais', 'exportarDados' e 'importarDados' foram removidas,
+// pois se tornaram obsoletas com a integração direta com o Firebase.
 
 // --- ESTADO DA APLICAÇÃO ---
 export let membros = [];
@@ -31,13 +33,6 @@ export function excluirRestricaoPermanente(index) {
     restricoesPermanentes.splice(index, 1);
 }
 
-export function limparDadosGlobais() {
-    membros = [];
-    restricoes = [];
-    restricoesPermanentes = [];
-}
-
-
 // --- FUNÇÕES DE PERSISTÊNCIA DE DADOS (Firebase e Exportação) ---
 
 export function salvarDados(auth, database) {
@@ -69,7 +64,10 @@ export function carregarDados(auth, database, onDataLoaded) {
                 restricoes = dados.restricoes || [];
                 restricoesPermanentes = dados.restricoesPermanentes || [];
             } else {
-                limparDadosGlobais();
+                // Se não há dados, zera as variáveis locais para evitar persistência de estado anterior
+                membros = [];
+                restricoes = [];
+                restricoesPermanentes = [];
             }
             onDataLoaded(); // Callback para notificar que os dados foram carregados
         })
@@ -77,38 +75,4 @@ export function carregarDados(auth, database, onDataLoaded) {
             console.error('Erro ao carregar dados: ', error);
             onDataLoaded(); // Chama o callback mesmo em caso de erro para a UI não ficar travada
         });
-}
-
-export function exportarDados() {
-    const dados = { membros, restricoes, restricoesPermanentes };
-    const json = JSON.stringify(dados, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'dados_escala.json';
-    a.click();
-    URL.revokeObjectURL(url);
-}
-
-export function importarDados(event, auth, database) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const dados = JSON.parse(e.target.result);
-            membros = dados.membros || [];
-            restricoes = dados.restricoes || [];
-            restricoesPermanentes = dados.restricoesPermanentes || [];
-            
-            salvarDados(auth, database).then(() => {
-                alert('Dados importados com sucesso! Recarregando para aplicar as mudanças.');
-                window.location.reload();
-            });
-        } catch (error) {
-            alert('Erro ao importar dados: ' + error.message);
-        }
-    };
-    reader.readAsText(file);
 }
