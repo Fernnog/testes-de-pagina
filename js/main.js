@@ -33,6 +33,7 @@ import {
     exportarEscalaXLSX,
     renderDisponibilidadeGeral
 } from './ui.js';
+import { setupSavedSchedulesListeners } from './saved-schedules-manager.js';
 
 
 // ETAPA 2: O código que interage com a página é envolvido pelo listener DOMContentLoaded.
@@ -149,4 +150,5 @@ document.addEventListener('DOMContentLoaded', () => {
     setupGeradorEscala();
     setupUiListeners(); 
     setupEventListeners(); 
+    setupSavedSchedulesListeners(auth, database);
 });
