@@ -76,7 +76,7 @@ nav button:active {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Abas - CORRIGIDO */
+/* Abas */
 .tab {
     background-color: #ffffff;
     padding: 30px;
@@ -87,12 +87,13 @@ nav button:active {
     border-left: 5px solid transparent;
     border-image: linear-gradient(to bottom, #ff4500, #ff8c00) 1;
     opacity: 0;
-    transition: opacity 0.3s ease-in-out; /* REMOVIDA A TRANSIÇÃO DE TRANSFORM */
+    transform: translateX(-20px);
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
 
 .tab[style*="display: block"] {
     opacity: 1;
-    /* REMOVIDA A REGRA 'transform: translateX(0);' */
+    transform: translateX(0);
 }
 
 /* Formulários */
@@ -423,29 +424,14 @@ button:active {
     background-color: #e6ffed;
 }
 
-/* Container para os botões de filtro (COM LÓGICA STICKY) - CORRIGIDO */
+/* Container para os botões de filtro */
 .escala-filtros-container {
-    position: -webkit-sticky; /* Suporte para Safari */
-    position: sticky;
-    top: 75px; /* Ajuste para não ficar sob a barra de navegação principal. */
-    z-index: 5; /* Garante que flutue acima dos cards, mas abaixo da nav principal. */
-
-    /* Estilos visuais para quando a barra estiver flutuando */
-    background-color: rgba(255, 255, 255, 0.95);
-    padding-top: 10px;
-    padding-bottom: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    transition: padding 0.3s ease;
-
-    /* Estilos originais mantidos para layout */
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 10px;
     margin-bottom: 25px;
-    margin-top: 20px;
+    margin-top: 20px; /* Espaçamento */
 }
 
 /* Estilo dos botões de filtro */
@@ -784,7 +770,6 @@ footer {
     border-radius: 8px;
     border-top: 3px solid #ffa07a;
 }
-
 .saved-schedules-container h3 {
     color: #af4d00;
     margin-top: 0;
@@ -792,7 +777,6 @@ footer {
     -webkit-text-fill-color: initial;
     text-shadow: none;
 }
-
 .saved-schedules-list li {
     display: flex;
     justify-content: space-between;
@@ -800,17 +784,14 @@ footer {
     padding: 15px;
     gap: 15px;
 }
-
 .saved-schedules-list li > span {
     font-weight: 500;
     color: #1a3850;
 }
-
 .saved-schedules-list li > div {
     display: flex;
     gap: 10px;
 }
-
 .saved-schedules-list li button {
     padding: 6px 12px;
     font-size: 0.9em;
