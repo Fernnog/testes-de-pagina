@@ -1,11 +1,13 @@
 // ARQUIVO: data-manager.js (Versão Completa)
 // DESCRIÇÃO: As funções 'limparDadosGlobais', 'exportarDados' e 'importarDados' foram removidas,
 // pois se tornaram obsoletas com a integração direta com o Firebase.
+// ADICIONADO: Suporte para 'escalasSalvas'.
 
 // --- ESTADO DA APLICAÇÃO ---
 export let membros = [];
 export let restricoes = [];
 export let restricoesPermanentes = [];
+export let escalasSalvas = [];
 
 // --- FUNÇÕES DE MANIPULAÇÃO DO ESTADO LOCAL (CRUD) ---
 
@@ -33,6 +35,24 @@ export function excluirRestricaoPermanente(index) {
     restricoesPermanentes.splice(index, 1);
 }
 
+export function adicionarEscalaSalva(escala) {
+    escalasSalvas.push(escala);
+}
+
+export function excluirEscalaSalva(escalaId) {
+    const index = escalasSalvas.findIndex(e => e.id === escalaId);
+    if (index > -1) {
+        escalasSalvas.splice(index, 1);
+    }
+}
+
+export function atualizarNomeEscalaSalva(escalaId, novoNome) {
+    const escala = escalasSalvas.find(e => e.id === escalaId);
+    if (escala) {
+        escala.nome = novoNome;
+    }
+}
+
 // --- FUNÇÕES DE PERSISTÊNCIA DE DADOS (Firebase e Exportação) ---
 
 export function salvarDados(auth, database) {
@@ -42,7 +62,8 @@ export function salvarDados(auth, database) {
     return database.ref('users/' + uid).set({
         membros: membros,
         restricoes: restricoes,
-        restricoesPermanentes: restricoesPermanentes
+        restricoesPermanentes: restricoesPermanentes,
+        escalasSalvas: escalasSalvas
     });
 }
 
@@ -63,11 +84,13 @@ export function carregarDados(auth, database, onDataLoaded) {
                 });
                 restricoes = dados.restricoes || [];
                 restricoesPermanentes = dados.restricoesPermanentes || [];
+                escalasSalvas = dados.escalasSalvas || [];
             } else {
                 // Se não há dados, zera as variáveis locais para evitar persistência de estado anterior
                 membros = [];
                 restricoes = [];
                 restricoesPermanentes = [];
+                escalasSalvas = [];
             }
             onDataLoaded(); // Callback para notificar que os dados foram carregados
         })
