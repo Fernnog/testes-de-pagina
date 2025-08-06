@@ -1,7 +1,7 @@
 // js/ui.js
 
 import { membros, restricoes, restricoesPermanentes, escalasSalvas } from './data-manager.js';
-import { saoCompativeis } from './schedule-generator.js'; // <-- NOVA IMPORTAÇÃO
+import { saoCompativeis } from './schedule-generator.js';
 
 // =========================================================
 // === SEÇÃO DE CONFIGURAÇÃO E ESTADO (SEM ALTERAÇÕES) ===
@@ -37,9 +37,9 @@ let todasAsRestricoes = [];
 let todasAsRestricoesPerm = [];
 
 
-// =========================================================
-// === SEÇÃO DE FUNÇÕES EXISTENTES (SEM ALTERAÇÕES) ===
-// =========================================================
+// ====================================================================
+// === SEÇÃO DE RENDERIZAÇÃO DE LISTAS (COM onlick REMOVIDO) ===
+// ====================================================================
 
 function atualizarListaMembros() {
     const lista = document.getElementById('listaMembros');
@@ -64,7 +64,7 @@ function atualizarListaMembros() {
         }
         const genderSymbol = m.genero === 'M' ? '♂️' : '♀️';
         return `
-            <li class="${isTotalmenteSuspenso ? 'suspended-member' : ''}">
+            <li class="${isTotalmenteSuspenso ? 'suspended-member' : ''}" data-index="${index}">
                 <div>
                     <span class="gender-icon gender-${m.genero === 'M' ? 'male' : 'female'}">${genderSymbol}</span>
                     <span class="member-name ${isTotalmenteSuspenso ? 'suspended-text' : ''}">
@@ -76,8 +76,9 @@ function atualizarListaMembros() {
                     ${m.conjuge ? `<span class="spouse-info">- Cônjuge: ${m.conjuge}</span>` : ''}
                 </div>
                 <div>
-                    <button class="secondary-button" onclick="window.abrirModalSuspensao(${index})">Gerenciar Suspensão</button>
-                    <button onclick="window.excluirMembro(${index})">Excluir</button>
+                    <!-- MODIFICADO: onclick removido, data-action adicionado -->
+                    <button class="secondary-button" data-action="manage-suspension" data-index="${index}">Gerenciar Suspensão</button>
+                    <button data-action="delete-member" data-index="${index}">Excluir</button>
                 </div>
             </li>`;
     }).join('');
@@ -99,19 +100,20 @@ function atualizarListaRestricoes() {
     const lista = document.getElementById('listaRestricoes');
     restricoes.sort((a, b) => a.membro.localeCompare(b.membro));
     lista.innerHTML = restricoes.map((r, index) =>
-        `<li>${r.membro}: ${new Date(r.inicio).toLocaleDateString('pt-BR', {timeZone: 'UTC'})} a ${new Date(r.fim).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}
-        <button onclick="window.excluirRestricao(${index})">Excluir</button></li>`).join('');
+        `<li data-index="${index}">${r.membro}: ${new Date(r.inicio).toLocaleDateString('pt-BR', {timeZone: 'UTC'})} a ${new Date(r.fim).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}
+        <!-- MODIFICADO: onclick removido, data-action adicionado -->
+        <button data-action="delete-restriction" data-index="${index}">Excluir</button></li>`).join('');
 }
 
 function atualizarListaRestricoesPermanentes() {
     const lista = document.getElementById('listaRestricoesPermanentes');
     restricoesPermanentes.sort((a, b) => a.membro.localeCompare(b.membro));
     lista.innerHTML = restricoesPermanentes.map((r, index) =>
-        `<li>${r.membro}: ${r.diaSemana}
-        <button onclick="window.excluirRestricaoPermanente(${index})">Excluir</button></li>`).join('');
+        `<li data-index="${index}">${r.membro}: ${r.diaSemana}
+        <!-- MODIFICADO: onclick removido, data-action adicionado -->
+        <button data-action="delete-perm-restriction" data-index="${index}">Excluir</button></li>`).join('');
 }
 
-// NOVA FUNÇÃO
 function atualizarListaEscalasSalvas() {
     const lista = document.getElementById('listaEscalasSalvas');
     if (!lista) return;
@@ -135,10 +137,14 @@ export function atualizarTodasAsListas() {
     atualizarSelectMembros();
     atualizarListaRestricoes();
     atualizarListaRestricoesPermanentes();
-    atualizarListaEscalasSalvas(); // CHAMADA ADICIONADA
+    atualizarListaEscalasSalvas();
 }
 
-// NOVA FUNÇÃO EXPORTADA
+
+// ===============================================================
+// === O RESTANTE DO ARQUIVO ui.js PERMANECE SEM ALTERAÇÕES ... ===
+// ===============================================================
+
 export function abrirModalAcaoEscala(action, escalaId = null, escalaNome = '') {
     const modal = document.getElementById('escalaActionModal');
     const title = document.getElementById('escalaModalTitle');
@@ -209,11 +215,6 @@ export function exportarEscalaXLSX() {
     XLSX.utils.book_append_sheet(wb, wsEscala, 'Escala do Mês');
     XLSX.writeFile(wb, 'escala_gerada.xlsx');
 }
-
-
-// =========================================================================
-// === SEÇÃO DE FUNÇÕES NOVAS OU MODIFICADAS (SEM ALTERAÇÕES NESTA SEÇÃO) ===
-// =========================================================================
 
 function _analisarConcentracao(diasGerados) {
     const analise = {};
@@ -463,10 +464,6 @@ export function renderDisponibilidadeGeral() {
     container.innerHTML = contentHTML;
 }
 
-// =========================================================================
-// === SEÇÃO DE DRAG & DROP (COM AS PRIORIDADES 1 E 2 IMPLEMENTADAS) ===
-// =========================================================================
-
 function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
     const diaAlvo = escalaAtual.find(d => d.id === cardAlvoId);
     if (!diaAlvo) return;
@@ -491,7 +488,7 @@ function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
     const outrosMembrosNoCard = diaAlvo.selecionados.filter(m => m.nome !== nomeAlvo);
     let isCompativel = true;
     for (const companheiro of outrosMembrosNoCard) {
-        if (!saoCompativeis(membroArrastadoObj, companheiro)) { // <-- USA A FUNÇÃO HELPER
+        if (!saoCompativeis(membroArrastadoObj, companheiro)) {
             isCompativel = false;
             break;
         }
