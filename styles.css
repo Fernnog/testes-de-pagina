@@ -761,3 +761,42 @@ footer {
 .modal-header, .close-button, .modal-body {
     /* Estilos mantidos para o modal de suspensão, mas não afetam mais a análise */
 }
+
+/* ===== ESTILOS PARA ESCALAS SALVAS ===== */
+.saved-schedules-container {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border-top: 3px solid #ffa07a;
+}
+.saved-schedules-container h3 {
+    color: #af4d00;
+    margin-top: 0;
+    background: none;
+    -webkit-text-fill-color: initial;
+    text-shadow: none;
+}
+.saved-schedules-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    gap: 15px;
+}
+.saved-schedules-list li > span {
+    font-weight: 500;
+    color: #1a3850;
+}
+.saved-schedules-list li > div {
+    display: flex;
+    gap: 10px;
+}
+.saved-schedules-list li button {
+    padding: 6px 12px;
+    font-size: 0.9em;
+    width: auto;
+}
+#escalaModalBody .input-group {
+    margin-top: 0; /* Ajuste para o modal */
+}
