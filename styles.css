@@ -156,7 +156,6 @@ form {
 #formEscala .input-group,
 #cadastro .input-group,
 #suspensaoModal .input-group,
-/* NOVO: Estilo para o filtro do painel de disponibilidade */
 #disponibilidadeContainer .input-group {
     display: flex;
     align-items: center;
@@ -167,7 +166,6 @@ form {
 #formEscala input[type="radio"],
 #cadastro input[type="checkbox"],
 #suspensaoModal input[type="checkbox"],
-/* NOVO: Estilo para o filtro do painel de disponibilidade */
 #disponibilidadeContainer input[type="checkbox"] {
     accent-color: #ff8c00;
     width: 18px;
@@ -655,6 +653,8 @@ footer {
     #listaMembros li { gap: 5px; }
     #listaMembros li > div:last-child { flex-direction: row; width: 100%; }
     #listaMembros li > div:last-child button { flex-grow: 1; }
+    /* Ajuste para botões de autenticação em telas pequenas */
+    .auth-actions { flex-direction: column; }
 }
 
 /* ===== ESTILOS PARA SUSPENSÃO E MODAL ===== */
@@ -799,4 +799,16 @@ footer {
 }
 #escalaModalBody .input-group {
     margin-top: 0; /* Ajuste para o modal */
+}
+
+/* ===== ESTILOS PARA AUTENTICAÇÃO UNIFICADA (NOVO) ===== */
+.auth-actions {
+    display: flex;
+    gap: 15px; /* Espaçamento entre os botões */
+    margin-top: 10px;
+}
+
+.auth-actions button {
+    flex-grow: 1; /* Faz os botões ocuparem o espaço disponível igualmente */
+    width: auto; /* Sobrescreve a regra de 100% de largura em mobile para funcionar com flex */
 }
