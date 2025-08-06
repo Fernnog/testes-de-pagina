@@ -1,4 +1,7 @@
-// Arquivo: main.js (Versão Completa e Corrigida)
+// ARQUIVO: main.js (Versão Completa e Corrigida)
+// DESCRIÇÃO: Este arquivo foi atualizado para remover os listeners de eventos dos botões obsoletos
+// ("Exportar Dados", "Importar Dados", "Limpar Dados"). As importações de funções não utilizadas
+// do 'data-manager.js' também foram removidas para alinhar o código com a nova interface.
 
 /**
  * PONTO DE ENTRADA PRINCIPAL DA APLICAÇÃO (main.js)
@@ -16,9 +19,6 @@ import { setupGeradorEscala } from './schedule-generator.js';
 import {
     carregarDados,
     salvarDados,
-    limparDadosGlobais,
-    exportarDados,
-    importarDados,
     adicionarMembro,
     adicionarRestricao,
     adicionarRestricaoPermanente,
@@ -31,7 +31,6 @@ import {
     setupUiListeners,
     showToast,
     exportarEscalaXLSX,
-    // ▼▼▼ A importação de 'setupAnaliseModalListeners' foi REMOVIDA daqui ▼▼▼
     renderDisponibilidadeGeral
 } from './ui.js';
 
@@ -84,27 +83,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('nav-escala').addEventListener('click', () => showTab('escala'));
 
         // --- Listeners dos Botões de Ação Globais ---
-        document.getElementById('btn-exportar-dados').addEventListener('click', exportarDados);
-        
         document.getElementById('btn-exportar-xlsx').addEventListener('click', exportarEscalaXLSX);
 
-        document.getElementById('btn-importar-dados').addEventListener('click', () => {
-            document.getElementById('importarArquivo').click();
-        });
-        document.getElementById('importarArquivo').addEventListener('change', (event) => {
-            importarDados(event, auth, database);
-        });
-        
-        document.getElementById('btn-limpar-dados').addEventListener('click', () => {
-            if (confirm('Tem certeza que deseja limpar todos os dados? Esta ação não pode ser desfeita.')) {
-                limparDadosGlobais();
-                salvarDados(auth, database).then(() => {
-                    atualizarTodasAsListas();
-                    document.getElementById('resultadoEscala').innerHTML = '';
-                    showToast('Todos os dados foram limpos.', 'success');
-                });
-            }
-        });
+        // --- Listeners dos botões de import/export/limpar dados foram removidos ---
 
         document.getElementById('logout').addEventListener('click', () => handleLogout(auth));
 
