@@ -76,7 +76,7 @@ nav button:active {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Abas */
+/* Abas - CORRIGIDO */
 .tab {
     background-color: #ffffff;
     padding: 30px;
@@ -87,13 +87,12 @@ nav button:active {
     border-left: 5px solid transparent;
     border-image: linear-gradient(to bottom, #ff4500, #ff8c00) 1;
     opacity: 0;
-    transform: translateX(-20px);
-    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    transition: opacity 0.3s ease-in-out; /* REMOVIDA A TRANSIÇÃO DE TRANSFORM */
 }
 
 .tab[style*="display: block"] {
     opacity: 1;
-    transform: translateX(0);
+    /* REMOVIDA A REGRA 'transform: translateX(0);' */
 }
 
 /* Formulários */
@@ -424,11 +423,11 @@ button:active {
     background-color: #e6ffed;
 }
 
-/* Container para os botões de filtro (COM LÓGICA STICKY) */
+/* Container para os botões de filtro (COM LÓGICA STICKY) - CORRIGIDO */
 .escala-filtros-container {
     position: -webkit-sticky; /* Suporte para Safari */
     position: sticky;
-    top: 75px; /* Ajuste para não ficar sob a barra de navegação principal. Altere se a altura da nav for diferente. */
+    top: 75px; /* Ajuste para não ficar sob a barra de navegação principal. */
     z-index: 5; /* Garante que flutue acima dos cards, mas abaixo da nav principal. */
 
     /* Estilos visuais para quando a barra estiver flutuando */
@@ -438,7 +437,7 @@ button:active {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
-    transition: padding 0.3s ease; /* Transição suave */
+    transition: padding 0.3s ease;
 
     /* Estilos originais mantidos para layout */
     display: flex;
