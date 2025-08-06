@@ -1,3 +1,5 @@
+// Arquivo: main.js (Versão Completa e Corrigida)
+
 /**
  * PONTO DE ENTRADA PRINCIPAL DA APLICAÇÃO (main.js)
  * Responsabilidades:
@@ -29,8 +31,8 @@ import {
     setupUiListeners,
     showToast,
     exportarEscalaXLSX,
-    setupAnaliseModalListeners,
-    renderDisponibilidadeGeral // <-- MELHORIA: Importa a nova função para o painel de disponibilidade
+    // ▼▼▼ A importação de 'setupAnaliseModalListeners' foi REMOVIDA daqui ▼▼▼
+    renderDisponibilidadeGeral
 } from './ui.js';
 
 
@@ -73,13 +75,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Listeners da Barra de Navegação ---
         document.getElementById('nav-auth').addEventListener('click', () => showTab('auth'));
         document.getElementById('nav-cadastro').addEventListener('click', () => showTab('cadastro'));
-        
-        // <-- MELHORIA: Adicionado listener para o novo painel de Visão Geral de Disponibilidade -->
         document.getElementById('nav-disponibilidade').addEventListener('click', () => {
             showTab('disponibilidade');
             renderDisponibilidadeGeral();
         });
-        
         document.getElementById('nav-restricoes').addEventListener('click', () => showTab('restricoes'));
         document.getElementById('nav-restricoes-permanentes').addEventListener('click', () => showTab('restricoesPermanentes'));
         document.getElementById('nav-escala').addEventListener('click', () => showTab('escala'));
@@ -87,7 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Listeners dos Botões de Ação Globais ---
         document.getElementById('btn-exportar-dados').addEventListener('click', exportarDados);
         
-        // Listener do botão de exportar a escala XLSX
         document.getElementById('btn-exportar-xlsx').addEventListener('click', exportarEscalaXLSX);
 
         document.getElementById('btn-importar-dados').addEventListener('click', () => {
@@ -140,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const membro = document.getElementById('membroRestricao').value;
             const dataInicioStr = document.getElementById('dataInicio').value;
             const dataFimStr = document.getElementById('dataFim').value;
-            const inicio = new Date(dataInicioStr + 'T12:00:00'); // Evita problemas de fuso
+            const inicio = new Date(dataInicioStr + 'T12:00:00');
             const fim = new Date(dataFimStr + 'T12:00:00');
 
             if (!membro) { alert('Selecione um membro!'); return; }
@@ -166,10 +164,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- INICIALIZAÇÃO DA APLICAÇÃO ---
-    // Configura os módulos que precisam de inicialização
     setupAuthListeners(auth, onLoginSuccess);
     setupGeradorEscala();
     setupUiListeners(); 
-    setupAnaliseModalListeners();
     setupEventListeners(); 
 });
