@@ -1,7 +1,4 @@
-// ARQUIVO: ui.js (Versão Completa)
-// DESCRIÇÃO: As funções 'renderAnaliseConcentracao' e 'remanejarMembro' foram atualizadas.
-// 1. 'renderAnaliseConcentracao' agora exibe um painel consolidado quando o filtro "Todos" está ativo.
-// 2. 'remanejarMembro' agora executa uma substituição direta em vez de uma troca mútua.
+// js/ui.js
 
 import { membros, restricoes, restricoesPermanentes } from './data-manager.js';
 
@@ -223,7 +220,6 @@ export function renderAnaliseConcentracao(filtro = 'all') {
     let contentHTML = '';
 
     if (filtro === 'all') {
-        // Lógica para a visão consolidada
         const participacoesGlobais = {};
         membros.forEach(m => {
             participacoesGlobais[m.nome] = 0;
@@ -238,7 +234,7 @@ export function renderAnaliseConcentracao(filtro = 'all') {
         });
 
         const listaMembrosHtml = Object.entries(participacoesGlobais)
-            .sort(([, a], [, b]) => b - a) // Ordena por número de participações
+            .sort(([, a], [, b]) => b - a)
             .map(([nome, count]) => `<li><span><strong>${nome}:</strong> ${count} vez(es)</span></li>`)
             .join('');
 
@@ -252,7 +248,6 @@ export function renderAnaliseConcentracao(filtro = 'all') {
             </div>`;
 
     } else {
-        // Lógica existente para filtros específicos
         const turnosParaRenderizar = [filtro];
         contentHTML = turnosParaRenderizar
             .filter(turno => analise[turno])
@@ -314,7 +309,8 @@ export function renderEscalaEmCards(dias) {
     container.innerHTML = '';
     container.classList.add('escala-container');
     dias.forEach(dia => {
-        // Renderiza o card mesmo que esteja temporariamente sem selecionados
+        if (dia.selecionados.length === 0 && dia.tipo !== 'Quarta' && dia.tipo !== 'Sábado' && !dia.tipo.startsWith('Domingo')) return;
+
         const turnoConfig = VISUAL_CONFIG.turnos[dia.tipo] || { classe: '' };
         const cardHTML = `
             <div class="escala-card ${turnoConfig.classe}" data-id="${dia.id}" data-turno="${dia.tipo}">
@@ -329,6 +325,7 @@ export function renderEscalaEmCards(dias) {
         container.innerHTML += cardHTML;
     });
 }
+
 
 export function renderizarFiltros(dias) {
     const container = document.getElementById('escala-filtros');
@@ -420,18 +417,24 @@ export function renderDisponibilidadeGeral() {
 }
 
 // =========================================================================
-// === SEÇÃO DE DRAG & DROP (Com Melhorias de Atualização) ===
+// === SEÇÃO DE DRAG & DROP (COM AS PRIORIDADES 1 E 2 IMPLEMENTADAS) ===
 // =========================================================================
 
 function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
-    const diaOrigem = escalaAtual.find(d => d.id === cardOrigemId);
     const diaAlvo = escalaAtual.find(d => d.id === cardAlvoId);
-    if (!diaOrigem || !diaAlvo) return;
+    if (!diaAlvo) return;
 
     const membroArrastadoObj = membros.find(m => m.nome === nomeArrastado);
     if (!membroArrastadoObj) return;
 
-    // 1. Validar se o membro arrastado pode ir para o card de destino
+    // PRIORIDADE 2: Impedir que um membro seja adicionado a um card onde ele já está.
+    const jaEstaNoCard = diaAlvo.selecionados.some(m => m.nome === nomeArrastado);
+    if (jaEstaNoCard) {
+        showToast(`${nomeArrastado} já está escalado(a) neste dia. Ação cancelada.`, 'warning');
+        return;
+    }
+
+    // PRIORIDADE 1 (Validação): Verificar restrições do membro arrastado para o dia alvo.
     const diaAlvoData = new Date(diaAlvo.data); diaAlvoData.setHours(0,0,0,0);
     const temRestricaoTemp = todasAsRestricoes.some(r => r.membro === nomeArrastado && diaAlvoData >= new Date(r.inicio) && diaAlvoData <= new Date(r.fim));
     const temRestricaoPerm = todasAsRestricoesPerm.some(r => r.membro === nomeArrastado && r.diaSemana === diaAlvo.tipo);
@@ -441,22 +444,21 @@ function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
         return;
     }
 
-    // 2. Localizar os membros e seus índices nos arrays da escala
-    const indexArrastadoOrigem = diaOrigem.selecionados.findIndex(m => m.nome === nomeArrastado);
     const indexAlvoDestino = diaAlvo.selecionados.findIndex(m => m.nome === nomeAlvo);
+    if (indexAlvoDestino === -1) return;
 
-    // 3. Executar a substituição no card de destino
+    // PRIORIDADE 1 (Lógica): Realizar a "cópia com substituição".
     diaAlvo.selecionados.splice(indexAlvoDestino, 1, membroArrastadoObj);
 
-    // 4. Remover o membro arrastado do card de origem
-    diaOrigem.selecionados.splice(indexArrastadoOrigem, 1);
-
-    // 5. Atualizar contagem de participações: o substituído perde uma, o arrastado mantém a sua.
+    // PRIORIDADE 1 (Contagem): Atualizar as participações.
     if (justificationDataAtual[nomeAlvo]) {
         justificationDataAtual[nomeAlvo].participations--;
     }
+    if (justificationDataAtual[nomeArrastado]) {
+        justificationDataAtual[nomeArrastado].participations++;
+    }
 
-    // 6. Re-renderizar toda a UI relevante para refletir a mudança
+    // Re-renderizar toda a UI relevante para refletir o estado atualizado
     renderEscalaEmCards(escalaAtual);
     exibirIndiceEquilibrio(justificationDataAtual);
     configurarDragAndDrop(escalaAtual, justificationDataAtual, todasAsRestricoes, todasAsRestricoesPerm);
@@ -464,7 +466,7 @@ function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
     const filtroAtivo = document.querySelector('#escala-filtros button.active')?.dataset.filter || 'all';
     renderAnaliseConcentracao(filtroAtivo);
 
-    showToast(`${nomeAlvo} foi substituído por ${nomeArrastado}.`, 'success');
+    showToast(`${nomeArrastado} foi adicionado(a) à escala, substituindo ${nomeAlvo}.`, 'success');
 }
 
 
