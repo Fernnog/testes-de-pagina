@@ -1,7 +1,7 @@
 // js/ui.js
 
 import { membros, restricoes, restricoesPermanentes, escalasSalvas } from './data-manager.js';
-import { saoCompativeis } from './schedule-generator.js';
+import { saoCompativeis } from './schedule-generator.js'; // <-- NOVA IMPORTAÇÃO
 
 // =========================================================
 // === SEÇÃO DE CONFIGURAÇÃO E ESTADO (SEM ALTERAÇÕES) ===
@@ -111,7 +111,7 @@ function atualizarListaRestricoesPermanentes() {
         <button onclick="window.excluirRestricaoPermanente(${index})">Excluir</button></li>`).join('');
 }
 
-// NOVA FUNÇÃO para renderizar a lista de escalas salvas
+// NOVA FUNÇÃO
 function atualizarListaEscalasSalvas() {
     const lista = document.getElementById('listaEscalasSalvas');
     if (!lista) return;
@@ -135,7 +135,33 @@ export function atualizarTodasAsListas() {
     atualizarSelectMembros();
     atualizarListaRestricoes();
     atualizarListaRestricoesPermanentes();
-    atualizarListaEscalasSalvas(); // ADICIONADA chamada à nova função
+    atualizarListaEscalasSalvas(); // CHAMADA ADICIONADA
+}
+
+// NOVA FUNÇÃO EXPORTADA
+export function abrirModalAcaoEscala(action, escalaId = null, escalaNome = '') {
+    const modal = document.getElementById('escalaActionModal');
+    const title = document.getElementById('escalaModalTitle');
+    const body = document.getElementById('escalaModalBody');
+    document.getElementById('escalaModalAction').value = action;
+    document.getElementById('escalaModalId').value = escalaId;
+
+    if (action === 'save' || action === 'rename') {
+        title.textContent = action === 'save' ? 'Salvar Escala' : 'Renomear Escala';
+        const defaultName = (action === 'save')
+            ? `Escala de ${new Date().toLocaleDateString('pt-BR')}`
+            : escalaNome;
+        body.innerHTML = `
+            <div class="input-group">
+                <input type="text" id="escalaModalInputName" value="${defaultName}" required placeholder=" ">
+                <label for="escalaModalInputName">Nome da Escala</label>
+            </div>`;
+    } else if (action === 'delete') {
+        title.textContent = 'Confirmar Exclusão';
+        body.innerHTML = `<p>Você tem certeza que deseja excluir a escala "<strong>${escalaNome}</strong>"? Esta ação não pode ser desfeita.</p>`;
+    }
+
+    modal.style.display = 'flex';
 }
 
 export function showTab(tabId) {
@@ -186,34 +212,8 @@ export function exportarEscalaXLSX() {
 
 
 // =========================================================================
-// === SEÇÃO DE FUNÇÕES NOVAS OU MODIFICADAS (COM ALTERAÇÕES) ===
+// === SEÇÃO DE FUNÇÕES NOVAS OU MODIFICADAS (SEM ALTERAÇÕES NESTA SEÇÃO) ===
 // =========================================================================
-
-// NOVA FUNÇÃO para gerenciar o modal de ações da escala
-export function abrirModalAcaoEscala(action, escalaId = null, escalaNome = '') {
-    const modal = document.getElementById('escalaActionModal');
-    const title = document.getElementById('escalaModalTitle');
-    const body = document.getElementById('escalaModalBody');
-    document.getElementById('escalaModalAction').value = action;
-    document.getElementById('escalaModalId').value = escalaId;
-
-    if (action === 'save' || action === 'rename') {
-        title.textContent = action === 'save' ? 'Salvar Escala' : 'Renomear Escala';
-        const defaultName = (action === 'save')
-            ? `Escala de ${new Date().toLocaleDateString('pt-BR')}`
-            : escalaNome;
-        body.innerHTML = `
-            <div class="input-group">
-                <input type="text" id="escalaModalInputName" value="${defaultName}" required placeholder=" ">
-                <label for="escalaModalInputName">Nome da Escala</label>
-            </div>`;
-    } else if (action === 'delete') {
-        title.textContent = 'Confirmar Exclusão';
-        body.innerHTML = `<p>Você tem certeza que deseja excluir a escala "<strong>${escalaNome}</strong>"? Esta ação não pode ser desfeita.</p>`;
-    }
-
-    modal.style.display = 'flex';
-}
 
 function _analisarConcentracao(diasGerados) {
     const analise = {};
@@ -324,6 +324,7 @@ export function renderAnaliseConcentracao(filtro = 'all') {
     container.style.display = contentHTML ? 'block' : 'none';
 }
 
+
 export function exibirIndiceEquilibrio(justificationData) {
     justificationDataAtual = justificationData;
     const container = document.getElementById('balanceIndexContainer');
@@ -348,6 +349,7 @@ export function exibirIndiceEquilibrio(justificationData) {
     else bar.style.background = 'linear-gradient(90deg, #28a745, #84fab0)';
 }
 
+
 export function renderEscalaEmCards(dias) {
     escalaAtual = dias;
     const container = document.getElementById('resultadoEscala');
@@ -361,7 +363,7 @@ export function renderEscalaEmCards(dias) {
             <div class="escala-card ${turnoConfig.classe}" data-id="${dia.id}" data-turno="${dia.tipo}">
                 <div class="escala-card__header">
                     <h4>${dia.tipo}</h4>
-                    <span>${new Date(dia.data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                    <span>${dia.data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
                 </div>
                 <div class="escala-card__body">
                     ${dia.selecionados.map(m => `<div class="membro-card" draggable="true" data-nome="${m.nome}">${m.nome}</div>`).join('')}
@@ -370,6 +372,7 @@ export function renderEscalaEmCards(dias) {
         container.innerHTML += cardHTML;
     });
 }
+
 
 export function renderizarFiltros(dias) {
     const container = document.getElementById('escala-filtros');
@@ -461,7 +464,7 @@ export function renderDisponibilidadeGeral() {
 }
 
 // =========================================================================
-// === SEÇÃO DE DRAG & DROP (SEM ALTERAÇÕES) ===
+// === SEÇÃO DE DRAG & DROP (COM AS PRIORIDADES 1 E 2 IMPLEMENTADAS) ===
 // =========================================================================
 
 function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
@@ -477,11 +480,7 @@ function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
     }
 
     const diaAlvoData = new Date(diaAlvo.data); diaAlvoData.setHours(0,0,0,0);
-    const temRestricaoTemp = todasAsRestricoes.some(r => {
-        const rInicio = new Date(r.inicio); rInicio.setHours(0,0,0,0);
-        const rFim = new Date(r.fim); rFim.setHours(0,0,0,0);
-        return r.membro === nomeArrastado && diaAlvoData >= rInicio && diaAlvoData <= rFim
-    });
+    const temRestricaoTemp = todasAsRestricoes.some(r => r.membro === nomeArrastado && diaAlvoData >= new Date(r.inicio) && diaAlvoData <= new Date(r.fim));
     const temRestricaoPerm = todasAsRestricoesPerm.some(r => r.membro === nomeArrastado && r.diaSemana === diaAlvo.tipo);
 
     if (temRestricaoTemp || temRestricaoPerm) {
@@ -492,7 +491,7 @@ function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
     const outrosMembrosNoCard = diaAlvo.selecionados.filter(m => m.nome !== nomeAlvo);
     let isCompativel = true;
     for (const companheiro of outrosMembrosNoCard) {
-        if (!saoCompativeis(membroArrastadoObj, companheiro)) {
+        if (!saoCompativeis(membroArrastadoObj, companheiro)) { // <-- USA A FUNÇÃO HELPER
             isCompativel = false;
             break;
         }
@@ -524,6 +523,7 @@ function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
 
     showToast(`${nomeArrastado} foi adicionado(a) à escala, substituindo ${nomeAlvo}.`, 'success');
 }
+
 
 export function configurarDragAndDrop(dias, justificationData, restricoes, restricoesPermanentes) {
     escalaAtual = dias;
