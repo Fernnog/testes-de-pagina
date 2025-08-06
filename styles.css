@@ -424,21 +424,23 @@ button:active {
     background-color: #e6ffed;
 }
 
-/* Container para os botões de filtro (AGORA COM LÓGICA STICKY) */
+/* Container para os botões de filtro (COM LÓGICA STICKY) */
 .escala-filtros-container {
     position: -webkit-sticky; /* Suporte para Safari */
     position: sticky;
-    top: 75px; /* Espaço para a barra de navegação principal não sobrepor */
-    z-index: 5; /* Garante que fique acima do conteúdo da escala, mas abaixo da nav principal (z-index: 10) */
+    top: 75px; /* Ajuste para não ficar sob a barra de navegação principal. Altere se a altura da nav for diferente. */
+    z-index: 5; /* Garante que flutue acima dos cards, mas abaixo da nav principal. */
 
-    /* Estilos para quando a barra estiver "grudada" */
+    /* Estilos visuais para quando a barra estiver flutuando */
     background-color: rgba(255, 255, 255, 0.95);
-    padding: 10px 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(5px); /* Efeito de vidro fosco para navegadores modernos */
+    padding-top: 10px;
+    padding-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
+    transition: padding 0.3s ease; /* Transição suave */
 
-    /* Estilos originais mantidos */
+    /* Estilos originais mantidos para layout */
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -446,7 +448,6 @@ button:active {
     margin-bottom: 25px;
     margin-top: 20px;
 }
-
 
 /* Estilo dos botões de filtro */
 .escala-filtros-container button {
@@ -774,4 +775,48 @@ footer {
 /* Remove estilos do modal que não são mais necessários para análise */
 .modal-header, .close-button, .modal-body {
     /* Estilos mantidos para o modal de suspensão, mas não afetam mais a análise */
+}
+
+/* ===== ESTILOS PARA ESCALAS SALVAS ===== */
+.saved-schedules-container {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border-top: 3px solid #ffa07a;
+}
+
+.saved-schedules-container h3 {
+    color: #af4d00;
+    margin-top: 0;
+    background: none;
+    -webkit-text-fill-color: initial;
+    text-shadow: none;
+}
+
+.saved-schedules-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    gap: 15px;
+}
+
+.saved-schedules-list li > span {
+    font-weight: 500;
+    color: #1a3850;
+}
+
+.saved-schedules-list li > div {
+    display: flex;
+    gap: 10px;
+}
+
+.saved-schedules-list li button {
+    padding: 6px 12px;
+    font-size: 0.9em;
+    width: auto;
+}
+#escalaModalBody .input-group {
+    margin-top: 0; /* Ajuste para o modal */
 }
