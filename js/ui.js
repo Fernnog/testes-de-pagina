@@ -1,6 +1,7 @@
 // js/ui.js
 
 import { membros, restricoes, restricoesPermanentes } from './data-manager.js';
+import { saoCompativeis } from './schedule-generator.js'; // <-- NOVA IMPORTAÇÃO
 
 // =========================================================
 // === SEÇÃO DE CONFIGURAÇÃO E ESTADO (SEM ALTERAÇÕES) ===
@@ -165,7 +166,7 @@ export function exportarEscalaXLSX() {
 
 
 // =========================================================================
-// === SEÇÃO DE FUNÇÕES NOVAS OU MODIFICADAS PARA AS NOVAS FUNCIONALIDADES ===
+// === SEÇÃO DE FUNÇÕES NOVAS OU MODIFICADAS (SEM ALTERAÇÕES NESTA SEÇÃO) ===
 // =========================================================================
 
 function _analisarConcentracao(diasGerados) {
@@ -427,14 +428,11 @@ function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
     const membroArrastadoObj = membros.find(m => m.nome === nomeArrastado);
     if (!membroArrastadoObj) return;
 
-    // PRIORIDADE 2: Impedir que um membro seja adicionado a um card onde ele já está.
-    const jaEstaNoCard = diaAlvo.selecionados.some(m => m.nome === nomeArrastado);
-    if (jaEstaNoCard) {
+    if (diaAlvo.selecionados.some(m => m.nome === nomeArrastado)) {
         showToast(`${nomeArrastado} já está escalado(a) neste dia. Ação cancelada.`, 'warning');
         return;
     }
 
-    // PRIORIDADE 1 (Validação): Verificar restrições do membro arrastado para o dia alvo.
     const diaAlvoData = new Date(diaAlvo.data); diaAlvoData.setHours(0,0,0,0);
     const temRestricaoTemp = todasAsRestricoes.some(r => r.membro === nomeArrastado && diaAlvoData >= new Date(r.inicio) && diaAlvoData <= new Date(r.fim));
     const temRestricaoPerm = todasAsRestricoesPerm.some(r => r.membro === nomeArrastado && r.diaSemana === diaAlvo.tipo);
@@ -444,13 +442,25 @@ function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
         return;
     }
 
+    const outrosMembrosNoCard = diaAlvo.selecionados.filter(m => m.nome !== nomeAlvo);
+    let isCompativel = true;
+    for (const companheiro of outrosMembrosNoCard) {
+        if (!saoCompativeis(membroArrastadoObj, companheiro)) { // <-- USA A FUNÇÃO HELPER
+            isCompativel = false;
+            break;
+        }
+    }
+
+    if (!isCompativel) {
+        showToast('Ação inválida. A dupla formada não segue a regra de mesmo gênero ou cônjuges.', 'error');
+        return;
+    }
+
     const indexAlvoDestino = diaAlvo.selecionados.findIndex(m => m.nome === nomeAlvo);
     if (indexAlvoDestino === -1) return;
 
-    // PRIORIDADE 1 (Lógica): Realizar a "cópia com substituição".
     diaAlvo.selecionados.splice(indexAlvoDestino, 1, membroArrastadoObj);
 
-    // PRIORIDADE 1 (Contagem): Atualizar as participações.
     if (justificationDataAtual[nomeAlvo]) {
         justificationDataAtual[nomeAlvo].participations--;
     }
@@ -458,7 +468,6 @@ function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
         justificationDataAtual[nomeArrastado].participations++;
     }
 
-    // Re-renderizar toda a UI relevante para refletir o estado atualizado
     renderEscalaEmCards(escalaAtual);
     exibirIndiceEquilibrio(justificationDataAtual);
     configurarDragAndDrop(escalaAtual, justificationDataAtual, todasAsRestricoes, todasAsRestricoesPerm);
