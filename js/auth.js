@@ -3,7 +3,7 @@
 // Responsável pelo registro, login, logout e gerenciamento do estado de autenticação do usuário.
 //
 
-import { showTab } from './ui.js';
+import { showTab, showToast } from './ui.js';
 
 /**
  * Configura todos os listeners relacionados à autenticação.
@@ -11,38 +11,49 @@ import { showTab } from './ui.js';
  * @param {Function} onLoginSuccess - A função de callback a ser executada quando o login for bem-sucedido.
  */
 export function setupAuthListeners(auth, onLoginSuccess) {
-    const formRegistro = document.getElementById('formRegistro');
-    const formLogin = document.getElementById('formLogin');
+    const btnRegistro = document.getElementById('btnRegistro');
+    const btnLogin = document.getElementById('btnLogin');
 
-    // Listener para o formulário de Registro
-    formRegistro.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const email = document.getElementById('emailRegistro').value;
-        const senha = document.getElementById('senhaRegistro').value;
-        auth.createUserWithEmailAndPassword(email, senha)
-            .then(() => {
-                alert('Usuário registrado com sucesso!');
-                // Não chama onLoginSuccess aqui, pois o onAuthStateChanged fará isso.
-            })
-            .catch((error) => {
-                alert('Erro ao registrar: ' + error.message);
-            });
-    });
+    // Listener para o botão de Registro
+    if (btnRegistro) {
+        btnRegistro.addEventListener('click', () => {
+            const email = document.getElementById('emailAuth').value;
+            const senha = document.getElementById('senhaAuth').value;
+            if (!email || !senha) {
+                showToast('Por favor, preencha e-mail e senha.', 'error');
+                return;
+            }
+            auth.createUserWithEmailAndPassword(email, senha)
+                .then(() => {
+                    showToast('Usuário registrado com sucesso! Bem-vindo(a).', 'success');
+                    // Não chama onLoginSuccess aqui, pois o onAuthStateChanged fará isso.
+                })
+                .catch((error) => {
+                    showToast('Erro ao registrar: ' + error.message, 'error');
+                });
+        });
+    }
 
-    // Listener para o formulário de Login
-    formLogin.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const email = document.getElementById('emailLogin').value;
-        const senha = document.getElementById('senhaLogin').value;
-        auth.signInWithEmailAndPassword(email, senha)
-            .then(() => {
-                alert('Login bem-sucedido!');
-                // Não chama onLoginSuccess aqui, pois o onAuthStateChanged fará isso.
-            })
-            .catch((error) => {
-                alert('Erro ao fazer login: ' + error.message);
-            });
-    });
+    // Listener para o botão de Login
+    if (btnLogin) {
+        btnLogin.addEventListener('click', () => {
+            const email = document.getElementById('emailAuth').value;
+            const senha = document.getElementById('senhaAuth').value;
+            if (!email || !senha) {
+                showToast('Por favor, preencha e-mail e senha.', 'error');
+                return;
+            }
+            auth.signInWithEmailAndPassword(email, senha)
+                .then(() => {
+                    showToast('Login bem-sucedido!', 'success');
+                    // Não chama onLoginSuccess aqui, pois o onAuthStateChanged fará isso.
+                })
+                .catch((error) => {
+                    showToast('Erro ao fazer login: ' + error.message, 'error');
+                });
+        });
+    }
+
 
     // Listener de Estado de Autenticação (o ponto central de controle)
     auth.onAuthStateChanged((user) => {
@@ -66,8 +77,8 @@ export function setupAuthListeners(auth, onLoginSuccess) {
  */
 export function handleLogout(auth) {
     auth.signOut().then(() => {
-        alert('Logout bem-sucedido!');
+        showToast('Logout bem-sucedido!', 'success');
     }).catch((error) => {
-        alert('Erro ao fazer logout: ' + error.message);
+        showToast('Erro ao fazer logout: ' + error.message, 'error');
     });
 }
