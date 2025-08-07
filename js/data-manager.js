@@ -101,11 +101,19 @@ export function carregarDados(auth, database, onDataLoaded) {
                 const restricoesPermProcessadas = dados.restricoesPermanentes || [];
                 restricoesPermProcessadas.forEach(restricao => restricoesPermanentes.push(restricao));
                 
-                // Processa e preenche ESCALAS SALVAS, mutando o array original.
+                // =======================================================================
+                // === INÍCIO DA CORREÇÃO (PRIORIDADE 1) ===
+                // =======================================================================
+                // Processa e preenche ESCALAS SALVAS, garantindo a conversão das datas.
                 const escalasProcessadas = (dados.escalasSalvas || []).map(escala => {
+                    // Garante que a escala tenha um array de 'dias' para processar.
                     if (escala.dias && Array.isArray(escala.dias)) {
+                        // Itera sobre cada dia da escala para "reviver" o objeto de data.
                         escala.dias = escala.dias.map(dia => {
+                            // Se a propriedade 'data' existe (virá como string do Firebase)...
                             if (dia.data) {
+                                // ...a convertemos de volta para um objeto Date.
+                                // Esta é a correção que resolve o bug de renderização.
                                 dia.data = new Date(dia.data);
                             }
                             return dia;
@@ -114,6 +122,9 @@ export function carregarDados(auth, database, onDataLoaded) {
                     return escala;
                 });
                 escalasProcessadas.forEach(escala => escalasSalvas.push(escala));
+                // =======================================================================
+                // === FIM DA CORREÇÃO ===
+                // =======================================================================
             }
             
             // O callback é chamado aqui, após o preenchimento (ou não) dos dados.
