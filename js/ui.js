@@ -111,7 +111,6 @@ function atualizarListaRestricoesPermanentes() {
         <button onclick="window.excluirRestricaoPermanente(${index})">Excluir</button></li>`).join('');
 }
 
-// NOVA FUNÇÃO
 function atualizarListaEscalasSalvas() {
     const lista = document.getElementById('listaEscalasSalvas');
     if (!lista) return;
@@ -135,10 +134,9 @@ export function atualizarTodasAsListas() {
     atualizarSelectMembros();
     atualizarListaRestricoes();
     atualizarListaRestricoesPermanentes();
-    atualizarListaEscalasSalvas(); // CHAMADA ADICIONADA
+    atualizarListaEscalasSalvas();
 }
 
-// NOVA FUNÇÃO EXPORTADA
 export function abrirModalAcaoEscala(action, escalaId = null, escalaNome = '') {
     const modal = document.getElementById('escalaActionModal');
     const title = document.getElementById('escalaModalTitle');
@@ -212,12 +210,12 @@ export function exportarEscalaXLSX() {
 
 
 // =========================================================================
-// === SEÇÃO DE FUNÇÕES NOVAS OU MODIFICADAS (COM ALTERAÇÕES NESTA SEÇÃO) ===
+// === SEÇÃO DE FUNÇÕES NOVAS OU MODIFICADAS (COM AS PRIORIDADES IMPLEMENTADAS) ===
 // =========================================================================
 
 function _analisarConcentracao(diasGerados) {
     const analise = {};
-    const turnosCulto = ['Quarta', 'Domingo Manhã', 'Domingo Noite'];
+    const turnosCulto = ['Quarta', 'Domingo Manhã', 'Domingo Noite', 'Sábado', 'Oração no WhatsApp'];
 
     turnosCulto.forEach(turno => {
         const membrosDoTurno = [];
@@ -228,7 +226,12 @@ function _analisarConcentracao(diasGerados) {
             let isDisponivel = true;
             let status = { type: 'disponivel' };
             
-            if (membro.suspensao.cultos) {
+            let suspensaoKey;
+            if (turno === 'Sábado') suspensaoKey = 'sabado';
+            else if (turno === 'Oração no WhatsApp') suspensaoKey = 'whatsapp';
+            else suspensaoKey = 'cultos';
+
+            if (membro.suspensao[suspensaoKey]) {
                 isDisponivel = false;
                 status = { type: 'suspenso' };
             } else if (restricoesPermanentes.some(r => r.membro === membro.nome && r.diaSemana === turno)) {
@@ -265,31 +268,72 @@ export function renderAnaliseConcentracao(filtro = 'all') {
 
     const analise = _analisarConcentracao(escalaAtual);
     let contentHTML = '';
+    const turnosDisponiveis = ['Quarta', 'Domingo Manhã', 'Domingo Noite', 'Sábado', 'Oração no WhatsApp'];
 
     if (filtro === 'all') {
         const participacoesGlobais = {};
         membros.forEach(m => {
-            participacoesGlobais[m.nome] = 0;
+            participacoesGlobais[m.nome] = { total: 0 };
+            turnosDisponiveis.forEach(turno => { participacoesGlobais[m.nome][turno] = 0; });
         });
 
         escalaAtual.forEach(dia => {
             dia.selecionados.forEach(membro => {
-                if (participacoesGlobais[membro.nome] !== undefined) {
-                    participacoesGlobais[membro.nome]++;
+                if (participacoesGlobais[membro.nome]) {
+                    participacoesGlobais[membro.nome].total++;
+                    if (participacoesGlobais[membro.nome][dia.tipo] !== undefined) {
+                        participacoesGlobais[membro.nome][dia.tipo]++;
+                    }
                 }
             });
         });
 
+        const averages = {};
+        turnosDisponiveis.forEach(turno => {
+            const dadosTurno = analise[turno];
+            if (dadosTurno && dadosTurno.membrosDisponiveis > 0) {
+                averages[turno] = dadosTurno.totalParticipacoesNoTurno / dadosTurno.membrosDisponiveis;
+            } else {
+                averages[turno] = 0;
+            }
+        });
+
         const listaMembrosHtml = Object.entries(participacoesGlobais)
-            .sort(([, a], [, b]) => b - a)
-            .map(([nome, count]) => `<li><span><strong>${nome}:</strong> ${count} vez(es)</span></li>`)
+            .sort(([, a], [, b]) => b.total - a.total)
+            .map(([nome, data]) => {
+                const breakdownParts = turnosDisponiveis
+                    .filter(turno => data[turno] > 0)
+                    .map(turno => {
+                        const shortName = turno.replace('Domingo ', 'Dom. ').replace('Oração no WhatsApp', 'WhatsApp');
+                        const count = data[turno];
+                        const avg = averages[turno];
+                        let highlightClass = '';
+
+                        if (avg > 0.5) { // Evita destacar em escalas muito pequenas
+                           if (count > avg * 1.75) {
+                                highlightClass = 'highlight-over';
+                           } else if (count < avg * 0.5) {
+                                const membroStatus = analise[turno]?.membrosDoTurno.find(m => m.nome === nome);
+                                if (membroStatus?.status.type === 'disponivel') {
+                                    highlightClass = 'highlight-under';
+                                }
+                           }
+                        }
+                        
+                        return `<span class="${highlightClass}" title="Média do turno: ${avg.toFixed(2)}">${shortName}: ${count}</span>`;
+                    });
+                
+                const breakdownString = breakdownParts.length > 0 ? ` (${breakdownParts.join(', ')})` : '';
+
+                return `<li><span><strong>${nome}:</strong> ${data.total} vez(es)</span><span class="breakdown-details">${breakdownString}</span></li>`;
+            })
             .join('');
 
         contentHTML = `
             <div class="analysis-content">
                 <div class="analise-turno-bloco">
                     <h5>Análise Global Consolidada</h5>
-                    <p>Total de participações de cada membro em todos os turnos.</p>
+                    <p>Total de participações e o detalhamento por turno (passe o mouse para ver a média).</p>
                     <ul>${listaMembrosHtml}</ul>
                 </div>
             </div>`;
@@ -356,7 +400,11 @@ export function renderEscalaEmCards(dias) {
     container.innerHTML = '';
     container.classList.add('escala-container');
     dias.forEach(dia => {
-        if (!dia || !dia.data) return; // Checagem de segurança para o bug de carregamento
+        // Correção do bug de carregamento: converte string de data para objeto Date
+        if (typeof dia.data === 'string') {
+            dia.data = new Date(dia.data);
+        }
+    
         if (dia.selecionados.length === 0 && dia.tipo !== 'Quarta' && dia.tipo !== 'Sábado' && !dia.tipo.startsWith('Domingo')) return;
 
         const turnoConfig = VISUAL_CONFIG.turnos[dia.tipo] || { classe: '' };
@@ -395,19 +443,6 @@ export function renderizarFiltros(dias) {
             
             filtrarCards(filtroSelecionado);
             renderAnaliseConcentracao(filtroSelecionado);
-            
-            // --- LÓGICA DE AUTO-SCROLL ---
-            if (filtroSelecionado === 'all') {
-                const resultadoContainer = document.getElementById('resultadoEscala');
-                if (resultadoContainer) {
-                    resultadoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            } else {
-                const firstVisibleCard = document.querySelector(`.escala-card[data-turno="${filtroSelecionado}"]`);
-                if (firstVisibleCard) {
-                    firstVisibleCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }
-            }
         }
     });
 }
@@ -478,7 +513,7 @@ export function renderDisponibilidadeGeral() {
 }
 
 // =========================================================================
-// === SEÇÃO DE DRAG & DROP (COM AS PRIORIDADES 1 E 2 IMPLEMENTADAS) ===
+// === SEÇÃO DE DRAG & DROP (SEM ALTERAÇÕES) ===
 // =========================================================================
 
 function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
