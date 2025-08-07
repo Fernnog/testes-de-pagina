@@ -1,10 +1,10 @@
 // js/ui.js
 
 import { membros, restricoes, restricoesPermanentes, escalasSalvas } from './data-manager.js';
-import { saoCompativeis } from './schedule-generator.js'; // <-- NOVA IMPORTAÇÃO
+import { saoCompativeis } from './schedule-generator.js';
 
 // =========================================================
-// === SEÇÃO DE CONFIGURAÇÃO E ESTADO (SEM ALTERAÇÕES) ===
+// === SEÇÃO DE CONFIGURAÇÃO E ESTADO ===
 // =========================================================
 
 const VISUAL_CONFIG = {
@@ -38,7 +38,7 @@ let todasAsRestricoesPerm = [];
 
 
 // =========================================================
-// === SEÇÃO DE FUNÇÕES EXISTENTES (SEM ALTERAÇÕES) ===
+// === SEÇÃO DE FUNÇÕES DE ATUALIZAÇÃO DA UI ===
 // =========================================================
 
 function atualizarListaMembros() {
@@ -111,7 +111,6 @@ function atualizarListaRestricoesPermanentes() {
         <button onclick="window.excluirRestricaoPermanente(${index})">Excluir</button></li>`).join('');
 }
 
-// NOVA FUNÇÃO
 function atualizarListaEscalasSalvas() {
     const lista = document.getElementById('listaEscalasSalvas');
     if (!lista) return;
@@ -135,10 +134,9 @@ export function atualizarTodasAsListas() {
     atualizarSelectMembros();
     atualizarListaRestricoes();
     atualizarListaRestricoesPermanentes();
-    atualizarListaEscalasSalvas(); // CHAMADA ADICIONADA
+    atualizarListaEscalasSalvas();
 }
 
-// NOVA FUNÇÃO EXPORTADA
 export function abrirModalAcaoEscala(action, escalaId = null, escalaNome = '') {
     const modal = document.getElementById('escalaActionModal');
     const title = document.getElementById('escalaModalTitle');
@@ -212,7 +210,7 @@ export function exportarEscalaXLSX() {
 
 
 // =========================================================================
-// === SEÇÃO DE FUNÇÕES NOVAS OU MODIFICADAS (COM ALTERAÇÕES NESTA SEÇÃO) ===
+// === SEÇÃO DE FUNÇÕES DE RENDERIZAÇÃO DA ESCALA E ANÁLISE ===
 // =========================================================================
 
 function _analisarConcentracao(diasGerados) {
@@ -349,15 +347,28 @@ export function exibirIndiceEquilibrio(justificationData) {
     else bar.style.background = 'linear-gradient(90deg, #28a745, #84fab0)';
 }
 
-
+/**
+ * **FUNÇÃO CORRIGIDA**
+ * Renderiza a escala em cards no container de resultados.
+ * A lógica que ocultava cards vazios foi removida para garantir que
+ * escalas carregadas sejam sempre exibidas corretamente.
+ * @param {Array<object>} dias - O array de dias da escala a ser renderizado.
+ */
 export function renderEscalaEmCards(dias) {
     escalaAtual = dias;
     const container = document.getElementById('resultadoEscala');
     container.innerHTML = '';
     container.classList.add('escala-container');
+
     dias.forEach(dia => {
-        if (!dia || !dia.data) return; // Checagem de segurança para o bug de carregamento
-        if (dia.selecionados.length === 0 && dia.tipo !== 'Quarta' && dia.tipo !== 'Sábado' && !dia.tipo.startsWith('Domingo')) return;
+        // Checagem de segurança para garantir que o objeto 'dia' e sua data são válidos.
+        if (!dia || !dia.data) {
+            console.warn('Item de dia inválido encontrado na escala, pulando renderização:', dia);
+            return;
+        }
+
+        // A condição que filtrava dias vazios foi removida. Agora, todos os dias de uma
+        // escala carregada serão exibidos, mesmo que vazios, permitindo a edição com drag & drop.
 
         const turnoConfig = VISUAL_CONFIG.turnos[dia.tipo] || { classe: '' };
         const cardHTML = `
@@ -373,7 +384,6 @@ export function renderEscalaEmCards(dias) {
         container.innerHTML += cardHTML;
     });
 }
-
 
 export function renderizarFiltros(dias) {
     const container = document.getElementById('escala-filtros');
@@ -396,7 +406,6 @@ export function renderizarFiltros(dias) {
             filtrarCards(filtroSelecionado);
             renderAnaliseConcentracao(filtroSelecionado);
             
-            // --- LÓGICA DE AUTO-SCROLL ---
             if (filtroSelecionado === 'all') {
                 const resultadoContainer = document.getElementById('resultadoEscala');
                 if (resultadoContainer) {
@@ -478,7 +487,7 @@ export function renderDisponibilidadeGeral() {
 }
 
 // =========================================================================
-// === SEÇÃO DE DRAG & DROP (COM AS PRIORIDADES 1 E 2 IMPLEMENTADAS) ===
+// === SEÇÃO DE DRAG & DROP ===
 // =========================================================================
 
 function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
@@ -505,7 +514,7 @@ function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
     const outrosMembrosNoCard = diaAlvo.selecionados.filter(m => m.nome !== nomeAlvo);
     let isCompativel = true;
     for (const companheiro of outrosMembrosNoCard) {
-        if (!saoCompativeis(membroArrastadoObj, companheiro)) { // <-- USA A FUNÇÃO HELPER
+        if (!saoCompativeis(membroArrastadoObj, companheiro)) {
             isCompativel = false;
             break;
         }
