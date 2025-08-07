@@ -1,28 +1,10 @@
 // js/saved-schedules-manager.js
-// VERSÃO ATUALIZADA: Renderiza filtros e análises ao carregar uma escala salva.
 
 // Importa as funções e variáveis necessárias de outros módulos.
-import {
-    salvarDados,
-    adicionarEscalaSalva,
-    excluirEscalaSalva,
-    atualizarNomeEscalaSalva,
-    escalasSalvas,
-    membros, // Importado para cálculo de participações
-    restricoes, // Importado para o Drag & Drop
-    restricoesPermanentes // Importado para o Drag & Drop
-} from './data-manager.js';
-import {
-    showToast,
-    atualizarTodasAsListas,
-    abrirModalAcaoEscala,
-    renderEscalaEmCards,
-    configurarDragAndDrop,
-    escalaAtual,
-    renderizarFiltros, // Nova importação
-    exibirIndiceEquilibrio, // Nova importação
-    renderAnaliseConcentracao // Nova importação
-} from './ui.js';
+// O 'data-manager' lida com os dados (salvar, carregar, etc.).
+// O 'ui' lida com a interface (mostrar notificações, abrir modais, renderizar cards).
+import { salvarDados, adicionarEscalaSalva, excluirEscalaSalva, atualizarNomeEscalaSalva, escalasSalvas } from './data-manager.js';
+import { showToast, atualizarTodasAsListas, abrirModalAcaoEscala, renderEscalaEmCards, configurarDragAndDrop, escalaAtual } from './ui.js';
 
 /**
  * Função auxiliar para fechar o modal de ações da escala.
@@ -47,6 +29,7 @@ export function setupSavedSchedulesListeners(auth, database) {
     const btnCancelarAcao = document.getElementById('btn-cancelar-escala-acao');
 
     // 1. Listener para o botão "Salvar Escala Atual"
+    // Abre o modal para o usuário inserir o nome da escala.
     if (btnSalvarEscala) {
         btnSalvarEscala.addEventListener('click', () => {
             if (escalaAtual.length === 0) {
@@ -58,10 +41,11 @@ export function setupSavedSchedulesListeners(auth, database) {
     }
 
     // 2. Listener delegado para a lista de escalas salvas
+    // Gerencia os cliques nos botões "Carregar", "Renomear" e "Excluir".
     if (listaEscalasSalvas) {
         listaEscalasSalvas.addEventListener('click', (e) => {
             const button = e.target.closest('button[data-action]');
-            if (!button) return;
+            if (!button) return; // Ignora cliques que não são nos botões de ação
 
             const action = button.dataset.action;
             const escalaId = button.closest('li').dataset.id;
@@ -70,43 +54,21 @@ export function setupSavedSchedulesListeners(auth, database) {
             if (!escala) return;
 
             if (action === 'load') {
-                // Renderiza os cards da escala na tela
+                // Ação de carregar é imediata, não precisa de modal.
                 renderEscalaEmCards(escala.dias);
-
-                // --- INÍCIO DA LÓGICA ADICIONADA (PRIORIDADE 1) ---
-                
-                // Recalcula as participações com base na escala carregada
-                const participacoesCarregadas = {};
-                membros.forEach(m => { participacoesCarregadas[m.nome] = { participations: 0 }; });
-                escala.dias.forEach(dia => {
-                    dia.selecionados.forEach(membro => {
-                        // Garante que o membro ainda existe antes de incrementar
-                        if (participacoesCarregadas[membro.nome]) {
-                            participacoesCarregadas[membro.nome].participations++;
-                        }
-                    });
-                });
-
-                // Renderiza os componentes da UI que dependem dos dados da escala
-                renderizarFiltros(escala.dias);
-                exibirIndiceEquilibrio(participacoesCarregadas);
-                renderAnaliseConcentracao('all');
-                
-                // Configura o Drag & Drop com os dados corretos da escala carregada
-                configurarDragAndDrop(escala.dias, participacoesCarregadas, restricoes, restricoesPermanentes);
-
-                // --- FIM DA LÓGICA ADICIONADA ---
-
+                // Reinicia os dados de justificação e restrições ao carregar uma escala salva
+                configurarDragAndDrop(escala.dias, {}, [], []);
                 showToast(`Escala "${escala.nome}" carregada.`, 'success');
                 document.getElementById('resultadoEscala').scrollIntoView({ behavior: 'smooth' });
-
             } else if (action === 'rename' || action === 'delete') {
+                // Ações de renomear e excluir abrem o modal para confirmação/input.
                 abrirModalAcaoEscala(action, escala.id, escala.nome);
             }
         });
     }
 
     // 3. Listener para o botão de confirmação DENTRO do modal
+    // Executa a ação (salvar, renomear ou excluir) com base nos dados do modal.
     if (btnConfirmarAcao) {
         btnConfirmarAcao.addEventListener('click', () => {
             const action = document.getElementById('escalaModalAction').value;
@@ -131,6 +93,7 @@ export function setupSavedSchedulesListeners(auth, database) {
                 excluirEscalaSalva(escalaId);
             }
 
+            // Após qualquer modificação, salva no Firebase e atualiza a UI.
             salvarDados(auth, database).then(() => {
                 atualizarTodasAsListas();
                 fecharModal();

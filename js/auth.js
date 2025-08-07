@@ -1,7 +1,6 @@
 //
 // MÓDULO DE AUTENTICAÇÃO (auth.js)
 // Responsável pelo registro, login, logout e gerenciamento do estado de autenticação do usuário.
-// VERSÃO ATUALIZADA: Implementa formulário unificado e fluxo de erro inteligente.
 //
 
 import { showTab } from './ui.js';
@@ -12,65 +11,37 @@ import { showTab } from './ui.js';
  * @param {Function} onLoginSuccess - A função de callback a ser executada quando o login for bem-sucedido.
  */
 export function setupAuthListeners(auth, onLoginSuccess) {
-    const btnLogin = document.getElementById('btnLogin');
-    const btnRegistro = document.getElementById('btnRegistro');
+    const formRegistro = document.getElementById('formRegistro');
+    const formLogin = document.getElementById('formLogin');
 
-    /**
-     * Função auxiliar para obter as credenciais do formulário unificado.
-     * @returns {{email: string, senha: string}}
-     */
-    const getAuthCredentials = () => {
-        const email = document.getElementById('emailAuth').value;
-        const senha = document.getElementById('senhaAuth').value;
-        return { email, senha };
-    };
-
-    /**
-     * Função auxiliar para registrar um novo usuário.
-     * @param {string} email - O e-mail para registro.
-     * @param {string} senha - A senha para registro.
-     */
-    const performRegistration = (email, senha) => {
+    // Listener para o formulário de Registro
+    formRegistro.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('emailRegistro').value;
+        const senha = document.getElementById('senhaRegistro').value;
         auth.createUserWithEmailAndPassword(email, senha)
             .then(() => {
-                alert('Usuário registrado com sucesso! Você já está logado.');
+                alert('Usuário registrado com sucesso!');
+                // Não chama onLoginSuccess aqui, pois o onAuthStateChanged fará isso.
             })
             .catch((error) => {
                 alert('Erro ao registrar: ' + error.message);
             });
-    };
+    });
 
-    // Listener para o botão de Login
-    btnLogin.addEventListener('click', () => {
-        const { email, senha } = getAuthCredentials();
-        if (!email || !senha) {
-            alert('Por favor, preencha e-mail e senha.');
-            return;
-        }
+    // Listener para o formulário de Login
+    formLogin.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('emailLogin').value;
+        const senha = document.getElementById('senhaLogin').value;
         auth.signInWithEmailAndPassword(email, senha)
             .then(() => {
                 alert('Login bem-sucedido!');
+                // Não chama onLoginSuccess aqui, pois o onAuthStateChanged fará isso.
             })
             .catch((error) => {
-                // PRIORIDADE 2: Melhoria de UX com fluxo de erro inteligente
-                if (error.code === 'auth/user-not-found') {
-                    if (confirm('Usuário não encontrado. Deseja se registrar com este e-mail e senha?')) {
-                        performRegistration(email, senha);
-                    }
-                } else {
-                    alert('Erro ao fazer login: ' + error.message);
-                }
+                alert('Erro ao fazer login: ' + error.message);
             });
-    });
-
-    // Listener para o botão de Registro
-    btnRegistro.addEventListener('click', () => {
-        const { email, senha } = getAuthCredentials();
-        if (!email || !senha) {
-            alert('Por favor, preencha e-mail e senha.');
-            return;
-        }
-        performRegistration(email, senha);
     });
 
     // Listener de Estado de Autenticação (o ponto central de controle)

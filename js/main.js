@@ -1,4 +1,7 @@
 // ARQUIVO: main.js (Versão Completa e Corrigida)
+// DESCRIÇÃO: Este arquivo foi atualizado para remover os listeners de eventos dos botões obsoletos
+// ("Exportar Dados", "Importar Dados", "Limpar Dados"). As importações de funções não utilizadas
+// do 'data-manager.js' também foram removidas para alinhar o código com a nova interface.
 
 /**
  * PONTO DE ENTRADA PRINCIPAL DA APLICAÇÃO (main.js)
@@ -10,6 +13,7 @@
  * 5. Orquestrar as chamadas entre os diferentes módulos (auth, data, ui, etc.).
  */
 
+// ETAPA 1: As importações DEVEM estar no topo do arquivo, no escopo global.
 import { setupAuthListeners, handleLogout } from './auth.js';
 import { setupGeradorEscala } from './schedule-generator.js';
 import {
@@ -18,7 +22,7 @@ import {
     adicionarMembro,
     adicionarRestricao,
     adicionarRestricaoPermanente,
-    membros
+    membros // Importa o array de membros para validação
 } from './data-manager.js';
 import {
     showTab,
@@ -30,10 +34,9 @@ import {
     renderDisponibilidadeGeral
 } from './ui.js';
 import { setupSavedSchedulesListeners } from './saved-schedules-manager.js';
-// NOVA IMPORTAÇÃO: Importa as funções de ação do novo módulo.
-import * as memberActions from './member-actions.js';
 
 
+// ETAPA 2: O código que interage com a página é envolvido pelo listener DOMContentLoaded.
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- INICIALIZAÇÃO DO FIREBASE ---
@@ -52,6 +55,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const database = firebase.database();
 
     // --- FUNÇÕES DE ORQUESTRAÇÃO ---
+
+    /**
+     * Função chamada após um login bem-sucedido.
+     * Carrega os dados do usuário e atualiza toda a interface.
+     */
     function onLoginSuccess() {
         carregarDados(auth, database, () => {
             atualizarTodasAsListas();
@@ -59,7 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Configura todos os event listeners da aplicação.
+     * Configura todos os event listeners da aplicação que não são
+     * configurados dentro de outros módulos.
      */
     function setupEventListeners() {
         
@@ -76,6 +85,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Listeners dos Botões de Ação Globais ---
         document.getElementById('btn-exportar-xlsx').addEventListener('click', exportarEscalaXLSX);
+
+        // --- Listeners dos botões de import/export/limpar dados foram removidos ---
+
         document.getElementById('logout').addEventListener('click', () => handleLogout(auth));
 
         // --- Listeners de Submissão de Formulários ---
@@ -131,44 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
             salvarDados(auth, database).then(atualizarTodasAsListas);
             e.target.reset();
         });
-
-        // --- MODIFICADO: Listeners de Ação por Delegação de Eventos ---
-        // Um único listener para a lista de membros que gerencia todas as ações.
-        document.getElementById('listaMembros').addEventListener('click', (e) => {
-            const button = e.target.closest('button[data-action]');
-            if (!button) return;
-
-            const action = button.dataset.action;
-            const index = parseInt(button.dataset.index, 10);
-
-            if (action === 'delete-member') {
-                memberActions.excluirMembro(index, auth, database);
-            } else if (action === 'manage-suspension') {
-                memberActions.abrirModalSuspensao(index);
-            }
-        });
-
-        // Listener para a lista de restrições temporárias.
-        document.getElementById('listaRestricoes').addEventListener('click', (e) => {
-            const button = e.target.closest('button[data-action="delete-restriction"]');
-            if (!button) return;
-            const index = parseInt(button.dataset.index, 10);
-            memberActions.excluirRestricao(index, auth, database);
-        });
-
-        // Listener para a lista de restrições permanentes.
-        document.getElementById('listaRestricoesPermanentes').addEventListener('click', (e) => {
-            const button = e.target.closest('button[data-action="delete-perm-restriction"]');
-            if (!button) return;
-            const index = parseInt(button.dataset.index, 10);
-            memberActions.excluirRestricaoPermanente(index, auth, database);
-        });
-
-        // Listeners para os botões do Modal de Suspensão.
-        document.getElementById('btn-salvar-suspensao').addEventListener('click', () => {
-            memberActions.salvarSuspensao(auth, database);
-        });
-        document.getElementById('btn-cancelar-suspensao').addEventListener('click', memberActions.fecharModalSuspensao);
     }
 
     // --- INICIALIZAÇÃO DA APLICAÇÃO ---
