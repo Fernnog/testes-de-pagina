@@ -59,7 +59,7 @@ export function salvarDados(auth, database) {
     const user = auth.currentUser;
     if (!user) return Promise.resolve(); // Retorna uma promessa para não quebrar a cadeia .then()
     const uid = user.uid;
-    return database.ref('users/'' + uid).set({
+    return database.ref('users/' + uid).set({
         membros: membros,
         restricoes: restricoes,
         restricoesPermanentes: restricoesPermanentes,
