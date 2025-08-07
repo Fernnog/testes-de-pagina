@@ -85,11 +85,11 @@ export function carregarDados(auth, database, onDataLoaded) {
                 restricoes = dados.restricoes || [];
                 restricoesPermanentes = dados.restricoesPermanentes || [];
                 
-                // PRIORIDADE 1: CORREÇÃO DO BUG DE CARREGAMENTO DE ESCALAS SALVAS
-                // Converte as strings de data de volta para objetos Date.
+                // CORREÇÃO: Converte strings de data em objetos Date ao carregar escalas salvas
                 escalasSalvas = (dados.escalasSalvas || []).map(escala => {
                     if (escala.dias && Array.isArray(escala.dias)) {
                         escala.dias = escala.dias.map(dia => {
+                            // Converte a string de data (formato ISO) de volta para um objeto Date
                             if (dia.data) {
                                 dia.data = new Date(dia.data);
                             }
