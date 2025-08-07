@@ -2,13 +2,110 @@
 
 import {
     membros,
+    adicionarMembro,
     excluirMembro as dmExcluirMembro,
+    adicionarRestricao,
     excluirRestricao as dmExcluirRestricao,
+    adicionarRestricaoPermanente,
     excluirRestricaoPermanente as dmExcluirRestricaoPermanente,
     salvarDados
 } from './data-manager.js';
 
-import { atualizarTodasAsListas, showToast } from './ui.js';
+import { atualizarTodasAsListas, showToast, toggleConjuge } from './ui.js';
+
+// --- AÇÕES DE CADASTRO E RESTRIÇÃO (LÓGICA MOVIDA DE main.js) ---
+
+/**
+ * Processa a submissão do formulário de cadastro de membros.
+ * @param {Event} e - O evento de submissão do formulário.
+ * @param {firebase.auth.Auth} auth - Instância de autenticação do Firebase.
+ * @param {firebase.database.Database} database - Instância do banco de dados do Firebase.
+ */
+export function handleCadastroSubmit(e, auth, database) {
+    e.preventDefault();
+    const nome = document.getElementById('nome').value;
+    const genero = document.getElementById('genero').value;
+    const conjugeParticipa = document.getElementById('conjugeParticipa').checked;
+    const nomeConjuge = conjugeParticipa ? document.getElementById('nomeConjuge').value : null;
+
+    if (nomeConjuge && !membros.some(m => m.nome === nomeConjuge)) {
+        showToast('O cônjuge deve estar cadastrado como membro!', 'error');
+        return;
+    }
+
+    adicionarMembro({
+        nome,
+        genero,
+        conjuge: nomeConjuge,
+        suspensao: { cultos: false, sabado: false, whatsapp: false }
+    });
+    
+    salvarDados(auth, database)
+        .then(() => {
+            atualizarTodasAsListas();
+            showToast('Membro cadastrado com sucesso!', 'success');
+        })
+        .catch(err => showToast(`Erro ao cadastrar membro: ${err.message}`, 'error'));
+
+    e.target.reset();
+    toggleConjuge();
+}
+
+/**
+ * Processa a submissão do formulário de restrição temporária.
+ * @param {Event} e - O evento de submissão do formulário.
+ * @param {firebase.auth.Auth} auth - Instância de autenticação do Firebase.
+ * @param {firebase.database.Database} database - Instância do banco de dados do Firebase.
+ */
+export function handleRestricaoSubmit(e, auth, database) {
+    e.preventDefault();
+    const membro = document.getElementById('membroRestricao').value;
+    const dataInicioStr = document.getElementById('dataInicio').value;
+    const dataFimStr = document.getElementById('dataFim').value;
+    const inicio = new Date(dataInicioStr + 'T12:00:00');
+    const fim = new Date(dataFimStr + 'T12:00:00');
+
+    if (!membro) { showToast('Selecione um membro!', 'warning'); return; }
+    if (fim < inicio) { showToast('A data de fim deve ser posterior à data de início!', 'error'); return; }
+
+    adicionarRestricao({ membro, inicio: inicio.toISOString(), fim: fim.toISOString() });
+    
+    salvarDados(auth, database)
+        .then(() => {
+            atualizarTodasAsListas();
+            showToast('Restrição temporária registrada.', 'success');
+        })
+        .catch(err => showToast(`Erro ao salvar restrição: ${err.message}`, 'error'));
+    
+    e.target.reset();
+}
+
+/**
+ * Processa a submissão do formulário de restrição permanente.
+ * @param {Event} e - O evento de submissão do formulário.
+ * @param {firebase.auth.Auth} auth - Instância de autenticação do Firebase.
+ * @param {firebase.database.Database} database - Instância do banco de dados do Firebase.
+ */
+export function handleRestricaoPermanenteSubmit(e, auth, database) {
+    e.preventDefault();
+    const membro = document.getElementById('membroRestricaoPermanente').value;
+    const diaSemana = document.getElementById('diaSemana').value;
+    if (!membro) { showToast('Selecione um membro!', 'warning'); return; }
+
+    adicionarRestricaoPermanente({ membro, diaSemana });
+
+    salvarDados(auth, database)
+        .then(() => {
+            atualizarTodasAsListas();
+            showToast('Restrição permanente registrada.', 'success');
+        })
+        .catch(err => showToast(`Erro ao salvar restrição: ${err.message}`, 'error'));
+
+    e.target.reset();
+}
+
+
+// --- AÇÕES DE EXCLUSÃO E SUSPENSÃO ---
 
 /**
  * Exclui um membro da lista principal.
