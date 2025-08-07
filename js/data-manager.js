@@ -84,7 +84,21 @@ export function carregarDados(auth, database, onDataLoaded) {
                 });
                 restricoes = dados.restricoes || [];
                 restricoesPermanentes = dados.restricoesPermanentes || [];
-                escalasSalvas = dados.escalasSalvas || [];
+                
+                // CORREÇÃO: Converte strings de data em objetos Date ao carregar escalas salvas
+                escalasSalvas = (dados.escalasSalvas || []).map(escala => {
+                    if (escala.dias && Array.isArray(escala.dias)) {
+                        escala.dias = escala.dias.map(dia => {
+                            // Converte a string de data (formato ISO) de volta para um objeto Date
+                            if (dia.data) {
+                                dia.data = new Date(dia.data);
+                            }
+                            return dia;
+                        });
+                    }
+                    return escala;
+                });
+
             } else {
                 // Se não há dados, zera as variáveis locais para evitar persistência de estado anterior
                 membros = [];
