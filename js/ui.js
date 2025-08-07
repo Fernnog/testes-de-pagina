@@ -212,7 +212,7 @@ export function exportarEscalaXLSX() {
 
 
 // =========================================================================
-// === SEÇÃO DE FUNÇÕES NOVAS OU MODIFICADAS (SEM ALTERAÇÕES NESTA SEÇÃO) ===
+// === SEÇÃO DE FUNÇÕES NOVAS OU MODIFICADAS (COM ALTERAÇÕES NESTA SEÇÃO) ===
 // =========================================================================
 
 function _analisarConcentracao(diasGerados) {
@@ -356,6 +356,7 @@ export function renderEscalaEmCards(dias) {
     container.innerHTML = '';
     container.classList.add('escala-container');
     dias.forEach(dia => {
+        if (!dia || !dia.data) return; // Checagem de segurança para o bug de carregamento
         if (dia.selecionados.length === 0 && dia.tipo !== 'Quarta' && dia.tipo !== 'Sábado' && !dia.tipo.startsWith('Domingo')) return;
 
         const turnoConfig = VISUAL_CONFIG.turnos[dia.tipo] || { classe: '' };
@@ -394,6 +395,19 @@ export function renderizarFiltros(dias) {
             
             filtrarCards(filtroSelecionado);
             renderAnaliseConcentracao(filtroSelecionado);
+            
+            // --- LÓGICA DE AUTO-SCROLL ---
+            if (filtroSelecionado === 'all') {
+                const resultadoContainer = document.getElementById('resultadoEscala');
+                if (resultadoContainer) {
+                    resultadoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            } else {
+                const firstVisibleCard = document.querySelector(`.escala-card[data-turno="${filtroSelecionado}"]`);
+                if (firstVisibleCard) {
+                    firstVisibleCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
         }
     });
 }
