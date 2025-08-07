@@ -10,7 +10,7 @@
  * 2. Esperar o carregamento da página (DOMContentLoaded).
  * 3. Inicializar o Firebase.
  * 4. Configurar todos os event listeners (cliques em botões, submissão de formulários).
- * 5. Orquestrar as chamadas entre os diferentes módulos (auth, data, ui, etc.).
+ * 5. Orquestrar as chamadas entre os diferentes módulos (auth, data, etc.).
  */
 
 // ETAPA 1: As importações DEVEM estar no topo do arquivo, no escopo global.
