@@ -347,29 +347,24 @@ export function exibirIndiceEquilibrio(justificationData) {
     else bar.style.background = 'linear-gradient(90deg, #28a745, #84fab0)';
 }
 
-/**
- * **FUNÇÃO CORRIGIDA**
- * Renderiza a escala em cards no container de resultados.
- * A lógica que ocultava cards vazios foi removida para garantir que
- * escalas carregadas sejam sempre exibidas corretamente.
- * @param {Array<object>} dias - O array de dias da escala a ser renderizado.
- */
 export function renderEscalaEmCards(dias) {
-    escalaAtual = dias;
+    // CORREÇÃO: Filtra os dias para garantir que todos tenham uma data válida ANTES de qualquer outra operação.
+    const diasValidos = dias.filter(dia => {
+        if (dia && dia.data instanceof Date) {
+            return true;
+        }
+        // Se a validação falhar, registra um aviso para depuração.
+        console.warn('Item de dia inválido (sem data ou com data incorreta) foi filtrado e não será renderizado:', dia);
+        return false;
+    });
+
+    // Agora, o estado e a renderização usam apenas os dados limpos.
+    escalaAtual = diasValidos;
     const container = document.getElementById('resultadoEscala');
     container.innerHTML = '';
     container.classList.add('escala-container');
 
-    dias.forEach(dia => {
-        // Checagem de segurança para garantir que o objeto 'dia' e sua data são válidos.
-        if (!dia || !dia.data) {
-            console.warn('Item de dia inválido encontrado na escala, pulando renderização:', dia);
-            return;
-        }
-
-        // A condição que filtrava dias vazios foi removida. Agora, todos os dias de uma
-        // escala carregada serão exibidos, mesmo que vazios, permitindo a edição com drag & drop.
-
+    diasValidos.forEach(dia => {
         const turnoConfig = VISUAL_CONFIG.turnos[dia.tipo] || { classe: '' };
         const cardHTML = `
             <div class="escala-card ${turnoConfig.classe}" data-id="${dia.id}" data-turno="${dia.tipo}">
