@@ -73,23 +73,38 @@ export function carregarDados(auth, database, onDataLoaded) {
     const uid = user.uid;
     database.ref('users/' + uid).once('value')
         .then((snapshot) => {
+            // Limpa os arrays de estado ANTES de preenchê-los.
+            // Isso garante que não haja dados de uma sessão anterior em caso de falha ou snapshot vazio.
+            membros.length = 0;
+            restricoes.length = 0;
+            restricoesPermanentes.length = 0;
+            escalasSalvas.length = 0;
+
             if (snapshot.exists()) {
                 const dados = snapshot.val();
-                membros = (dados.membros || []).map(m => {
+                
+                // Processa e preenche MEMBROS, mutando o array original.
+                const membrosProcessados = (dados.membros || []).map(m => {
                     if (typeof m.suspensao !== 'object' || m.suspensao === null) {
                         const isSuspendedOld = !!m.suspenso;
                         m.suspensao = { cultos: isSuspendedOld, sabado: isSuspendedOld, whatsapp: isSuspendedOld };
                     }
                     return m;
                 });
-                restricoes = dados.restricoes || [];
-                restricoesPermanentes = dados.restricoesPermanentes || [];
+                membrosProcessados.forEach(membro => membros.push(membro));
+
+                // Processa e preenche RESTRIÇÕES, mutando o array original.
+                const restricoesProcessadas = dados.restricoes || [];
+                restricoesProcessadas.forEach(restricao => restricoes.push(restricao));
+
+                // Processa e preenche RESTRIÇÕES PERMANENTES, mutando o array original.
+                const restricoesPermProcessadas = dados.restricoesPermanentes || [];
+                restricoesPermProcessadas.forEach(restricao => restricoesPermanentes.push(restricao));
                 
-                // CORREÇÃO: Converte strings de data em objetos Date ao carregar escalas salvas
-                escalasSalvas = (dados.escalasSalvas || []).map(escala => {
+                // Processa e preenche ESCALAS SALVAS, mutando o array original.
+                const escalasProcessadas = (dados.escalasSalvas || []).map(escala => {
                     if (escala.dias && Array.isArray(escala.dias)) {
                         escala.dias = escala.dias.map(dia => {
-                            // Converte a string de data (formato ISO) de volta para um objeto Date
                             if (dia.data) {
                                 dia.data = new Date(dia.data);
                             }
@@ -98,18 +113,15 @@ export function carregarDados(auth, database, onDataLoaded) {
                     }
                     return escala;
                 });
-
-            } else {
-                // Se não há dados, zera as variáveis locais para evitar persistência de estado anterior
-                membros = [];
-                restricoes = [];
-                restricoesPermanentes = [];
-                escalasSalvas = [];
+                escalasProcessadas.forEach(escala => escalasSalvas.push(escala));
             }
-            onDataLoaded(); // Callback para notificar que os dados foram carregados
+            
+            // O callback é chamado aqui, após o preenchimento (ou não) dos dados.
+            onDataLoaded();
         })
         .catch((error) => {
             console.error('Erro ao carregar dados: ', error);
-            onDataLoaded(); // Chama o callback mesmo em caso de erro para a UI não ficar travada
+            // Garante que o callback seja chamado mesmo em caso de erro para não travar a UI.
+            onDataLoaded();
         });
 }
