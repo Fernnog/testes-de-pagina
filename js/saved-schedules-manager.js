@@ -1,7 +1,7 @@
 // js/saved-schedules-manager.js
 
-import { salvarDados, adicionarEscalaSalva, excluirEscalaSalva, atualizarNomeEscalaSalva, escalasSalvas } from './data-manager.js';
-import { showToast, atualizarTodasAsListas, abrirModalAcaoEscala, renderEscalaEmCards, configurarDragAndDrop, escalaAtual } from './ui.js';
+import { salvarDados, adicionarEscalaSalva, excluirEscalaSalva, atualizarNomeEscalaSalva, escalasSalvas, membros, restricoes, restricoesPermanentes } from './data-manager.js';
+import { showToast, atualizarTodasAsListas, abrirModalAcaoEscala, renderEscalaEmCards, configurarDragAndDrop, escalaAtual, exibirIndiceEquilibrio } from './ui.js';
 
 /**
  * Fecha o modal de ações da escala (Salvar, Renomear, Excluir).
@@ -66,11 +66,42 @@ export function setupSavedSchedulesListeners(auth, database) {
             if (!escala) return;
 
             if (action === 'load') {
-                renderEscalaEmCards(escala.dias);
-                configurarDragAndDrop(escala.dias, {}, [], []);
-                showToast(`Escala "${escala.nome}" carregada.`, 'success');
+                // 1. Validar e preparar os dados da escala carregada
+                // Mapeia os dias, convertendo a string de data do Firebase para um objeto Date real.
+                const diasComDatasValidas = escala.dias
+                    .map(dia => ({ ...dia, data: new Date(dia.data) }))
+                    .filter(dia => dia.data && !isNaN(dia.data.getTime())); // Filtra qualquer dia que resulte em uma data inválida
+
+                // Se nenhum dia válido for encontrado, exibe um erro e interrompe.
+                if (diasComDatasValidas.length === 0) {
+                    showToast(`Erro: A escala "${escala.nome}" não contém dados de dias válidos.`, 'error');
+                    return;
+                }
+                
+                // 2. Recalcular os dados de análise (Índice de Equilíbrio)
+                // Cria um objeto para contar as participações de cada membro na escala carregada.
+                const justificationDataRecalculado = {};
+                membros.forEach(m => {
+                    justificationDataRecalculado[m.nome] = { participations: 0 };
+                });
+                diasComDatasValidas.forEach(dia => {
+                    dia.selecionados.forEach(membro => {
+                        if (justificationDataRecalculado[membro.nome]) {
+                            justificationDataRecalculado[membro.nome].participations++;
+                        }
+                    });
+                });
+
+                // 3. Renderizar a interface com os dados limpos e preparados
+                renderEscalaEmCards(diasComDatasValidas);
+                configurarDragAndDrop(diasComDatasValidas, justificationDataRecalculado, restricoes, restricoesPermanentes);
+                exibirIndiceEquilibrio(justificationDataRecalculado);
+
+                // 4. Fornecer feedback ao usuário
+                showToast(`Escala "${escala.nome}" carregada com sucesso.`, 'success');
                 document.getElementById('resultadoEscala').scrollIntoView({ behavior: 'smooth' });
                 _updateLoadedScheduleIndicator(escala.nome);
+
             } else if (action === 'rename' || action === 'delete') {
                 abrirModalAcaoEscala(action, escala.id, escala.nome);
             }
@@ -116,12 +147,13 @@ export function setupSavedSchedulesListeners(auth, database) {
     if (btnClearLoadedSchedule) {
         btnClearLoadedSchedule.addEventListener('click', () => {
             document.getElementById('resultadoEscala').innerHTML = '';
+            // Limpa o estado da escala atual para evitar inconsistências
             escalaAtual.length = 0; 
             document.getElementById('balanceIndexContainer').style.display = 'none';
             document.getElementById('escala-filtros').innerHTML = '';
             document.getElementById('diagnosticReportContainer').style.display = 'none';
             _updateLoadedScheduleIndicator(null);
-            showToast('Escala removida da tela.', 'info');
+            showToast('Visualização da escala limpa.', 'info');
         });
     }
 }
