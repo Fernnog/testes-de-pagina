@@ -24,30 +24,23 @@
         <button id="nav-escala"><i class="fas fa-calendar-check"></i> Geração da Escala</button>
     </nav>
 
-    <!-- Aba de Autenticação -->
+    <!-- Aba de Autenticação (MODIFICADA) -->
     <div id="auth" class="tab">
         <h2>Autenticação</h2>
-        <form id="formRegistro">
+        <!-- Formulário Unificado -->
+        <form id="formAuth" onsubmit="event.preventDefault();">
             <div class="input-group">
-                <input type="email" id="emailRegistro" required placeholder=" ">
-                <label for="emailRegistro">E-mail</label>
+                <input type="email" id="emailAuth" required placeholder=" ">
+                <label for="emailAuth">E-mail</label>
             </div>
             <div class="input-group">
-                <input type="password" id="senhaRegistro" required placeholder=" ">
-                <label for="senhaRegistro">Senha</label>
+                <input type="password" id="senhaAuth" required placeholder=" ">
+                <label for="senhaAuth">Senha</label>
             </div>
-            <button type="submit" class="secondary-button">Registrar</button>
-        </form>
-        <form id="formLogin">
-            <div class="input-group">
-                <input type="email" id="emailLogin" required placeholder=" ">
-                <label for="emailLogin">E-mail</label>
+            <div class="auth-actions">
+                <button type="button" id="btnRegistro" class="secondary-button">Registrar</button>
+                <button type="button" id="btnLogin" class="secondary-button">Fazer Login</button>
             </div>
-            <div class="input-group">
-                <input type="password" id="senhaLogin" required placeholder=" ">
-                <label for="senhaLogin">Senha</label>
-            </div>
-            <button type="submit" class="secondary-button">Login</button>
         </form>
         <button id="logout" style="display:none;">Logout</button>
     </div>
@@ -137,7 +130,7 @@
         <ul id="listaRestricoesPermanentes"></ul>
     </div>
 
-    <!-- Aba Geração da Escala -->
+    <!-- Aba Geração da Escala (MODIFICADA) -->
     <div id="escala" class="tab" style="display: none;">
         <h2>Geração da Escala</h2>
         <form id="formEscala">
@@ -176,14 +169,16 @@
             <button type="submit" class="secondary-button">Gerar Escala</button>
         </form>
         
-        <div id="escala-filtros" class="escala-filtros-container"></div>
-        
         <div id="resultadoEscala" class="escala-container"></div>
         <div id="balanceIndexContainer" style="display: none; cursor: pointer;"></div>
+        
+        <!-- NOVA POSIÇÃO DOS FILTROS -->
+        <div id="escala-filtros" class="escala-filtros-container"></div>
+        
         <div id="diagnosticReportContainer" style="display: none;"></div>
         <button id="btn-exportar-xlsx" class="secondary-button">Exportar Escala (XLSX)</button>
 
-        <!-- NOVO: Seção para Salvar e Gerenciar Escalas -->
+        <!-- Seção para Salvar e Gerenciar Escalas -->
         <div class="saved-schedules-container">
             <button id="btn-salvar-escala" class="secondary-button" style="margin-top: 20px;">Salvar Escala Atual</button>
             <h3>Escalas Salvas</h3>
@@ -217,7 +212,7 @@
         </div>
     </div>
     
-    <!-- NOVO: Modal de Ações da Escala (Salvar, Renomear, Excluir) -->
+    <!-- Modal de Ações da Escala (Salvar, Renomear, Excluir) -->
     <div id="escalaActionModal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <h3 id="escalaModalTitle">Ação da Escala</h3>
