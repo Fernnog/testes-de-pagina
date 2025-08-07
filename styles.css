@@ -784,6 +784,50 @@ footer {
     flex: 1;
 }
 
+/* NOVO: Estilos para o indicador de escala carregada */
+#loaded-schedule-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #e8f0ff;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+    border: 1px solid #4682b4;
+    color: #1a3850;
+    font-weight: 500;
+}
+
+#btn-clear-loaded-schedule {
+    background: transparent;
+    border: none;
+    color: #c82333;
+    padding: 0 8px;
+    border-radius: 50%;
+    font-size: 22px;
+    line-height: 1;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+#btn-clear-loaded-schedule:hover {
+    background-color: #fde8e8;
+    color: #dc3545;
+    transform: none;
+    box-shadow: none;
+}
+
+#btn-clear-loaded-schedule:active {
+    background-color: #fbd6d6;
+    transform: none;
+    box-shadow: none;
+}
+
+
 /* Responsividade */
 @media (max-width: 768px) {
     nav { flex-direction: column; padding: 10px; }
