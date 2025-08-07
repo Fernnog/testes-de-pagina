@@ -196,8 +196,7 @@ export function setupGeradorEscala() {
         exibirIndiceEquilibrio(justificationData);
         
         if (gerarCultos) {
-            const relatorioConcentracao = analisarConcentracao(dias);
-            renderAnaliseConcentracao(relatorioConcentracao, 'all'); 
+            renderAnaliseConcentracao('all'); 
             
             if (balanceContainer) {
                 balanceContainer.onclick = () => {
