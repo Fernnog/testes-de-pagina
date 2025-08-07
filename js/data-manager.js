@@ -1,4 +1,4 @@
-// ARQUIVO: data-manager.js (Versão Completa)
+// ARQUIVO: data-manager.js (Versão Completa e Corrigida)
 // DESCRIÇÃO: As funções 'limparDadosGlobais', 'exportarDados' e 'importarDados' foram removidas,
 // pois se tornaram obsoletas com a integração direta com o Firebase.
 // ADICIONADO: Suporte para 'escalasSalvas'.
