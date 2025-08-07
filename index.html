@@ -169,12 +169,6 @@
             <button type="submit" class="secondary-button">Gerar Escala</button>
         </form>
         
-        <!-- NOVO: Indicador de escala carregada -->
-        <div id="loaded-schedule-indicator" style="display: none;">
-            <span>Visualizando: <strong id="loaded-schedule-name"></strong></span>
-            <button id="btn-clear-loaded-schedule" title="Limpar escala da tela e gerar uma nova">×</button>
-        </div>
-        
         <div id="resultadoEscala" class="escala-container"></div>
         <div id="balanceIndexContainer" style="display: none; cursor: pointer;"></div>
         
@@ -182,6 +176,13 @@
         <div id="escala-filtros" class="escala-filtros-container"></div>
         
         <div id="diagnosticReportContainer" style="display: none;"></div>
+
+        <!-- NOVO: Indicador de Escala Carregada -->
+        <div id="loaded-schedule-indicator" style="display: none; align-items: center; justify-content: space-between; background-color: #e8f0ff; padding: 10px 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #4682b4;">
+            <span>Visualizando escala salva: <strong id="loaded-schedule-name"></strong></span>
+            <button id="btn-clear-loaded-schedule" style="background: none; border: none; font-size: 1.2em; cursor: pointer; color: #dc3545;" title="Limpar visualização da escala">&times;</button>
+        </div>
+
         <button id="btn-exportar-xlsx" class="secondary-button">Exportar Escala (XLSX)</button>
 
         <!-- Seção para Salvar e Gerenciar Escalas -->
