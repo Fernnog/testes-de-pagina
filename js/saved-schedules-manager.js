@@ -1,4 +1,4 @@
-// js/saved-schedules-manager.js
+// js/saved-schedules-manager.js (Versão Simplificada Pós-Correção)
 
 import { salvarDados, adicionarEscalaSalva, excluirEscalaSalva, atualizarNomeEscalaSalva, escalasSalvas, membros, restricoes, restricoesPermanentes } from './data-manager.js';
 import { showToast, atualizarTodasAsListas, abrirModalAcaoEscala, renderEscalaEmCards, configurarDragAndDrop, escalaAtual, exibirIndiceEquilibrio } from './ui.js';
@@ -66,20 +66,18 @@ export function setupSavedSchedulesListeners(auth, database) {
             if (!escala) return;
 
             if (action === 'load') {
-                // 1. Validar e preparar os dados da escala carregada
-                // Mapeia os dias, convertendo a string de data do Firebase para um objeto Date real.
-                const diasComDatasValidas = escala.dias
-                    .map(dia => ({ ...dia, data: new Date(dia.data) }))
-                    .filter(dia => dia.data && !isNaN(dia.data.getTime())); // Filtra qualquer dia que resulte em uma data inválida
+                // ======================================================================
+                // === CÓDIGO DE CARREGAMENTO SIMPLIFICADO ===
+                // ======================================================================
+                // A validação de data agora acontece no data-manager.js
+                const diasComDatasValidas = escala.dias;
 
-                // Se nenhum dia válido for encontrado, exibe um erro e interrompe.
-                if (diasComDatasValidas.length === 0) {
+                if (!diasComDatasValidas || diasComDatasValidas.length === 0) {
                     showToast(`Erro: A escala "${escala.nome}" não contém dados de dias válidos.`, 'error');
                     return;
                 }
                 
-                // 2. Recalcular os dados de análise (Índice de Equilíbrio)
-                // Cria um objeto para contar as participações de cada membro na escala carregada.
+                // Recalcula os dados de análise (Índice de Equilíbrio)
                 const justificationDataRecalculado = {};
                 membros.forEach(m => {
                     justificationDataRecalculado[m.nome] = { participations: 0 };
@@ -92,15 +90,17 @@ export function setupSavedSchedulesListeners(auth, database) {
                     });
                 });
 
-                // 3. Renderizar a interface com os dados limpos e preparados
+                // Renderiza a interface com os dados já validados
                 renderEscalaEmCards(diasComDatasValidas);
                 configurarDragAndDrop(diasComDatasValidas, justificationDataRecalculado, restricoes, restricoesPermanentes);
                 exibirIndiceEquilibrio(justificationDataRecalculado);
 
-                // 4. Fornecer feedback ao usuário
                 showToast(`Escala "${escala.nome}" carregada com sucesso.`, 'success');
                 document.getElementById('resultadoEscala').scrollIntoView({ behavior: 'smooth' });
                 _updateLoadedScheduleIndicator(escala.nome);
+                // ======================================================================
+                // === FIM DO CÓDIGO SIMPLIFICADO ===
+                // ======================================================================
 
             } else if (action === 'rename' || action === 'delete') {
                 abrirModalAcaoEscala(action, escala.id, escala.nome);
@@ -147,7 +147,6 @@ export function setupSavedSchedulesListeners(auth, database) {
     if (btnClearLoadedSchedule) {
         btnClearLoadedSchedule.addEventListener('click', () => {
             document.getElementById('resultadoEscala').innerHTML = '';
-            // Limpa o estado da escala atual para evitar inconsistências
             escalaAtual.length = 0; 
             document.getElementById('balanceIndexContainer').style.display = 'none';
             document.getElementById('escala-filtros').innerHTML = '';

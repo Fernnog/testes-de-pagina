@@ -1,7 +1,4 @@
-// ARQUIVO: data-manager.js (Versão Completa e Corrigida)
-// DESCRIÇÃO: As funções 'limparDadosGlobais', 'exportarDados' e 'importarDados' foram removidas,
-// pois se tornaram obsoletas com a integração direta com o Firebase.
-// ADICIONADO: Suporte para 'escalasSalvas'.
+// ARQUIVO: data-manager.js (Versão Corrigida e Robusta)
 
 // --- ESTADO DA APLICAÇÃO ---
 export let membros = [];
@@ -74,7 +71,6 @@ export function carregarDados(auth, database, onDataLoaded) {
     database.ref('users/' + uid).once('value')
         .then((snapshot) => {
             // Limpa os arrays de estado ANTES de preenchê-los.
-            // Isso garante que não haja dados de uma sessão anterior em caso de falha ou snapshot vazio.
             membros.length = 0;
             restricoes.length = 0;
             restricoesPermanentes.length = 0;
@@ -83,7 +79,7 @@ export function carregarDados(auth, database, onDataLoaded) {
             if (snapshot.exists()) {
                 const dados = snapshot.val();
                 
-                // Processa e preenche MEMBROS, mutando o array original.
+                // Processa e preenche MEMBROS
                 const membrosProcessados = (dados.membros || []).map(m => {
                     if (typeof m.suspensao !== 'object' || m.suspensao === null) {
                         const isSuspendedOld = !!m.suspenso;
@@ -93,35 +89,47 @@ export function carregarDados(auth, database, onDataLoaded) {
                 });
                 membrosProcessados.forEach(membro => membros.push(membro));
 
-                // Processa e preenche RESTRIÇÕES, mutando o array original.
+                // Processa e preenche RESTRIÇÕES
                 const restricoesProcessadas = dados.restricoes || [];
                 restricoesProcessadas.forEach(restricao => restricoes.push(restricao));
 
-                // Processa e preenche RESTRIÇÕES PERMANENTES, mutando o array original.
+                // Processa e preenche RESTRIÇÕES PERMANENTES
                 const restricoesPermProcessadas = dados.restricoesPermanentes || [];
                 restricoesPermProcessadas.forEach(restricao => restricoesPermanentes.push(restricao));
                 
-                // Processa e preenche ESCALAS SALVAS, mutando o array original.
-                const escalasProcessadas = (dados.escalasSalvas || []).map(escala => {
+                // =================================================================================
+                // === INÍCIO DA CORREÇÃO DEFINITIVA: Processamento robusto de escalas salvas ===
+                // =================================================================================
+                const escalasSalvasDoBanco = dados.escalasSalvas || [];
+                
+                const escalasProcessadas = escalasSalvasDoBanco.map(escala => {
                     if (escala.dias && Array.isArray(escala.dias)) {
-                        escala.dias = escala.dias.map(dia => {
-                            if (dia.data) {
-                                dia.data = new Date(dia.data);
-                            }
-                            return dia;
-                        });
+                        // Mapeia os dias e converte a string de data para um objeto Date.
+                        // Em seguida, filtra para garantir que apenas dias com data válida permaneçam.
+                        const diasValidos = escala.dias
+                            .map(dia => {
+                                // A data vinda do Firebase é uma string, converte para objeto Date
+                                const dataConvertida = new Date(dia.data); 
+                                return { ...dia, data: dataConvertida };
+                            })
+                            .filter(dia => dia.data && !isNaN(dia.data.getTime())); // Checa se a data é válida
+
+                        return { ...escala, dias: diasValidos };
                     }
-                    return escala;
+                    // Se a escala não tiver dias, retorna como está (ou vazia para segurança)
+                    return { ...escala, dias: [] }; 
                 });
+                
                 escalasProcessadas.forEach(escala => escalasSalvas.push(escala));
+                // ===============================================================================
+                // === FIM DA CORREÇÃO DEFINITIVA ===
+                // ===============================================================================
             }
             
-            // O callback é chamado aqui, após o preenchimento (ou não) dos dados.
             onDataLoaded();
         })
         .catch((error) => {
             console.error('Erro ao carregar dados: ', error);
-            // Garante que o callback seja chamado mesmo em caso de erro para não travar a UI.
             onDataLoaded();
         });
 }
