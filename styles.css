@@ -156,7 +156,6 @@ form {
 #formEscala .input-group,
 #cadastro .input-group,
 #suspensaoModal .input-group,
-/* NOVO: Estilo para o filtro do painel de disponibilidade */
 #disponibilidadeContainer .input-group {
     display: flex;
     align-items: center;
@@ -167,7 +166,6 @@ form {
 #formEscala input[type="radio"],
 #cadastro input[type="checkbox"],
 #suspensaoModal input[type="checkbox"],
-/* NOVO: Estilo para o filtro do painel de disponibilidade */
 #disponibilidadeContainer input[type="checkbox"] {
     accent-color: #ff8c00;
     width: 18px;
@@ -495,7 +493,6 @@ button:active {
     margin-left: 15px;
 }
 
-/* NOVO: Estilo para emojis de status para garantir consistência */
 .status-icon.status-emoji {
     font-family: 'Roboto', sans-serif;
     vertical-align: middle;
@@ -516,7 +513,6 @@ button:active {
     margin-top: 20px;
 }
 
-/* Adiciona a lógica para ocultar a coluna de disponíveis */
 #disponibilidadeContainer.hide-available .disponiveis {
     display: none;
 }
@@ -641,22 +637,6 @@ footer {
 }
 
 
-/* Responsividade */
-@media (max-width: 768px) {
-    nav { flex-direction: column; padding: 10px; }
-    nav button { width: 100%; margin: 8px 0; padding: 12px 20px; }
-    .tab { padding: 15px; border-left-width: 3px; }
-    form { padding: 15px; }
-    .input-group { margin-top: 15px; }
-    #formEscala .input-group { flex-direction: row; align-items: center; } /* Mantém radio na linha */
-    ul li { flex-direction: column; align-items: flex-start; gap: 10px; }
-    button, .secondary-button { width: 100%; }
-    .logo { max-width: 120px; }
-    #listaMembros li { gap: 5px; }
-    #listaMembros li > div:last-child { flex-direction: row; width: 100%; }
-    #listaMembros li > div:last-child button { flex-grow: 1; }
-}
-
 /* ===== ESTILOS PARA SUSPENSÃO E MODAL ===== */
 .suspended-member { background-color: #e9ecef !important; opacity: 0.7; }
 .suspended-text { text-decoration: line-through; color: #6c757d; }
@@ -690,14 +670,14 @@ footer {
 }
 .toast.success { background: linear-gradient(45deg, #28a745, #34d058); }
 .toast.warning { background: linear-gradient(45deg, #ffc107, #ffdb58); color: #343a40; }
-.toast.error { background: linear-gradient(45deg, #dc3545, #c82333); } /* Novo para validação */
+.toast.error { background: linear-gradient(45deg, #dc3545, #c82333); } 
 @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
 @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; transform: translateX(100%); } }
 
 #balanceIndexContainer {
     margin: 25px 0; padding: 20px; background-color: #f8f9fa;
     border-radius: 8px; text-align: center;
-    cursor: pointer; /* MODIFICADO: Indica que é clicável para rolar */
+    cursor: pointer;
 }
 #balanceIndexContainer h4 {
     margin-top: 0; margin-bottom: 15px; font-size: 1.1em; color: #495057; background: none; -webkit-text-fill-color: initial; text-shadow: none;
@@ -713,17 +693,15 @@ footer {
     color: white; font-weight: bold; font-size: 0.9em;
 }
 
-/* MODIFICADO: Estilo para o PAINEL DE ANÁLISE INTEGRADO */
 #diagnosticReportContainer {
-    display: none; /* Inicia oculto e será exibido via JS */
+    display: none; 
     margin-top: 30px;
     padding: 25px;
-    background-color: #fff9f2; /* Um fundo suave para diferenciar */
+    background-color: #fff9f2; 
     border: 1px solid #ffebcc;
     border-radius: 8px;
     transition: all 0.3s ease-in-out;
 }
-/* MODIFICADO: Adiciona layout flex para os blocos de turno */
 #diagnosticReportContainer .analysis-content {
     display: flex;
     flex-wrap: wrap;
@@ -731,10 +709,9 @@ footer {
     justify-content: center;
 }
 
-/* MODIFICADO: Adapta o bloco de análise para o novo layout */
 #diagnosticReportContainer .analise-turno-bloco {
     flex: 1;
-    min-width: 300px; /* Garante que não fiquem muito espremidos */
+    min-width: 300px; 
     margin-bottom: 0;
     background-color: #f8f9fa;
     padding: 15px;
@@ -757,10 +734,7 @@ footer {
     margin: 8px 0;
 }
 
-/* Remove estilos do modal que não são mais necessários para análise */
-.modal-header, .close-button, .modal-body {
-    /* Estilos mantidos para o modal de suspensão, mas não afetam mais a análise */
-}
+.modal-header, .close-button, .modal-body { }
 
 /* ===== ESTILOS PARA ESCALAS SALVAS ===== */
 .saved-schedules-container {
@@ -801,37 +775,31 @@ footer {
     margin-top: 0; /* Ajuste para o modal */
 }
 
-/* NOVO: Estilo para o indicador de escala carregada */
-.loaded-schedule-indicator {
+/* NOVO: Estilos para o formulário de autenticação unificado */
+.auth-actions {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 20px;
-    margin-bottom: 20px;
-    background-color: #fff3e0;
-    border-left: 5px solid #ff8c00;
-    border-radius: 8px;
-    color: #af4d00;
-    font-size: 1.1em;
+    gap: 15px;
+}
+.auth-actions button {
+    flex: 1;
 }
 
-.loaded-schedule-indicator strong {
-    font-weight: 700;
-}
-
-#btn-clear-loaded-schedule {
-    background: transparent;
-    border: none;
-    font-size: 1.8em;
-    color: #af4d00;
-    cursor: pointer;
-    padding: 0 10px;
-    line-height: 1;
-    transition: color 0.2s, transform 0.2s;
-}
-
-#btn-clear-loaded-schedule:hover {
-    color: #dc3545;
-    transform: scale(1.1);
-    box-shadow: none;
+/* Responsividade */
+@media (max-width: 768px) {
+    nav { flex-direction: column; padding: 10px; }
+    nav button { width: 100%; margin: 8px 0; padding: 12px 20px; }
+    .tab { padding: 15px; border-left-width: 3px; }
+    form { padding: 15px; }
+    .input-group { margin-top: 15px; }
+    #formEscala .input-group { flex-direction: row; align-items: center; } /* Mantém radio na linha */
+    ul li { flex-direction: column; align-items: flex-start; gap: 10px; }
+    button, .secondary-button { width: 100%; }
+    .logo { max-width: 120px; }
+    #listaMembros li { gap: 5px; }
+    #listaMembros li > div:last-child { flex-direction: row; width: 100%; }
+    #listaMembros li > div:last-child button { flex-grow: 1; }
+    /* NOVO: Regra responsiva para os botões de autenticação */
+    .auth-actions {
+        flex-direction: column;
+    }
 }
