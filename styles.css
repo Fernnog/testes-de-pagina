@@ -20,7 +20,7 @@ header {
     height: auto;
     display: block;
     margin: 0 auto;
-    animation: glow 2s infinite alternate;
+    /* animation: glow 2s infinite alternate; */
 }
 
 header h2 {
@@ -30,10 +30,12 @@ header h2 {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
 
+/*
 @keyframes glow {
     from { box-shadow: 0 0 10px rgba(255, 140, 0, 0.5); }
     to { box-shadow: 0 0 20px rgba(255, 140, 0, 1); }
 }
+*/
 
 /* Navegação */
 nav {
@@ -846,4 +848,49 @@ footer {
     .auth-actions {
         flex-direction: column;
     }
+}
+
+/* ESTILOS ADICIONADOS PARA AS MELHORIAS */
+.analysis-details {
+    font-size: 0.9em;
+    color: #6c757d;
+    margin-left: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.turn-detail {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    cursor: help; /* Indica que há uma dica de ferramenta */
+}
+
+.turn-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0; /* Impede que o círculo encolha */
+}
+
+.indicator-quarta { background-color: #17a2b8; }
+.indicator-domingo-manha { background-color: #ffc107; }
+.indicator-domingo-noite { background-color: #6f42c1; }
+.indicator-sabado { background-color: #28a745; }
+.indicator-oracao { background-color: #fd7e14; }
+
+.balance-warning {
+    color: #ff8c00; /* Laranja para atenção */
+    margin-left: 8px;
+    font-size: 1.1em;
+    cursor: help;
+}
+
+#diagnosticReportContainer .analise-turno-bloco ul li > span {
+   display: flex;
+   align-items: center;
+   flex-wrap: wrap;
+   gap: 5px;
 }
