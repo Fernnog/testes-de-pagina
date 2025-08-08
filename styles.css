@@ -595,7 +595,7 @@ button:active {
     letter-spacing: 1px;
 }
 
-#btn-exportar-xlsx:hover {
+#btn-exportar-xlsx:hover, #btn-importar-xlsx:hover {
     transform: translateY(-3px);
     box-shadow: 0 0 15px rgba(23, 162, 184, 0.7);
 }
