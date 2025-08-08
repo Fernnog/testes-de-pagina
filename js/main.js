@@ -16,14 +16,18 @@
 // ETAPA 1: As importações DEVEM estar no topo do arquivo, no escopo global.
 import { setupAuthListeners, handleLogout } from './auth.js';
 import { setupGeradorEscala } from './schedule-generator.js';
-import { carregarDados, salvarDados, membros } from './data-manager.js';
+import { carregarDados, salvarDados, membros, restricoes, restricoesPermanentes } from './data-manager.js';
 import {
     showTab,
     toggleConjuge,
     atualizarTodasAsListas,
     setupUiListeners,
     exportarEscalaXLSX,
-    renderDisponibilidadeGeral
+    renderDisponibilidadeGeral,
+    showToast,
+    renderEscalaEmCards,
+    configurarDragAndDrop,
+    exibirIndiceEquilibrio
 } from './ui.js';
 import { setupSavedSchedulesListeners } from './saved-schedules-manager.js';
 import {
@@ -117,13 +121,52 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('formRestricaoPermanente').addEventListener('submit', (e) => {
             handleRestricaoPermanenteSubmit(e, auth, database);
         });
-    }
 
-    // --- INICIALIZAÇÃO DA APLICAÇÃO ---
-    setupAuthListeners(auth, onLoginSuccess);
-    setupGeradorEscala();
-    setupUiListeners();
-    setupEventListeners();
-    setupSavedSchedulesListeners(auth, database);
-    exposeFunctionsToGlobalScope();
-});
+        // --- Listeners para Importação de Escala ---
+        const btnImportar = document.getElementById('btn-importar-xlsx');
+        const inputImportar = document.getElementById('input-importar-xlsx');
+
+        if (btnImportar) {
+            btnImportar.addEventListener('click', () => {
+                inputImportar.click(); // Aciona o input de arquivo escondido
+            });
+        }
+
+        if (inputImportar) {
+            inputImportar.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+                        // Transforma os dados da planilha para a estrutura interna da aplicação
+                        const diasTransformados = jsonData.map((row, index) => {
+                            // Validação básica da linha
+                            if (!row.Data || !row.Turno) return null;
+
+                            const [day, month, year] = row.Data.split('/');
+                            const dataObj = new Date(year, month - 1, day);
+
+                            const selecionados = [];
+                            // Loop para pegar todos os membros, não importa quantos sejam
+                            let i = 1;
+                            while (row[`Membro ${i}`]) {
+                                const nomeMembro = row[`Membro ${i}`].trim();
+                                // Encontra o objeto completo do membro para manter a consistência
+                                const membroObj = membros.find(m => m.nome === nomeMembro);
+                                if (membroObj) {
+                                    selecionados.push(membroObj);
+                                }
+                                i++;
+                            }
+                            
+                            return {
+                                id: `importado-${index}`,
+       
