@@ -61,3 +61,18 @@ export function checkMemberAvailability(membro, turno, data) {
     // 4. Se passou por todas as verificações, está disponível.
     return { type: 'disponivel' };
 }
+
+/**
+ * Verifica se dois membros são compatíveis para formar uma dupla (mesmo gênero ou cônjuges).
+ * @param {object} membroA - O primeiro membro.
+ * @param {object} membroB - O segundo membro.
+ * @returns {boolean}
+ */
+export function saoCompativeis(membroA, membroB) {
+    if (!membroA || !membroB) return false;
+    return (
+        membroA.genero === membroB.genero ||
+        membroA.conjuge === membroB.nome ||
+        membroB.conjuge === membroA.nome
+    );
+}
