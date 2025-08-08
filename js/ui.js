@@ -1,19 +1,27 @@
 // js/ui.js
 
 import { membros, restricoes, restricoesPermanentes, escalasSalvas } from './data-manager.js';
-import { saoCompativeis } from './schedule-generator.js';
 
 // =========================================================
 // === SEÇÃO DE CONFIGURAÇÃO E ESTADO ===
 // =========================================================
 
+export function saoCompativeis(membroA, membroB) {
+    if (!membroA || !membroB) return false;
+    return (
+        membroA.genero === membroB.genero ||
+        membroA.conjuge === membroB.nome ||
+        membroB.conjuge === membroA.nome
+    );
+}
+
 const VISUAL_CONFIG = {
     turnos: {
-        'Quarta':              { classe: 'turno-quarta' },
-        'Domingo Manhã':       { classe: 'turno-domingo-manha' },
-        'Domingo Noite':       { classe: 'turno-domingo-noite' },
-        'Sábado':              { classe: 'turno-sabado' },
-        'Oração no WhatsApp':  { classe: 'turno-oracao' }
+        'Quarta':              { cardClass: 'turno-quarta', indicatorClass: 'indicator-quarta' },
+        'Domingo Manhã':       { cardClass: 'turno-domingo-manha', indicatorClass: 'indicator-domingo-manha' },
+        'Domingo Noite':       { cardClass: 'turno-domingo-noite', indicatorClass: 'indicator-domingo-noite' },
+        'Sábado':              { cardClass: 'turno-sabado', indicatorClass: 'indicator-sabado' },
+        'Oração no WhatsApp':  { cardClass: 'turno-oracao', indicatorClass: 'indicator-oracao' }
     },
     status: {
         disponivel:   { type: 'fa', value: 'fa-check-circle',   classe: 'status-disponivel',    titulo: 'Disponível para este turno' },
@@ -267,27 +275,57 @@ export function renderAnaliseConcentracao(filtro = 'all') {
     if (filtro === 'all') {
         const participacoesGlobais = {};
         membros.forEach(m => {
-            participacoesGlobais[m.nome] = 0;
+            participacoesGlobais[m.nome] = { total: 0 };
         });
 
         escalaAtual.forEach(dia => {
             dia.selecionados.forEach(membro => {
-                if (participacoesGlobais[membro.nome] !== undefined) {
-                    participacoesGlobais[membro.nome]++;
+                const nomeMembro = membro.nome;
+                if (participacoesGlobais[nomeMembro]) {
+                    participacoesGlobais[nomeMembro].total++;
+                    participacoesGlobais[nomeMembro][dia.tipo] = (participacoesGlobais[nomeMembro][dia.tipo] || 0) + 1;
                 }
             });
         });
 
         const listaMembrosHtml = Object.entries(participacoesGlobais)
-            .sort(([, a], [, b]) => b - a)
-            .map(([nome, count]) => `<li><span><strong>${nome}:</strong> ${count} vez(es)</span></li>`)
+            .sort(([, a], [, b]) => b.total - a.total)
+            .map(([nome, dados]) => {
+                let maxTurnoCount = 0;
+                const dadosTurnos = Object.entries(dados).filter(([key]) => key !== 'total');
+                
+                dadosTurnos.forEach(([, contagem]) => {
+                    if (contagem > maxTurnoCount) maxTurnoCount = contagem;
+                });
+
+                const isUnbalanced = dados.total > 2 && (maxTurnoCount / dados.total > 0.7);
+                const balanceAlertHtml = isUnbalanced 
+                    ? `<i class="fas fa-exclamation-triangle balance-warning" title="Atenção: Participação concentrada em um único tipo de turno."></i>` 
+                    : '';
+
+                const breakdownHtml = dadosTurnos
+                    .map(([turno, contagem]) => {
+                        const indicatorClass = VISUAL_CONFIG.turnos[turno]?.indicatorClass || '';
+                        return `<span class="turn-detail" title="${contagem} participação(ões) em: ${turno}">
+                                    <span class="turn-indicator ${indicatorClass}"></span> ${contagem}
+                                </span>`;
+                    }).join('');
+
+                return `<li>
+                            <span>
+                                <strong>${nome}:</strong> ${dados.total} vez(es)
+                                ${balanceAlertHtml}
+                            </span>
+                            ${breakdownHtml ? `<div class="analysis-details">(${breakdownHtml})</div>` : ''}
+                        </li>`;
+            })
             .join('');
 
         contentHTML = `
             <div class="analysis-content">
                 <div class="analise-turno-bloco">
                     <h5>Análise Global Consolidada</h5>
-                    <p>Total de participações de cada membro em todos os turnos.</p>
+                    <p>Total de participações e detalhamento por turno. Passe o mouse sobre os números para ver os detalhes.</p>
                     <ul>${listaMembrosHtml}</ul>
                 </div>
             </div>`;
@@ -348,26 +386,23 @@ export function exibirIndiceEquilibrio(justificationData) {
 }
 
 export function renderEscalaEmCards(dias) {
-    // CORREÇÃO: Filtra os dias para garantir que todos tenham uma data válida ANTES de qualquer outra operação.
     const diasValidos = dias.filter(dia => {
         if (dia && dia.data instanceof Date) {
             return true;
         }
-        // Se a validação falhar, registra um aviso para depuração.
         console.warn('Item de dia inválido (sem data ou com data incorreta) foi filtrado e não será renderizado:', dia);
         return false;
     });
 
-    // Agora, o estado e a renderização usam apenas os dados limpos.
     escalaAtual = diasValidos;
     const container = document.getElementById('resultadoEscala');
     container.innerHTML = '';
     container.classList.add('escala-container');
 
     diasValidos.forEach(dia => {
-        const turnoConfig = VISUAL_CONFIG.turnos[dia.tipo] || { classe: '' };
+        const turnoConfig = VISUAL_CONFIG.turnos[dia.tipo] || { cardClass: '' };
         const cardHTML = `
-            <div class="escala-card ${turnoConfig.classe}" data-id="${dia.id}" data-turno="${dia.tipo}">
+            <div class="escala-card ${turnoConfig.cardClass}" data-id="${dia.id}" data-turno="${dia.tipo}">
                 <div class="escala-card__header">
                     <h4>${dia.tipo}</h4>
                     <span>${dia.data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
