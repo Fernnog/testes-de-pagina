@@ -1,19 +1,11 @@
 // js/ui.js
 
 import { membros, restricoes, restricoesPermanentes, escalasSalvas } from './data-manager.js';
+import { saoCompativeis } from './availability.js'; // Importação corrigida
 
 // =========================================================
 // === SEÇÃO DE CONFIGURAÇÃO E ESTADO ===
 // =========================================================
-
-export function saoCompativeis(membroA, membroB) {
-    if (!membroA || !membroB) return false;
-    return (
-        membroA.genero === membroB.genero ||
-        membroA.conjuge === membroB.nome ||
-        membroB.conjuge === membroA.nome
-    );
-}
 
 const VISUAL_CONFIG = {
     turnos: {
@@ -238,8 +230,8 @@ function _analisarConcentracao(diasGerados) {
                 isDisponivel = false;
                 status = { type: 'suspenso' };
             } else if (restricoesPermanentes.some(r => r.membro === membro.nome && r.diaSemana === turno)) {
-                isDisponivel = false;
                 status = { type: 'permanente' };
+                isDisponivel = false;
             }
             
             if (isDisponivel) {
@@ -331,6 +323,7 @@ export function renderAnaliseConcentracao(filtro = 'all') {
             </div>`;
 
     } else {
+        // Lógica para filtros específicos
         const turnosParaRenderizar = [filtro];
         contentHTML = turnosParaRenderizar
             .filter(turno => analise[turno])
@@ -339,20 +332,10 @@ export function renderAnaliseConcentracao(filtro = 'all') {
                 const listaMembrosHtml = dados.membrosDoTurno.map(membro => {
                     const statusConfig = VISUAL_CONFIG.status[membro.status.type];
                     const statusIcon = getStatusIconHTML(statusConfig);
-                    return `
-                        <li>
-                            <span><strong>${membro.nome}:</strong> ${membro.participacoes} vez(es)</span>
-                            ${statusIcon}
-                        </li>`;
+                    return `<li><span><strong>${membro.nome}:</strong> ${membro.participacoes} vez(es)</span>${statusIcon}</li>`;
                 }).join('');
-                return `
-                    <div class="analise-turno-bloco">
-                        <h5>Análise: ${turno}</h5>
-                        <p>Total de participações: <strong>${dados.totalParticipacoesNoTurno}</strong> | Membros disponíveis: <strong>${dados.membrosDisponiveis}</strong></p>
-                        <ul>${listaMembrosHtml || '<li>Nenhuma análise disponível.</li>'}</ul>
-                    </div>`;
+                return `<div class="analise-turno-bloco"><h5>Análise: ${turno}</h5><p>Total de participações: <strong>${dados.totalParticipacoesNoTurno}</strong> | Membros disponíveis: <strong>${dados.membrosDisponiveis}</strong></p><ul>${listaMembrosHtml || '<li>Nenhuma análise disponível.</li>'}</ul></div>`;
             }).join('');
-        
         contentHTML = contentHTML ? `<div class="analysis-content">${contentHTML}</div>` : '';
     }
 
@@ -360,39 +343,11 @@ export function renderAnaliseConcentracao(filtro = 'all') {
     container.style.display = contentHTML ? 'block' : 'none';
 }
 
-
-export function exibirIndiceEquilibrio(justificationData) {
-    justificationDataAtual = justificationData;
-    const container = document.getElementById('balanceIndexContainer');
-    const counts = Object.values(justificationData).map(p => p.participations);
-    if (counts.length < 2) { container.style.display = 'none'; return; }
-    const media = counts.reduce((sum, val) => sum + val, 0) / counts.length;
-    if (media === 0) { container.style.display = 'none'; return; }
-    const desvioPadrao = Math.sqrt(counts.map(x => Math.pow(x - media, 2)).reduce((a, b) => a + b) / counts.length);
-    const score = Math.max(0, 100 - (desvioPadrao * 30));
-    container.innerHTML = `
-        <h4>Índice de Equilíbrio da Escala</h4>
-        <div class="balance-bar-background">
-            <div class="balance-bar-foreground" style="width: ${score.toFixed(1)}%;" id="balanceBar">
-                ${score.toFixed(1)}%
-            </div>
-        </div>
-        <small style="margin-top: 10px; display: inline-block;">Clique aqui para rolar até a análise detalhada.</small>`;
-    container.style.display = 'block';
-    const bar = document.getElementById('balanceBar');
-    if (score < 50) bar.style.background = 'linear-gradient(90deg, #dc3545, #ff7e5f)';
-    else if (score < 75) bar.style.background = 'linear-gradient(90deg, #ffc107, #feca57)';
-    else bar.style.background = 'linear-gradient(90deg, #28a745, #84fab0)';
-}
-
 export function renderEscalaEmCards(dias) {
-    const diasValidos = dias.filter(dia => {
-        if (dia && dia.data instanceof Date) {
-            return true;
-        }
-        console.warn('Item de dia inválido (sem data ou com data incorreta) foi filtrado e não será renderizado:', dia);
-        return false;
-    });
+    const diasValidos = dias.filter(dia => dia && dia.data instanceof Date);
+    if (dias.length !== diasValidos.length) {
+        console.warn('Itens de dia inválidos foram filtrados e não serão renderizados.');
+    }
 
     escalaAtual = diasValidos;
     const container = document.getElementById('resultadoEscala');
@@ -544,6 +499,7 @@ function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
     const outrosMembrosNoCard = diaAlvo.selecionados.filter(m => m.nome !== nomeAlvo);
     let isCompativel = true;
     for (const companheiro of outrosMembrosNoCard) {
+        // Usa a função saoCompativeis importada de availability.js
         if (!saoCompativeis(membroArrastadoObj, companheiro)) {
             isCompativel = false;
             break;

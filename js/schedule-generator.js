@@ -1,6 +1,8 @@
+// ARQUIVO: schedule-generator.js 
+
 import { membros, restricoes, restricoesPermanentes } from './data-manager.js';
-import { exibirIndiceEquilibrio, renderEscalaEmCards, renderAnaliseConcentracao, renderizarFiltros, configurarDragAndDrop, saoCompativeis } from './ui.js';
-import { checkMemberAvailability } from './availability.js';
+import { exibirIndiceEquilibrio, renderEscalaEmCards, renderAnaliseConcentracao, renderizarFiltros, configurarDragAndDrop } from './ui.js';
+import { checkMemberAvailability, saoCompativeis } from './availability.js';
 
 function weightedRandom(weights) {
     let random = Math.random();
@@ -157,6 +159,7 @@ export function setupGeradorEscala() {
                     if (primeiro) {
                         const poolParaSegundo = membrosDisponiveis.filter(m => m.nome !== primeiro.nome);
                         
+                        // LÓGICA ATUALIZADA: USA A FUNÇÃO HELPER saoCompativeis
                         const membrosCompatíveis = poolParaSegundo.filter(m => saoCompativeis(m, primeiro));
                         
                         const poolFinal = membrosCompatíveis.length > 0 ? membrosCompatíveis : poolParaSegundo;
