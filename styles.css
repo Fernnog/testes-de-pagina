@@ -20,7 +20,6 @@ header {
     height: auto;
     display: block;
     margin: 0 auto;
-    /* animation: glow 2s infinite alternate; -- REMOVIDO */
 }
 
 header h2 {
@@ -29,11 +28,6 @@ header h2 {
     font-weight: bold;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
-
-/* @keyframes glow {
-    from { box-shadow: 0 0 10px rgba(255, 140, 0, 0.5); }
-    to { box-shadow: 0 0 20px rgba(255, 140, 0, 1); }
-} -- REMOVIDO */
 
 /* Navegação */
 nav {
@@ -734,54 +728,6 @@ footer {
     margin: 8px 0;
 }
 
-/* INÍCIO DAS NOVAS REGRAS DE ESTILO */
-
-#diagnosticReportContainer .analise-turno-bloco ul li > span {
-   display: flex;
-   align-items: center;
-   flex-wrap: wrap;
-   gap: 5px;
-}
-
-.analysis-details {
-    font-size: 0.9em;
-    color: #6c757d;
-    margin-left: 15px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
-}
-
-.turn-detail {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    cursor: help;
-}
-
-.turn-indicator {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    flex-shrink: 0;
-}
-
-.indicator-quarta { background-color: #17a2b8; }
-.indicator-domingo-manha { background-color: #ffc107; }
-.indicator-domingo-noite { background-color: #6f42c1; }
-.indicator-sabado { background-color: #28a745; }
-.indicator-oracao { background-color: #fd7e14; }
-
-.balance-warning {
-    color: #ff8c00;
-    margin-left: 8px;
-    font-size: 1.1em;
-    cursor: help;
-}
-
-/* FIM DAS NOVAS REGRAS DE ESTILO */
-
 .modal-header, .close-button, .modal-body { }
 
 /* ===== ESTILOS PARA ESCALAS SALVAS ===== */
@@ -894,4 +840,49 @@ footer {
     .auth-actions {
         flex-direction: column;
     }
+}
+
+/* ===== NOVOS ESTILOS PARA ANÁLISE DE ESCALA DETALHADA ===== */
+.analysis-details {
+    font-size: 0.9em;
+    color: #6c757d;
+    margin-left: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.turn-detail {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    cursor: help;
+}
+
+.turn-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.indicator-quarta { background-color: #17a2b8; }
+.indicator-domingo-manha { background-color: #ffc107; }
+.indicator-domingo-noite { background-color: #6f42c1; }
+.indicator-sabado { background-color: #28a745; }
+.indicator-oracao { background-color: #fd7e14; }
+
+.balance-warning {
+    color: #ff8c00;
+    margin-left: 8px;
+    font-size: 1.1em;
+    cursor: help;
+}
+
+#diagnosticReportContainer .analise-turno-bloco ul li > span {
+   display: flex;
+   align-items: center;
+   flex-wrap: wrap;
+   gap: 5px;
 }
