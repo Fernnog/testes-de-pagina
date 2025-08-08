@@ -1,33 +1,15 @@
-// ARQUIVO: main.js (Versão Completa e Corrigida)
-// DESCRIÇÃO: Este arquivo foi atualizado para remover os listeners de eventos dos botões obsoletos
-// ("Exportar Dados", "Importar Dados", "Limpar Dados"). As importações de funções não utilizadas
-// do 'data-manager.js' também foram removidas para alinhar o código com a nova interface.
+// ARQUIVO: main.js (Versão Final e Estável)
 
-/**
- * PONTO DE ENTRADA PRINCIPAL DA APLICAÇÃO (main.js)
- * Responsabilidades:
- * 1. Importar todos os outros módulos.
- * 2. Esperar o carregamento da página (DOMContentLoaded).
- * 3. Inicializar o Firebase.
- * 4. Configurar todos os event listeners (cliques em botões, submissão de formulários).
- * 5. Orquestrar as chamadas entre os diferentes módulos (auth, data, ui, etc.).
- */
-
-// ETAPA 1: As importações DEVEM estar no topo do arquivo, no escopo global.
 import { setupAuthListeners, handleLogout } from './auth.js';
 import { setupGeradorEscala } from './schedule-generator.js';
-import { carregarDados, salvarDados, membros, restricoes, restricoesPermanentes } from './data-manager.js';
+import { carregarDados, salvarDados } from './data-manager.js';
 import {
     showTab,
     toggleConjuge,
     atualizarTodasAsListas,
     setupUiListeners,
     exportarEscalaXLSX,
-    renderDisponibilidadeGeral,
-    showToast,
-    renderEscalaEmCards,
-    configurarDragAndDrop,
-    exibirIndiceEquilibrio
+    renderDisponibilidadeGeral
 } from './ui.js';
 import { setupSavedSchedulesListeners } from './saved-schedules-manager.js';
 import {
@@ -41,9 +23,10 @@ import {
     salvarSuspensao,
     fecharModalSuspensao
 } from './member-actions.js';
+// Importa a nova função do arquivo isolado
+import { setupXLSXImporter } from './file-importer.js';
 
 
-// ETAPA 2: O código que interage com a página é envolvido pelo listener DOMContentLoaded.
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- INICIALIZAÇÃO DO FIREBASE ---
@@ -62,21 +45,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const database = firebase.database();
 
     // --- FUNÇÕES DE ORQUESTRAÇÃO ---
-
-    /**
-     * Função chamada após um login bem-sucedido.
-     * Carrega os dados do usuário e atualiza toda a interface.
-     */
     function onLoginSuccess() {
         carregarDados(auth, database, () => {
             atualizarTodasAsListas();
         });
     }
 
-    /**
-     * Disponibiliza funções dos módulos no escopo global (window) para que
-     * possam ser chamadas pelos atributos `onclick` no HTML.
-     */
     function exposeFunctionsToGlobalScope() {
         window.excluirMembro = (index) => excluirMembro(index, auth, database);
         window.excluirRestricao = (index) => excluirRestricao(index, auth, database);
@@ -84,10 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.abrirModalSuspensao = abrirModalSuspensao;
     }
 
-    /**
-     * Configura todos os event listeners da aplicação que não são
-     * configurados dentro de outros módulos.
-     */
     function setupEventListeners() {
         
         // --- Listeners da Barra de Navegação ---
@@ -121,52 +91,15 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('formRestricaoPermanente').addEventListener('submit', (e) => {
             handleRestricaoPermanenteSubmit(e, auth, database);
         });
+    }
 
-        // --- Listeners para Importação de Escala ---
-        const btnImportar = document.getElementById('btn-importar-xlsx');
-        const inputImportar = document.getElementById('input-importar-xlsx');
-
-        if (btnImportar) {
-            btnImportar.addEventListener('click', () => {
-                inputImportar.click(); // Aciona o input de arquivo escondido
-            });
-        }
-
-        if (inputImportar) {
-            inputImportar.addEventListener('change', (event) => {
-                const file = event.target.files[0];
-                if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    try {
-                        const data = new Uint8Array(e.target.result);
-                        const workbook = XLSX.read(data, { type: 'array' });
-                        const firstSheetName = workbook.SheetNames[0];
-                        const worksheet = workbook.Sheets[firstSheetName];
-                        const jsonData = XLSX.utils.sheet_to_json(worksheet);
-
-                        // Transforma os dados da planilha para a estrutura interna da aplicação
-                        const diasTransformados = jsonData.map((row, index) => {
-                            // Validação básica da linha
-                            if (!row.Data || !row.Turno) return null;
-
-                            const [day, month, year] = row.Data.split('/');
-                            const dataObj = new Date(year, month - 1, day);
-
-                            const selecionados = [];
-                            // Loop para pegar todos os membros, não importa quantos sejam
-                            let i = 1;
-                            while (row[`Membro ${i}`]) {
-                                const nomeMembro = row[`Membro ${i}`].trim();
-                                // Encontra o objeto completo do membro para manter a consistência
-                                const membroObj = membros.find(m => m.nome === nomeMembro);
-                                if (membroObj) {
-                                    selecionados.push(membroObj);
-                                }
-                                i++;
-                            }
-                            
-                            return {
-                                id: `importado-${index}`,
-       
+    // --- INICIALIZAÇÃO DA APLICAÇÃO ---
+    setupAuthListeners(auth, onLoginSuccess);
+    setupGeradorEscala();
+    setupUiListeners();
+    setupEventListeners();
+    setupSavedSchedulesListeners(auth, database);
+    exposeFunctionsToGlobalScope();
+    // Ativa o novo importador de planilhas
+    setupXLSXImporter(); 
+});
