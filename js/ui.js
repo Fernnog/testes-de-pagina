@@ -1,7 +1,7 @@
 // js/ui.js
 
 import { membros, restricoes, restricoesPermanentes, escalasSalvas } from './data-manager.js';
-import { saoCompativeis } from './availability.js'; // Importação corrigida
+import { saoCompativeis } from './availability.js';
 
 // =========================================================
 // === SEÇÃO DE CONFIGURAÇÃO E ESTADO ===
@@ -370,6 +370,56 @@ export function renderEscalaEmCards(dias) {
     });
 }
 
+/**
+ * [NOVA FUNÇÃO ADICIONADA]
+ * Calcula e exibe o índice de equilíbrio da escala com base nas participações.
+ * @param {object} justificationData - Objeto com as contagens de participação de cada membro.
+ */
+export function exibirIndiceEquilibrio(justificationData) {
+    const container = document.getElementById('balanceIndexContainer');
+    if (!container) return;
+
+    const counts = Object.values(justificationData).map(d => d.participations);
+    if (counts.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
+
+    const totalParticipations = counts.reduce((sum, count) => sum + count, 0);
+    if (totalParticipations === 0) {
+        container.style.display = 'none';
+        return;
+    }
+    
+    const mean = totalParticipations / counts.length;
+    const variance = counts.reduce((sum, count) => sum + Math.pow(count - mean, 2), 0) / counts.length;
+    const stdDev = Math.sqrt(variance);
+
+    // Converte o desvio padrão em um percentual de equilíbrio.
+    // Quanto menor o desvio, mais perto de 100%.
+    let balancePercentage = Math.max(0, 100 - (stdDev / mean) * 100);
+    balancePercentage = Math.min(100, balancePercentage);
+
+    container.style.display = 'block';
+    container.innerHTML = `
+        <h4>Índice de Equilíbrio da Escala <small>(clique para ver o relatório)</small></h4>
+        <div class="balance-bar-background">
+            <div class="balance-bar-foreground" style="width: ${balancePercentage.toFixed(2)}%;">
+                ${balancePercentage.toFixed(0)}%
+            </div>
+        </div>
+    `;
+
+    const bar = container.querySelector('.balance-bar-foreground');
+    if (balancePercentage < 60) {
+        bar.style.background = 'linear-gradient(90deg, #dc3545, #ff6b6b)';
+    } else if (balancePercentage < 85) {
+        bar.style.background = 'linear-gradient(90deg, #ffc107, #ffda58)';
+    } else {
+        bar.style.background = 'linear-gradient(90deg, #28a745, #84fab0)';
+    }
+}
+
 export function renderizarFiltros(dias) {
     const container = document.getElementById('escala-filtros');
     if (!container) return;
@@ -499,7 +549,6 @@ function remanejarMembro(nomeArrastado, nomeAlvo, cardOrigemId, cardAlvoId) {
     const outrosMembrosNoCard = diaAlvo.selecionados.filter(m => m.nome !== nomeAlvo);
     let isCompativel = true;
     for (const companheiro of outrosMembrosNoCard) {
-        // Usa a função saoCompativeis importada de availability.js
         if (!saoCompativeis(membroArrastadoObj, companheiro)) {
             isCompativel = false;
             break;
