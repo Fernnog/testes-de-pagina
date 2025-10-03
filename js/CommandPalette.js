@@ -143,6 +143,12 @@ const CommandPalette = (() => {
                 li.textContent = model.name;
                 li.dataset.modelId = model.id;
                 li.setAttribute('role', 'option');
+
+                if (isPowerVariable(model)) {
+                    li.classList.add('cp-result-item--power-variable');
+                    li.title = 'Inserir variável: ' + model.name;
+                }
+
                 if (index === selectedIndex) {
                     li.classList.add('selected');
                     li.setAttribute('aria-selected', 'true');
@@ -178,9 +184,9 @@ const CommandPalette = (() => {
      */
     function selectResult(model) {
         if (model) {
-            // CORREÇÃO: A função insertModelContent espera o objeto 'model' completo
-            // para processar snippets e variáveis corretamente. A chamada anterior
-            // passava apenas o conteúdo, causando o bug.
+            // A função insertModelContent já sabe como processar variáveis,
+            // então não precisamos de uma nova função. Ela vai lidar
+            // perfeitamente com um modelo que só tem uma variável.
             insertModelContent(model);
         }
         close();
