@@ -1,5 +1,45 @@
 // js/script.js
 
+// --- NOVA BIBLIOTECA DE "BLUEPRINTS" PARA POWER VARIABLES ---
+const POWER_VARIABLE_BLUEPRINTS = [
+    {
+        type: 'prompt',
+        label: 'Caixa de Pergunta',
+        description: 'Pede ao usuário para digitar um texto livre.',
+        icon: '💬',
+        // A função 'build' gera o conteúdo final do modelo
+        build: (name) => `{{${name.replace(/\s+/g, '_').toLowerCase()}:prompt}}`
+    },
+    {
+        type: 'choice',
+        label: 'Menu de Opções',
+        description: 'Apresenta uma lista de opções para o usuário escolher.',
+        icon: '✅',
+        build: (name, options) => `{{${name.replace(/\s+/g, '_').toLowerCase()}:choice(${options.join('|')})}}`
+    },
+    {
+        type: 'data_atual',
+        label: 'Data Atual (Simples)',
+        description: 'Insere a data de hoje no formato DD/MM/AAAA.',
+        icon: '📅',
+        build: (name) => `{{data_atual}}` // Nome é para o rótulo, o sistema preenche o resto
+    },
+    {
+        type: 'data_por_extenso',
+        label: 'Data por Extenso',
+        description: 'Insere a data completa (ex: sexta-feira, 2 de agosto de 2024).',
+        icon: '📜',
+        build: (name) => `{{data_por_extenso}}`
+    },
+    {
+        type: 'hora_atual',
+        label: 'Hora Atual',
+        description: 'Insere a hora e os minutos atuais.',
+        icon: '⏰',
+        build: (name) => `{{hora_atual}}`
+    }
+];
+
 // --- DADOS E ESTADO DA APLICAÇÃO ---
 let appState = {};
 const FAVORITES_TAB_ID = 'favorites-tab-id';
@@ -39,6 +79,20 @@ const searchBtn = document.getElementById('search-btn');
 const clearSearchBtn = document.getElementById('clear-search-btn');
 const searchInTabCheckbox = document.getElementById('search-in-tab-checkbox');
 
+// --- FUNÇÃO AUXILIAR PARA DETECÇÃO DE POWER VARIABLES ---
+/**
+ * Verifica se o conteúdo de um modelo consiste em apenas uma única variável.
+ * @param {object} model - O objeto do modelo a ser verificado.
+ * @returns {boolean} - True se for uma Power Variable, false caso contrário.
+ */
+function isPowerVariable(model) {
+    if (!model || !model.content) return false;
+    // A Regex verifica se a string começa (^) e termina ($) com uma única variável {{...}},
+    // permitindo espaços em branco (\s*) antes e depois.
+    const POWER_VAR_REGEX = /^\s*{{\s*[^}]+?\s*}}\s*$/;
+    return POWER_VAR_REGEX.test(model.content);
+}
+
 // --- LÓGICA DE BACKUP E MODIFICAÇÃO DE ESTADO CENTRALIZADA (REATORADA) ---
 
 /**
@@ -63,19 +117,6 @@ function modifyUIState(modificationFn) {
 }
 
 function getNextColor() { const color = TAB_COLORS[colorIndex % TAB_COLORS.length]; colorIndex++; return color; }
-
-/**
- * Verifica se o conteúdo de um modelo consiste em apenas uma única variável.
- * @param {object} model - O objeto do modelo a ser verificado.
- * @returns {boolean} - True se for uma Power Variable, false caso contrário.
- */
-function isPowerVariable(model) {
-    if (!model || !model.content) return false;
-    // A Regex verifica se a string começa (^) e termina ($) com uma única variável {{...}},
-    // permitindo espaços em branco (\s*) antes e depois.
-    const POWER_VAR_REGEX = /^\s*{{\s*[^}]+?\s*}}\s*$/;
-    return POWER_VAR_REGEX.test(model.content);
-}
 
 // --- FUNÇÕES DE PERSISTÊNCIA ---
 function saveStateToStorage() { localStorage.setItem('editorModelosApp', JSON.stringify(appState)); }
@@ -464,6 +505,58 @@ function deleteFolder(folderId) {
     }
 }
 
+// --- NOVA LÓGICA DE CRIAÇÃO DE ITENS (CONTEXTUAL) ---
+
+/**
+ * Ponto de entrada para o botão "Adicionar". Decide qual fluxo de criação iniciar
+ * com base na aba ativa.
+ */
+function handleAddNewItem() {
+    if (appState.activeTabId === POWER_TAB_ID) {
+        // Se estamos na aba Power, abre o assistente de criação de Power Variables
+        openPowerVariableCreator();
+    } else {
+        // Se estamos em qualquer outra aba, usa o fluxo antigo de salvar do editor
+        addNewModelFromEditor();
+    }
+}
+
+/**
+ * Abre o modal do assistente de criação de Power Variables.
+ */
+function openPowerVariableCreator() {
+    ModalManager.show({
+        type: 'powerVariableCreator', // O novo tipo implementado no ModalManager
+        title: 'Criar Nova Ação Rápida',
+        onSave: (data) => { // A função onSave receberá os dados do formulário final
+            const blueprint = POWER_VARIABLE_BLUEPRINTS.find(b => b.type === data.type);
+            if (!blueprint || !data.name) {
+                NotificationService.show('O nome da ação é obrigatório.', 'error');
+                return;
+            }
+
+            // Usa a função 'build' do blueprint para gerar o conteúdo do modelo
+            const content = blueprint.build(data.name, data.options);
+            
+            modifyDataState(() => {
+                const newModel = { 
+                    id: `model-${Date.now()}`, 
+                    name: data.name.trim(), 
+                    content: content, 
+                    tabId: POWER_TAB_ID, 
+                    isFavorite: false, 
+                    folderId: null 
+                };
+                appState.models.push(newModel);
+            });
+            NotificationService.show(`Ação "${data.name.trim()}" criada com sucesso!`, 'success');
+        }
+    });
+}
+
+/**
+ * Lógica original para salvar o conteúdo do editor como um novo modelo.
+ */
 function addNewModelFromEditor() {
     const content = tinymce.activeEditor.getContent();
     if (!content) {
@@ -493,6 +586,7 @@ function addNewModelFromEditor() {
         }
     });
 }
+
 
 function editModel(modelId) {
     const model = appState.models.find(m => m.id === modelId);
@@ -714,7 +808,8 @@ window.addEventListener('DOMContentLoaded', () => {
     searchBox.addEventListener('keydown', (event) => { if (event.key === 'Enter') { event.preventDefault(); render(); } });
     addNewTabBtn.addEventListener('click', addNewTab);
     addNewFolderBtn.addEventListener('click', addNewFolder);
-    addNewModelBtn.addEventListener('click', addNewModelFromEditor);
+    // MODIFICADO: O botão "Adicionar" agora usa o handler contextual
+    addNewModelBtn.addEventListener('click', handleAddNewItem);
     searchBtn.addEventListener('click', render);
     clearSearchBtn.addEventListener('click', () => { searchBox.value = ''; render(); });
     exportBtn.addEventListener('click', exportModels);
