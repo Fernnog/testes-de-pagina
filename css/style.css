@@ -1147,8 +1147,8 @@ blockquote p {
 /* --- NOVOS ESTILOS PARA POWER VARIABLES (SIDEBAR E PALETA) --- */
 /* "Pílula" para a Power Variable na sidebar */
 .model-item.model-item--power-variable {
-    background-color: rgba(206, 42, 102, 0.1); /* Cor da aba Power com transparência */
-    border: 1px solid rgba(206, 42, 102, 0.4);
+    background-color: rgba(206, 42, 102, 0.08); /* Fundo mais sutil */
+    border: 1px solid rgba(206, 42, 102, 0.3);
     border-radius: 20px; /* Estilo de "pílula" */
     color: #a12050; /* Tom mais escuro da cor da aba */
 }
@@ -1159,6 +1159,17 @@ blockquote p {
 }
 .model-item.model-item--power-variable .model-actions {
     border-top: 1px solid rgba(206, 42, 102, 0.2);
+}
+
+/* Oculta o ícone de 'robô' pois o ícone de engrenagem já está presente */
+.model-item.model-item--power-variable .model-variable-indicator[title*="contém variáveis"] {
+    display: none;
+}
+
+/* Renomeia e ajusta o ícone de 'engrenagem' para ser mais claro */
+.model-item.model-item--power-variable .model-variable-indicator {
+    title: 'Variável Dinâmica';
+    opacity: 1;
 }
 
 /* Item da Power Variable na Paleta de Comandos */
