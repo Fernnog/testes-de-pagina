@@ -1143,3 +1143,38 @@ blockquote p {
     color: var(--primary-color);
     background-color: rgba(206, 42, 102, 0.1);
 }
+
+/* --- NOVOS ESTILOS PARA POWER VARIABLES (PRIORIDADE 1) --- */
+
+/* "Pílula" para a Power Variable na sidebar */
+.model-item--power-variable {
+    background-color: rgba(206, 42, 102, 0.1); /* Cor da aba Power com transparência */
+    border: 1px solid rgba(206, 42, 102, 0.4);
+    border-radius: 20px; /* Estilo de "pílula" */
+    color: #a12050; /* Tom mais escuro da cor da aba */
+}
+
+.model-item--power-variable:hover {
+    background-color: rgba(206, 42, 102, 0.2);
+}
+
+.model-item--power-variable .model-header .model-name::before {
+    content: '⚙️';
+    margin-right: 4px;
+    opacity: 0.8;
+}
+
+/* Item da Power Variable na Paleta de Comandos */
+.cp-result-item--power-variable {
+    font-style: italic;
+    color: #5e213a;
+}
+
+.cp-result-item--power-variable.selected {
+    color: white; /* Garante que o texto fique branco quando selecionado */
+}
+
+.cp-result-item--power-variable::before {
+    content: '⚙️';
+    margin-right: 10px;
+}
