@@ -100,14 +100,18 @@ const SidebarManager = (() => {
     
         const renderModel = (model, isChild = false) => {
             const li = document.createElement('li');
+            const isVar = isPowerVariable(model) || model.isSystemVariable;
             
-            if (isPowerVariable(model) || model.isSystemVariable) {
-                li.className = 'model-item model-item--power-variable';
-            } else {
-                li.className = 'model-item' + (isChild ? ' model-item-child' : '');
-            }
+            li.className = isVar
+                ? 'model-item model-item--power-variable'
+                : 'model-item' + (isChild ? ' model-item-child' : '');
             
             li.dataset.modelId = model.id;
+
+            if (isVar) {
+                li.addEventListener('click', () => callbacks.onModelInsert(model));
+                li.title = `Clique para inserir a variável "${model.name}"`;
+            }
     
             const headerDiv = document.createElement('div');
             headerDiv.className = 'model-header';
@@ -117,7 +121,7 @@ const SidebarManager = (() => {
             nameSpan.addEventListener('click', (e) => {
                 e.stopPropagation();
                 navigator.clipboard.writeText(model.content).then(() => {
-                    NotificationService.show(`Variável "${model.name}" copiada!`, 'success', 2500);
+                    NotificationService.show(`Conteúdo de "${model.name}" copiado!`, 'success', 2500);
                 });
             });
 
@@ -143,26 +147,30 @@ const SidebarManager = (() => {
             const actionsDiv = document.createElement('div');
             actionsDiv.className = 'model-actions';
             
-            const insertButton = { icon: ICON_PLUS, title: 'Inserir', action: () => callbacks.onModelInsert(model) };
-            let actionButtons = [insertButton];
+            if (!isVar) {
+                const insertButton = { icon: ICON_PLUS, title: 'Inserir', action: () => callbacks.onModelInsert(model) };
+                let actionButtons = [insertButton];
 
-            if (!model.isSystemVariable) {
                 actionButtons.push(
                     { icon: ICON_PENCIL, title: 'Editar modelo', action: () => callbacks.onModelEdit(model.id) },
                     { icon: ICON_MOVE, title: 'Mover para outra aba', action: () => callbacks.onModelMove(model.id) },
                     { icon: ICON_TRASH, title: 'Excluir modelo', action: () => callbacks.onModelDelete(model.id) },
                     { icon: model.isFavorite ? ICON_STAR_FILLED : ICON_STAR_OUTLINE, title: model.isFavorite ? 'Desfavoritar' : 'Favoritar', action: () => callbacks.onModelFavoriteToggle(model.id) }
                 );
+
+                actionButtons.forEach(btnInfo => {
+                    const button = document.createElement('button');
+                    button.className = 'action-btn';
+                    button.innerHTML = btnInfo.icon;
+                    button.title = btnInfo.title;
+                    button.onclick = (e) => {
+                        e.stopPropagation();
+                        btnInfo.action();
+                    };
+                    actionsDiv.appendChild(button);
+                });
             }
 
-            actionButtons.forEach(btnInfo => {
-                const button = document.createElement('button');
-                button.className = 'action-btn';
-                button.innerHTML = btnInfo.icon;
-                button.title = btnInfo.title;
-                button.onclick = btnInfo.action;
-                actionsDiv.appendChild(button);
-            });
             li.appendChild(headerDiv);
             li.appendChild(actionsDiv);
             return li;
@@ -174,22 +182,20 @@ const SidebarManager = (() => {
             li.dataset.folderId = folder.id;
             const modelInFolderCount = itemsToRender.filter(m => m.type === 'model' && m.folderId === folder.id).length;
         
-            // Aplicação da cor dinâmica com transparência
             const parentTabForFolder = appState.tabs.find(t => t.id === folder.tabId);
             if (parentTabForFolder && parentTabForFolder.color) {
                 const hex = parentTabForFolder.color.replace('#', '');
-                if (hex.length === 6) { // Garante que a cor é um hex válido
+                if (hex.length === 6) {
                     const r = parseInt(hex.substring(0, 2), 16);
                     const g = parseInt(hex.substring(2, 4), 16);
                     const b = parseInt(hex.substring(4, 6), 16);
-                    li.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.5)`; // 50% de transparência
+                    li.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.5)`;
                     li.style.borderColor = `rgba(${r}, ${g}, ${b}, 0.7)`;
                 }
             }
         
             li.innerHTML = `<span class="folder-toggle">${folder.isExpanded ? '▼' : '▶'}</span><span class="folder-icon">${ICON_FOLDER}</span><span class="folder-name">${folder.name}</span><span class="folder-counter">(${modelInFolderCount})</span>`;
             
-            // Usa a nova função `modifyUIState` para não acionar o backup
             li.addEventListener('click', (e) => {
                  e.stopPropagation();
                  const folderInState = appState.folders.find(f => f.id === folder.id);
