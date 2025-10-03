@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power Editor</title>
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- SCRIPT DO TINYMCE ADICIONADO AQUI -->
+    <script src="https://cdn.tiny.cloud/1/ejxjci6unfjljl6y2vali932gyz2bgenhi5lvoyp8yifsd46/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- Coluna Principal: Editor de Texto -->
+        <div class="editor-area">
+            <!-- NOVO WRAPPER PARA O EDITOR E A RÉGUA -->
+            <div class="editor-wrapper">
+                <!-- NOVAS DIVS PARA AS RÉGUAS -->
+                <div id="ruler-horizontal" class="ruler"></div>
+                <div id="ruler-vertical" class="ruler"></div>
+
+                <!-- A TEXTAREA DO EDITOR AGORA FICA AQUI DENTRO -->
+                <textarea id="editor" class="text-editor"></textarea>
+
+                <!-- BOTÃO FLUTUANTE (FAB) MOVIDO PARA CÁ -->
+                <button id="open-palette-fab" class="fab" aria-label="Abrir modelos rápidos">
+                    <!-- O ícone será inserido pelo JavaScript para mantermos consistência -->
+                </button>
+            </div>
+        </div>
+
+        <!-- Coluna da Direita: Sidebar de Modelos -->
+        <div class="sidebar-area">
+            <h3>Modelos de Documento</h3>
+            <div class="sidebar-controls">
+                <input type="text" id="search-box" placeholder="Pesquisar... Use 'E' / 'OU' para refinar">
+                
+                <!-- NOVO CONTAINER PARA O FILTRO DE BUSCA -->
+                <div class="search-filter-container">
+                    <input type="checkbox" id="search-in-tab-checkbox" name="search-filter">
+                    <label for="search-in-tab-checkbox">Buscar apenas na aba atual</label>
+                </div>
+
+                <!-- NOVO CARD DE STATUS DO BACKUP -->
+                <div id="backup-status-card">
+                    <span class="card-title">ÚLTIMO BACKUP</span>
+                    <span id="backup-status-text">Nenhum backup recente.</span>
+                </div>
+
+                <div class="control-buttons-grid">
+                    <button id="search-btn" class="control-btn btn-secondary">Pesquisar</button>
+                    <button id="clear-search-btn" class="control-btn btn-secondary">Limpar Pesquisa</button>
+                    <!-- Os botões "Formatar Doc" e "Apagar Doc" foram removidos daqui -->
+                </div>
+            </div>
+            
+            <!-- ÚNICO CONTAINER PARA TODAS AS ABAS -->
+            <div id="tabs-container" class="tabs-container">
+                <!-- As abas serão preenchidas pelo JavaScript -->
+            </div>
+
+            <!-- Container apenas para a lista -->
+            <div id="active-content-area" class="active-content-area">
+                <ul id="model-list">
+                    <!-- A lista de modelos será preenchida pelo JavaScript -->
+                </ul>
+                <div id="tab-actions-container"></div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <button id="add-new-tab-btn">Aba</button>
+                <button id="add-new-folder-btn">Pasta</button>
+                <button id="add-new-model-btn">Adicionar</button>
+                <button id="import-btn">Importar</button>
+                <button id="export-btn">Exportar</button>
+                <input type="file" id="import-file-input" accept=".json" style="display: none;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Estrutura do Modal Genérico e Dinâmico (Inicialmente Oculta) -->
+    <div id="modal-container" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modal-title">Título do Modal</h3>
+            
+            <!-- O conteúdo específico (editor de modelo ou gerenciador de substituição) será inserido aqui -->
+            <div id="modal-dynamic-content"></div>
+            
+            <div class="modal-buttons">
+                <button id="modal-btn-save">Salvar</button>
+                <button id="modal-btn-cancel">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estrutura do Modal de Ditado (Inicialmente Oculta) -->
+    <div id="dictation-modal" class="modal-overlay">
+        <div class="dictation-content">
+            <select id="dictation-lang-select" title="Selecionar idioma">
+                <option value="pt-BR" selected>Português (Brasil)</option>
+                <option value="en-US">English (US)</option>
+                <option value="es-ES">Español (España)</option>
+            </select>
+            <span id="dictation-status">Clique no microfone para começar</span>
+            <div id="dictation-mic-icon" class="mic-icon">🎤</div>
+            <button id="dictation-close-btn">&times;</button>
+        </div>
+    </div>
+
+    <!-- Container para as notificações "toast" -->
+    <div id="toast-container"></div>
+
+    <!-- Estrutura da Paleta de Comandos (Inicialmente Oculta) -->
+    <div id="command-palette-overlay" class="cp-overlay">
+        <div id="command-palette-search-box" class="cp-search-box">
+            <input type="text" id="command-palette-search" placeholder="Buscar modelo rápido...">
+            <ul id="command-palette-results" role="listbox">
+                <!-- Os resultados da busca serão inseridos aqui pelo JavaScript -->
+            </ul>
+        </div>
+    </div>
+    
+    <!-- NOVAS BIBLIOTECAS DE MARKDOWN -->
+    <script src="https://unpkg.com/turndown/dist/turndown.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- BIBLIOTECA PARA ARRASTAR E SOLTAR (DRAG-AND-DROP) -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+    <script src="js/config.js"></script>
+    <script src="js/speech.js"></script>
+    <script src="js/editor-actions.js"></script>
+    <script src="js/backup-manager.js"></script>
+    <script src="js/ModalManager.js"></script> <!-- ModalManager ANTES de script.js -->
+    <script src="js/NotificationService.js"></script> <!-- NotificationService ANTES de script.js -->
+    <script src="js/gemini-service.js"></script>
+    <script src="js/ui-icons.js"></script> 
+    <script src="js/markdown-converter.js"></script> <!-- NOVO MÓDULO DE MARKDOWN -->
+    <script src="js/CommandPalette.js"></script> <!-- NOVO SCRIPT DA PALETA DE COMANDOS -->
+    
+    <!-- =============================================================================== -->
+    <!--  CORREÇÃO AQUI: O NOVO MÓDULO SidebarManager.js PRECISA SER CARREGADO ANTES DE script.js -->
+    <script src="js/SidebarManager.js"></script> 
+    <!-- =============================================================================== -->
+    
+    <!-- O SCRIPT PRINCIPAL E O DE CONFIGURAÇÃO DO EDITOR VÊM POR ÚLTIMO -->
+    <script src="js/script.js"></script>
+    <script src="js/tinymce-config.js"></script> 
+</body>
+</html>
