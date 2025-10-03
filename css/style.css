@@ -1145,47 +1145,6 @@ blockquote p {
 }
 
 /* --- NOVOS ESTILOS PARA POWER VARIABLES (SIDEBAR E PALETA) --- */
-/* "Pílula" para a Power Variable na sidebar */
-.model-item.model-item--power-variable {
-    background-color: rgba(206, 42, 102, 0.08); /* Fundo mais sutil */
-    border: 1px solid rgba(206, 42, 102, 0.3);
-    border-radius: 20px; /* Estilo de "pílula" */
-    color: #a12050; /* Tom mais escuro da cor da aba */
-}
-.model-item.model-item--power-variable .model-header .model-name::before {
-    content: '⚙️';
-    margin-right: 4px;
-    opacity: 0.8;
-}
-.model-item.model-item--power-variable .model-actions {
-    border-top: 1px solid rgba(206, 42, 102, 0.2);
-}
-
-/* Oculta o ícone de 'robô' pois o ícone de engrenagem já está presente */
-.model-item.model-item--power-variable .model-variable-indicator[title*="contém variáveis"] {
-    display: none;
-}
-
-/* Renomeia e ajusta o ícone de 'engrenagem' para ser mais claro */
-.model-item.model-item--power-variable .model-variable-indicator {
-    title: 'Variável Dinâmica';
-    opacity: 1;
-}
-
-/* Item da Power Variable na Paleta de Comandos */
-.cp-result-item.cp-result-item--power-variable {
-    font-style: italic;
-    color: #5e213a;
-}
-.cp-result-item.cp-result-item--power-variable.selected {
-    color: white; /* Garante que o texto fique branco quando selecionado */
-}
-.cp-result-item.cp-result-item--power-variable::before {
-    content: '⚙️';
-    margin-right: 10px;
-}
-
-/* --- NOVOS ESTILOS PARA O ASSISTENTE DE CRIAÇÃO (MODAL) --- */
 #pv-creator-selection {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1242,4 +1201,56 @@ blockquote p {
     margin-top: 5px;
     font-size: 12px;
     color: #666;
+}
+
+/* --- ESTILOS PARA POWER VARIABLES --- */
+
+/* "Pílula" para a Power Variable na sidebar */
+.model-item.model-item--power-variable {
+    background-color: rgba(206, 42, 102, 0.1); /* Fundo fúcsia bem sutil */
+    border: 1px solid rgba(206, 42, 102, 0.4);
+    border-radius: 20px; /* Cantos arredondados para o estilo de "pílula" */
+    cursor: pointer; /* Indica que o item inteiro é clicável */
+    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.model-item.model-item--power-variable:hover {
+    background-color: rgba(206, 42, 102, 0.2);
+    border-color: rgba(206, 42, 102, 0.7);
+}
+
+/* Adiciona um ícone de "engrenagem" para indicar que é uma variável */
+.model-item.model-item--power-variable .model-header .model-name::before {
+    content: '⚙️';
+    margin-right: 6px;
+}
+
+/* Oculta o container dos botões de ação (Editar, Mover, etc.) APENAS para as pílulas */
+.model-item.model-item--power-variable .model-actions {
+    display: none;
+}
+
+/* Ajusta o cabeçalho para não ter borda inferior quando os botões estão ocultos */
+.model-item.model-item--power-variable .model-header {
+    margin-bottom: 0;
+}
+
+/* Garante que o nome possa ser copiado, mas não interfere no clique principal */
+.model-item.model-item--power-variable .model-name {
+    cursor: copy;
+}
+
+/* Diferenciação na Paleta de Comandos */
+.cp-result-item.cp-result-item--power-variable {
+    font-style: italic;
+    color: #a12050; /* Tom mais escuro da cor primária */
+}
+
+.cp-result-item.cp-result-item--power-variable.selected {
+    color: white; /* Garante que o texto fique branco ao ser selecionado */
+}
+
+.cp-result-item.cp-result-item--power-variable::before {
+    content: '⚙️';
+    margin-right: 10px;
 }
