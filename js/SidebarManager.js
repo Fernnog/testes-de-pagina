@@ -99,7 +99,13 @@ const SidebarManager = (() => {
     
         const renderModel = (model, isChild = false) => {
             const li = document.createElement('li');
-            li.className = 'model-item' + (isChild ? ' model-item-child' : '');
+            
+            if (isPowerVariable(model)) {
+                li.className = 'model-item model-item--power-variable';
+            } else {
+                li.className = 'model-item' + (isChild ? ' model-item-child' : '');
+            }
+            
             li.dataset.modelId = model.id;
     
             const headerDiv = document.createElement('div');
