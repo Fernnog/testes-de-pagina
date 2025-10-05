@@ -321,6 +321,25 @@ function filterModels() {
         if (appState.activeTabId === FAVORITES_TAB_ID) {
             sourceModels = appState.models.filter(m => m.isFavorite);
             sourceFolders = [];
+        } else if (appState.activeTabId === POWER_TAB_ID) {
+            // INÍCIO DA ALTERAÇÃO SOLICITADA
+            const userPowerModels = appState.models.filter(m => m.tabId === appState.activeTabId);
+            
+            const systemVariables = POWER_VARIABLE_BLUEPRINTS
+                .filter(bp => ['data_atual', 'data_por_extenso', 'hora_atual'].includes(bp.type))
+                .map(bp => ({
+                    id: `system-var-${bp.type}`,
+                    name: bp.label,
+                    content: bp.build(bp.label),
+                    isSystemVariable: true,
+                    tabId: POWER_TAB_ID,
+                    type: 'model'
+                }));
+
+            sourceModels = [...systemVariables, ...userPowerModels];
+            sourceFolders = (appState.folders || []).filter(f => f.tabId === appState.activeTabId);
+            // FIM DA ALTERAÇÃO SOLICITADA
+
         } else {
             sourceModels = appState.models.filter(m => m.tabId === appState.activeTabId);
             sourceFolders = (appState.folders || []).filter(f => f.tabId === appState.activeTabId);

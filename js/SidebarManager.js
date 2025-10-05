@@ -100,6 +100,7 @@ const SidebarManager = (() => {
     
         const renderModel = (model, isChild = false) => {
             const li = document.createElement('li');
+            // INÍCIO DA ALTERAÇÃO SOLICITADA
             const isVar = isPowerVariable(model) || model.isSystemVariable;
             
             li.className = isVar
@@ -112,6 +113,7 @@ const SidebarManager = (() => {
                 li.addEventListener('click', () => callbacks.onModelInsert(model));
                 li.title = `Clique para inserir a variável "${model.name}"`;
             }
+            // FIM DA ALTERAÇÃO SOLICITADA
     
             const headerDiv = document.createElement('div');
             headerDiv.className = 'model-header';
@@ -125,6 +127,7 @@ const SidebarManager = (() => {
                 });
             });
 
+            // INÍCIO DA ALTERAÇÃO SOLICITADA (não mostrar indicador de cor para var de sistema)
             if (!model.isSystemVariable) {
                 const colorIndicator = document.createElement('span');
                 colorIndicator.className = 'model-color-indicator';
@@ -132,6 +135,7 @@ const SidebarManager = (() => {
                 colorIndicator.style.backgroundColor = parentTab ? parentTab.color : '#ccc';
                 nameSpan.appendChild(colorIndicator);
             }
+            // FIM DA ALTERAÇÃO SOLICITADA
 
             if (model.content && model.content.includes('{{')) {
                 const variableIndicator = document.createElement('span');
@@ -147,6 +151,7 @@ const SidebarManager = (() => {
             const actionsDiv = document.createElement('div');
             actionsDiv.className = 'model-actions';
             
+            // INÍCIO DA ALTERAÇÃO SOLICITADA (ocultar botões)
             if (!isVar) {
                 const insertButton = { icon: ICON_PLUS, title: 'Inserir', action: () => callbacks.onModelInsert(model) };
                 let actionButtons = [insertButton];
@@ -170,6 +175,7 @@ const SidebarManager = (() => {
                     actionsDiv.appendChild(button);
                 });
             }
+            // FIM DA ALTERAÇÃO SOLICITADA
 
             li.appendChild(headerDiv);
             li.appendChild(actionsDiv);
