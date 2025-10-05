@@ -1144,6 +1144,7 @@ blockquote p {
     background-color: rgba(206, 42, 102, 0.1);
 }
 
+/* --- INÍCIO DA SEÇÃO MODIFICADA --- */
 /* --- NOVOS ESTILOS PARA POWER VARIABLES (SIDEBAR E PALETA) --- */
 #pv-creator-selection {
     display: grid;
@@ -1203,48 +1204,55 @@ blockquote p {
     color: #666;
 }
 
-/* --- INÍCIO DAS ALTERAÇÕES SOLICITADAS --- */
-
 /* --- ESTILOS PARA POWER VARIABLES --- */
 
-/* "Pílula" para a Power Variable na sidebar */
+/* "Tag" para a Power Variable na sidebar */
 .model-item.model-item--power-variable {
-    background-color: rgba(206, 42, 102, 0.15); /* Fundo fúcsia mais visível */
-    border: 1px solid rgba(206, 42, 102, 0.5);
-    border-radius: 20px; /* Cantos arredondados para o estilo de "pílula" */
-    cursor: pointer; /* Indica que o item inteiro é clicável */
-    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
-    display: inline-flex; /* Faz o container se ajustar ao conteúdo */
-    width: auto; /* Garante que a largura seja flexível */
+    background-color: #EC4899; /* Fúcsia vibrante */
+    color: #FFFFFF; /* Texto branco */
+    border: 1px solid #c026d3; /* Borda em um tom de roxo/fúcsia */
+    border-radius: 16px; /* Mantém o estilo de pílula */
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+    display: inline-flex;
+    width: auto;
+    padding: 6px 12px; /* Ajuste no padding para um visual mais compacto */
     margin-bottom: 8px;
     margin-right: 8px;
-    /* Sobrescreve o comportamento de coluna do .model-item geral */
-    flex-direction: row; 
 }
 
 .model-item.model-item--power-variable:hover {
-    background-color: rgba(206, 42, 102, 0.25);
-    border-color: rgba(206, 42, 102, 0.8);
+    background-color: #D946EF; /* Um tom um pouco mais claro no hover */
+    transform: scale(1.03); /* Efeito de leve crescimento */
 }
 
-/* Adiciona um ícone de "engrenagem" para indicar que é uma variável */
+/* Oculta os indicadores que porventura ainda restem */
+.model-item.model-item--power-variable .model-color-indicator,
+.model-item.model-item--power-variable .model-variable-indicator {
+    display: none;
+}
+
+/* Garante que o texto dentro da tag seja branco e sem o ícone de engrenagem */
+.model-item.model-item--power-variable .model-name {
+    cursor: copy;
+    font-weight: 600; /* Deixa a fonte um pouco mais forte */
+    color: #FFFFFF; /* Garante que o texto seja branco */
+}
+
+/* Remove a regra que adicionava o ícone de engrenagem via ::before */
 .model-item.model-item--power-variable .model-header .model-name::before {
-    content: '⚙️';
-    margin-right: 6px;
+    content: none; /* ESSENCIAL: Remove o ícone '⚙️' */
 }
 
-/* Ajusta o cabeçalho para não ter borda inferior e ocupar o espaço todo */
+/* Garante que o cabeçalho não tenha margens desnecessárias */
 .model-item.model-item--power-variable .model-header {
     margin-bottom: 0;
 }
 
-/* Garante que o nome possa ser copiado, mas não interfere no clique principal */
-.model-item.model-item--power-variable .model-name {
-    cursor: copy;
-    font-weight: 500;
-    color: #a12050; /* Tom mais escuro da cor primária */
+/* Oculta o container dos botões de ação (Editar, Mover, etc.) APENAS para as pílulas */
+.model-item.model-item--power-variable .model-actions {
+    display: none;
 }
-/* --- FIM DAS ALTERAÇÕES SOLICITADAS --- */
 
 
 /* Diferenciação na Paleta de Comandos */
@@ -1261,3 +1269,4 @@ blockquote p {
     content: '⚙️';
     margin-right: 10px;
 }
+/* --- FIM DA SEÇÃO MODIFICADA --- */
