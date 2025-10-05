@@ -1203,20 +1203,28 @@ blockquote p {
     color: #666;
 }
 
+/* --- INÍCIO DAS ALTERAÇÕES SOLICITADAS --- */
+
 /* --- ESTILOS PARA POWER VARIABLES --- */
 
 /* "Pílula" para a Power Variable na sidebar */
 .model-item.model-item--power-variable {
-    background-color: rgba(206, 42, 102, 0.1); /* Fundo fúcsia bem sutil */
-    border: 1px solid rgba(206, 42, 102, 0.4);
+    background-color: rgba(206, 42, 102, 0.15); /* Fundo fúcsia mais visível */
+    border: 1px solid rgba(206, 42, 102, 0.5);
     border-radius: 20px; /* Cantos arredondados para o estilo de "pílula" */
     cursor: pointer; /* Indica que o item inteiro é clicável */
     transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+    display: inline-flex; /* Faz o container se ajustar ao conteúdo */
+    width: auto; /* Garante que a largura seja flexível */
+    margin-bottom: 8px;
+    margin-right: 8px;
+    /* Sobrescreve o comportamento de coluna do .model-item geral */
+    flex-direction: row; 
 }
 
 .model-item.model-item--power-variable:hover {
-    background-color: rgba(206, 42, 102, 0.2);
-    border-color: rgba(206, 42, 102, 0.7);
+    background-color: rgba(206, 42, 102, 0.25);
+    border-color: rgba(206, 42, 102, 0.8);
 }
 
 /* Adiciona um ícone de "engrenagem" para indicar que é uma variável */
@@ -1225,12 +1233,7 @@ blockquote p {
     margin-right: 6px;
 }
 
-/* Oculta o container dos botões de ação (Editar, Mover, etc.) APENAS para as pílulas */
-.model-item.model-item--power-variable .model-actions {
-    display: none;
-}
-
-/* Ajusta o cabeçalho para não ter borda inferior quando os botões estão ocultos */
+/* Ajusta o cabeçalho para não ter borda inferior e ocupar o espaço todo */
 .model-item.model-item--power-variable .model-header {
     margin-bottom: 0;
 }
@@ -1238,7 +1241,11 @@ blockquote p {
 /* Garante que o nome possa ser copiado, mas não interfere no clique principal */
 .model-item.model-item--power-variable .model-name {
     cursor: copy;
+    font-weight: 500;
+    color: #a12050; /* Tom mais escuro da cor primária */
 }
+/* --- FIM DAS ALTERAÇÕES SOLICITADAS --- */
+
 
 /* Diferenciação na Paleta de Comandos */
 .cp-result-item.cp-result-item--power-variable {
