@@ -1,5 +1,7 @@
 // js/tinymce-config.js
 
+const APP_VERSION = '1.0.1';
+
 const TINYMCE_CONFIG = {
     selector: '#editor',
     
@@ -14,6 +16,27 @@ const TINYMCE_CONFIG = {
         bold: { inline: 'strong' },
         italic: { inline: 'em' },
         underline: { inline: 'u', exact: true },
+    },
+
+     setup: (editor) => {
+        // Esta função é executada quando o editor é inicializado.
+        editor.on('init', () => {
+            // 'init' garante que o editor está totalmente renderizado.
+            
+            // 1. Encontra o elemento de branding "Powered by Tiny" na barra de status.
+            const brandingElement = editor.getContainer().querySelector('.tox-statusbar__branding');
+
+            if (brandingElement) {
+                // 2. Cria um novo elemento <span> para a nossa versão.
+                const versionLabel = document.createElement('span');
+                versionLabel.className = 'app-version-label'; // Aplica o nosso estilo CSS.
+                versionLabel.textContent = `v${APP_VERSION}`;
+                versionLabel.title = `Versão da Aplicação`;
+
+                // 3. Insere o rótulo da versão ANTES do elemento de branding.
+                brandingElement.parentNode.insertBefore(versionLabel, brandingElement);
+            }
+        });
     },
     
     content_style: 'body { font-family:Arial,sans-serif; font-size:16px; line-height: 1.5; text-align: justify; color: var(--editor-text-color); } p { margin-bottom: 1em; } blockquote { margin-left: 7cm; margin-right: 0; padding-left: 15px; border-left: 3px solid #ccc; color: #333; font-style: italic; } blockquote p { text-indent: 0 !important; }',
