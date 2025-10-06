@@ -1,5 +1,22 @@
 // js/tinymce-config.js
 
+const CHANGELOG_DATA = {
+    currentVersion: '1.0.1',
+    history: [
+        {
+            version: '1.0.1',
+            title: '✨ Lançamento Inicial e Qualidade de Vida',
+            content: `
+                <ul>
+                    <li><strong>Versão Inicial:</strong> Lançamento da plataforma base do Power Editor.</li>
+                    <li><strong>Controle de Versão:</strong> Adicionado o indicador de versão e o changelog clicável no rodapé do editor.</li>
+                    <li><strong>UX:</strong> Melhoria no tooltip do botão da Power Palette (FAB) para incluir o atalho de teclado (Ctrl + .).</li>
+                </ul>
+            `
+        }
+    ]
+};
+
 const TINYMCE_CONFIG = {
     selector: '#editor',
     
@@ -259,6 +276,38 @@ const TINYMCE_CONFIG = {
             if (savedTheme) {
                 applyTheme(savedTheme);
             }
+
+            // --- INÍCIO DA LÓGICA DO CHANGELOG ---
+            try {
+                const statusBar = editor.getContainer().querySelector('.tox-statusbar');
+                const brandingLink = statusBar.querySelector('.tox-statusbar__branding');
+                if (brandingLink) {
+                    const versionEl = document.createElement('a');
+                    versionEl.className = 'version-changelog-link';
+                    versionEl.textContent = `| Versão ${CHANGELOG_DATA.currentVersion}`;
+                    versionEl.title = 'Clique para ver o histórico de mudanças';
+
+                    versionEl.onclick = () => {
+                        ModalManager.show({
+                            type: 'info',
+                            title: 'Histórico de Versões',
+                            initialData: {
+                                title: `Novidades da Versão ${CHANGELOG_DATA.currentVersion}`,
+                                cards: CHANGELOG_DATA.history.map(item => ({
+                                    title: `Versão ${item.version} - ${item.title}`,
+                                    content: item.content
+                                }))
+                            }
+                        });
+                    };
+                    
+                    // Insere o novo elemento logo após o link de branding do TinyMCE
+                    brandingLink.parentNode.insertBefore(versionEl, brandingLink.nextSibling);
+                }
+            } catch (error) {
+                console.error("Não foi possível adicionar o link de changelog:", error);
+            }
+            // --- FIM DA LÓGICA DO CHANGELOG ---
         
             if (typeof SpeechDictation !== 'undefined' && SpeechDictation.isSupported()) {
                 SpeechDictation.init({ 
