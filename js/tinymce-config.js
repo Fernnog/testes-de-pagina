@@ -1,8 +1,20 @@
 // js/tinymce-config.js
 
 const CHANGELOG_DATA = {
-    currentVersion: '1.0.1',
+    currentVersion: '1.0.2',
     history: [
+        {
+            version: '1.0.2',
+            title: '🚀 Supercharge: Novas Variáveis de Sistema',
+            content: `
+                <ul>
+                    <li><strong>Novas Variáveis Automáticas:</strong> Adicionadas variáveis para <code>{{dia_da_semana}}</code>, <code>{{mes_por_extenso}}</code>, <code>{{ano_atual}}</code> e um <code>{{id_unico}}</code>.</li>
+                    <li><strong>Variáveis de Contexto Jurídico:</strong> Pré-configuradas ações rápidas para inserir Número do Processo, Nomes das Partes e Status da Decisão.</li>
+                    <li><strong>Posicionamento de Cursor:</strong> Introduzida a variável especial <code>{{cursor}}</code> para posicionar o cursor de digitação após inserir um modelo.</li>
+                    <li><strong>Refatoração:</strong> A lógica de exibição de variáveis de sistema na Aba Power agora é dinâmica, facilitando futuras expansões.</li>
+                </ul>
+            `
+        },
         {
             version: '1.0.1',
             title: '✨ Lançamento Inicial e Qualidade de Vida',
@@ -261,7 +273,8 @@ const TINYMCE_CONFIG = {
 
         // ADICIONADO: Listener para o atalho da Paleta de Comandos dentro do editor
         editor.on('keydown', function(event) {
-            if (event.ctrlKey && event.altKey && event.key.toLowerCase() === 'p') {
+            // CORREÇÃO DE ATALHO: Mudado de Ctrl+Alt+P para Ctrl+. para consistência
+            if (event.ctrlKey && event.key === '.') {
                 event.preventDefault();
                 event.stopPropagation();
                 if (typeof CommandPalette !== 'undefined' && CommandPalette.open) {
