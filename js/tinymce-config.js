@@ -51,22 +51,15 @@ const TINYMCE_CONFIG = {
     autoresize_bottom_margin: 30,
 
     setup: function(editor) {
-        // --- Função Auxiliar para Gerenciar Temas ---
         const applyTheme = (themeName) => {
             const body = document.body;
-            // Limpa temas antigos
             body.classList.remove('theme-dark', 'theme-custom-yellow');
-            
-            // Adiciona o novo tema, se não for o padrão 'claro'
             if (themeName && themeName !== 'light') {
                 body.classList.add(themeName);
             }
-            
-            // Salva a escolha do usuário
             localStorage.setItem('editorTheme', themeName);
         };
         
-        // --- Registro de Ícones Customizados ---
         editor.ui.registry.addIcon('custom-mic', ICON_MIC);
         editor.ui.registry.addIcon('custom-ai-brain', ICON_AI_BRAIN);
         editor.ui.registry.addIcon('custom-replace', ICON_REPLACE);
@@ -76,52 +69,36 @@ const TINYMCE_CONFIG = {
         editor.ui.registry.addIcon('custom-delete-doc', ICON_DELETE_DOC);
         editor.ui.registry.addIcon('custom-paste-markdown', ICON_PASTE_MARKDOWN);
         editor.ui.registry.addIcon('custom-join-lines', ICON_JOIN_LINES);
-        editor.ui.registry.addIcon('custom-paintbrush', ICON_PAINTBRUSH); // NOVO ÍCONE REGISTRADO
+        editor.ui.registry.addIcon('custom-paintbrush', ICON_PAINTBRUSH);
 
-        // --- Definição dos Botões ---
-
-        // Botão para recuo de primeira linha
         editor.ui.registry.addButton('customIndent', {
             icon: 'indent',
             tooltip: 'Recuo da Primeira Linha (3cm)',
             onAction: function() {
                 const node = editor.selection.getNode();
                 const blockElement = editor.dom.getParents(node, (e) => e.nodeName === 'P' || /^H[1-6]$/.test(e.nodeName), editor.getBody());
-                
                 if (blockElement.length > 0) {
                     const element = blockElement[0];
-                    if (element.style.textIndent) {
-                        element.style.textIndent = '';
-                    } else {
-                        element.style.textIndent = '3cm';
-                    }
+                    element.style.textIndent = element.style.textIndent ? '' : '3cm';
                 }
             }
         });
 
-        // Botão de citação
         editor.ui.registry.addButton('customBlockquote', {
             icon: 'quote',
             tooltip: 'Transformar em citação (7cm + itálico)',
-            onAction: function() {
-                editor.execCommand('mceBlockQuote');
-            }
+            onAction: function() { editor.execCommand('mceBlockQuote'); }
         });
 
-        // Botão de Ditado por Voz
         editor.ui.registry.addButton('customMicButton', {
             icon: 'custom-mic',
             tooltip: 'Ditar texto',
             onAction: function() {
-                if (typeof SpeechDictation !== 'undefined' && SpeechDictation.isSupported()) {
-                    SpeechDictation.start();
-                } else {
-                    NotificationService.show('O reconhecimento de voz não é suportado neste navegador.', 'error');
-                }
+                if (typeof SpeechDictation !== 'undefined' && SpeechDictation.isSupported()) SpeechDictation.start();
+                else NotificationService.show('O reconhecimento de voz não é suportado neste navegador.', 'error');
             }
         });
 
-        // Botão de Ajustar Texto Quebrado (substituindo o de IA)
         editor.ui.registry.addButton('customAiButton', {
             icon: 'custom-join-lines',
             tooltip: 'Ajustar Texto Quebrado (de PDF)',
@@ -132,10 +109,7 @@ const TINYMCE_CONFIG = {
                     saveButtonText: 'Ajustar e Inserir',
                     onSave: (data) => {
                         if (data.text) {
-                            // Lógica principal: remove quebras de linha e espaços extras
                             const textoAjustado = data.text.replace(/\n/g, ' ').trim();
-                            
-                            // Insere o texto processado no editor
                             editor.execCommand('mceInsertContent', false, textoAjustado);
                             NotificationService.show('Texto ajustado e inserido com sucesso!', 'success');
                         } else {
@@ -146,26 +120,25 @@ const TINYMCE_CONFIG = {
             }
         });
 
-        // Botão de Substituir Termos
+        // **CORREÇÃO APLICADA AQUI**
         editor.ui.registry.addButton('customReplaceButton', {
-    icon: 'custom-replace',
-    tooltip: 'Gerenciar Substituições',
-    onAction: function () {
-        // Delega a responsabilidade para a função que será criada em script.js
-        handleOpenReplacementManager(); 
-    }
-});
+            icon: 'custom-replace',
+            tooltip: 'Gerenciar Substituições',
+            onAction: function () {
+                // Chamada correta e segura para a função no namespace
+                AppActions.openReplacementManager();
+            }
+        });
 
-        // NOVO BOTÃO: Colar do Markdown
         editor.ui.registry.addButton('customPasteMarkdown', {
             icon: 'custom-paste-markdown',
             tooltip: 'Colar do Markdown',
             onAction: async function() {
                 try {
-                    const textFromClipboard = await navigator.clipboard.readText();
-                    if (textFromClipboard) {
-                        const htmlContent = MarkdownConverter.markdownToHtml(textFromClipboard);
-                        editor.execCommand('mceInsertContent', false, htmlContent);
+                    const text = await navigator.clipboard.readText();
+                    if (text) {
+                        const html = MarkdownConverter.markdownToHtml(text);
+                        editor.execCommand('mceInsertContent', false, html);
                         NotificationService.show('Conteúdo Markdown colado e formatado!', 'success');
                     } else {
                          NotificationService.show('A área de transferência está vazia.', 'info');
@@ -177,19 +150,14 @@ const TINYMCE_CONFIG = {
             }
         });
 
-        // Botão de Copiar Formatado
         editor.ui.registry.addButton('customCopyFormatted', {
             icon: 'custom-copy-formatted',
             tooltip: 'Copiar como Markdown',
             onAction: async function() {
                 try {
-                    const htmlContent = editor.getContent();
-                    const markdownContent = MarkdownConverter.htmlToMarkdown(htmlContent);
-                    
-                    await navigator.clipboard.writeText(markdownContent);
-                    
+                    const markdown = MarkdownConverter.htmlToMarkdown(editor.getContent());
+                    await navigator.clipboard.writeText(markdown);
                     NotificationService.show('Texto copiado para a área de transferência em formato Markdown!', 'success');
-                    
                 } catch (error) {
                     console.error('Erro ao copiar como Markdown:', error);
                     NotificationService.show('Ocorreu um erro ao tentar copiar o texto.', 'error');
@@ -197,15 +165,13 @@ const TINYMCE_CONFIG = {
             }
         });
 
-        // Botão de Download
         editor.ui.registry.addButton('customOdtButton', {
             icon: 'custom-download-doc',
             tooltip: 'Salvar como documento Markdown (.md)',
             onAction: function() {
-                const editorContent = editor.getContent();
                 try {
-                    const markdownContent = MarkdownConverter.htmlToMarkdown(editorContent);
-                    const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
+                    const markdown = MarkdownConverter.htmlToMarkdown(editor.getContent());
+                    const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
@@ -221,33 +187,19 @@ const TINYMCE_CONFIG = {
             }
         });
 
-        // NOVO BOTÃO: Seletor de Tema
         editor.ui.registry.addMenuButton('customThemeButton', {
             icon: 'custom-paintbrush',
             tooltip: 'Mudar Tema do Editor',
             fetch: function (callback) {
                 const items = [
-                    {
-                        type: 'menuitem',
-                        text: 'Modo Claro (Padrão)',
-                        onAction: () => applyTheme('light')
-                    },
-                    {
-                        type: 'menuitem',
-                        text: 'Modo Escuro',
-                        onAction: () => applyTheme('theme-dark')
-                    },
-                    {
-                        type: 'menuitem',
-                        text: 'Amarelo Suave',
-                        onAction: () => applyTheme('theme-custom-yellow')
-                    }
+                    { type: 'menuitem', text: 'Modo Claro (Padrão)', onAction: () => applyTheme('light') },
+                    { type: 'menuitem', text: 'Modo Escuro', onAction: () => applyTheme('theme-dark') },
+                    { type: 'menuitem', text: 'Amarelo Suave', onAction: () => applyTheme('theme-custom-yellow') }
                 ];
                 callback(items);
             }
         });
         
-        // BOTÃO DE APAGAR DOCUMENTO
         editor.ui.registry.addButton('customDeleteButton', {
             icon: 'custom-delete-doc',
             tooltip: 'Apagar todo o conteúdo',
@@ -262,26 +214,18 @@ const TINYMCE_CONFIG = {
             }
         });
 
-        // ADICIONADO: Listener para o atalho da Paleta de Comandos dentro do editor
         editor.on('keydown', function(event) {
-            // CORREÇÃO DE ATALHO: Mudado de Ctrl+Alt+P para Ctrl+. para consistência
             if (event.ctrlKey && event.key === '.') {
                 event.preventDefault();
                 event.stopPropagation();
-                if (typeof CommandPalette !== 'undefined' && CommandPalette.open) {
-                    CommandPalette.open();
-                }
+                if (typeof CommandPalette !== 'undefined' && CommandPalette.open) CommandPalette.open();
             }
         });
 
         editor.on('init', () => {
-            // Carrega e aplica o tema salvo no LocalStorage
             const savedTheme = localStorage.getItem('editorTheme');
-            if (savedTheme) {
-                applyTheme(savedTheme);
-            }
+            if (savedTheme) applyTheme(savedTheme);
 
-            // --- INÍCIO DA LÓGICA DO CHANGELOG ---
             try {
                 const statusBar = editor.getContainer().querySelector('.tox-statusbar');
                 const brandingLink = statusBar.querySelector('.tox-statusbar__branding');
@@ -290,28 +234,21 @@ const TINYMCE_CONFIG = {
                     versionEl.className = 'version-changelog-link';
                     versionEl.textContent = `| Versão ${CHANGELOG_DATA.currentVersion}`;
                     versionEl.title = 'Clique para ver o histórico de mudanças';
-
                     versionEl.onclick = () => {
                         ModalManager.show({
                             type: 'info',
                             title: 'Histórico de Versões',
                             initialData: {
                                 title: `Novidades da Versão ${CHANGELOG_DATA.currentVersion}`,
-                                cards: CHANGELOG_DATA.history.map(item => ({
-                                    title: `Versão ${item.version} - ${item.title}`,
-                                    content: item.content
-                                }))
+                                cards: CHANGELOG_DATA.history.map(item => ({ title: `Versão ${item.version} - ${item.title}`, content: item.content }))
                             }
                         });
                     };
-                    
-                    // Insere o novo elemento logo após o link de branding do TinyMCE
                     brandingLink.parentNode.insertBefore(versionEl, brandingLink.nextSibling);
                 }
             } catch (error) {
                 console.error("Não foi possível adicionar o link de changelog:", error);
             }
-            // --- FIM DA LÓGICA DO CHANGELOG ---
         
             if (typeof SpeechDictation !== 'undefined' && SpeechDictation.isSupported()) {
                 SpeechDictation.init({ 
@@ -327,34 +264,19 @@ const TINYMCE_CONFIG = {
             }
         });
         
-        // --- LÓGICA DE DETECÇÃO AUTOMÁTICA DE MARKDOWN (CORRIGIDA) ---
         editor.on('paste_preprocess', function (plugin, args) {
-            // Para contornar a limpeza do TinyMCE, extraímos o texto puro
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = args.content;
             const plainText = tempDiv.textContent || "";
-
-            // Critérios de detecção aplicados no texto puro
-            const isLikelyMarkdown = (
-                /[*_#`[\]()~-]/.test(plainText) && // Contém caracteres de Markdown
-                plainText.length > 5 && // Não é muito curto
-                // Evita converter trechos de código ou URLs que contenham os caracteres
-                !/https?:\/\//.test(plainText)
-            );
-
+            const isLikelyMarkdown = (/[*_#`[\]()~-]/.test(plainText) && plainText.length > 5 && !/https?:\/\//.test(plainText));
             if (isLikelyMarkdown) {
-                // Convertemos o texto PURO, não o conteúdo já processado pelo TinyMCE
-                const htmlContent = MarkdownConverter.markdownToHtml(plainText);
-                
-                // Substituímos o conteúdo a ser colado pelo nosso HTML convertido
-                args.content = htmlContent;
+                args.content = MarkdownConverter.markdownToHtml(plainText);
                 NotificationService.show('Conteúdo Markdown colado e formatado!', 'info', 2500);
             }
         });
 
-        // --- LÓGICA DE SUBSTITUIÇÃO AUTOMÁTICA ---
         editor.on('keyup', function(e) {
-            if (e.keyCode !== 32 && e.keyCode !== 13) return; // Só continua para Espaço ou Enter
+            if (e.keyCode !== 32 && e.keyCode !== 13) return;
             if (!appState.replacements || appState.replacements.length === 0) return;
 
             const rng = editor.selection.getRng();
@@ -364,28 +286,21 @@ const TINYMCE_CONFIG = {
             if (startNode.nodeType !== Node.TEXT_NODE) return;
             
             const textBeforeCursor = startNode.nodeValue.substring(0, startOffset);
-            
             const sortedRules = [...appState.replacements].sort((a, b) => b.find.length - a.find.length);
 
             for (const rule of sortedRules) {
                 const triggerNormalSpace = rule.find + ' ';
                 const triggerNbsp = rule.find + '\u00A0';
-
                 let triggerFound = null;
-                if (textBeforeCursor.endsWith(triggerNormalSpace)) {
-                    triggerFound = triggerNormalSpace;
-                } else if (textBeforeCursor.endsWith(triggerNbsp)) {
-                    triggerFound = triggerNbsp;
-                }
+                if (textBeforeCursor.endsWith(triggerNormalSpace)) triggerFound = triggerNormalSpace;
+                else if (textBeforeCursor.endsWith(triggerNbsp)) triggerFound = triggerNbsp;
                 
                 if (triggerFound) {
                     const replaceRng = document.createRange();
                     replaceRng.setStart(startNode, startOffset - triggerFound.length);
                     replaceRng.setEnd(startNode, startOffset);
-
                     editor.selection.setRng(replaceRng);
                     editor.selection.setContent(rule.replace + '\u00A0'); 
-
                     return;
                 }
             }
