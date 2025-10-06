@@ -1143,54 +1143,69 @@ blockquote p {
     background-color: rgba(206, 42, 102, 0.1);
 }
 
-/* --- ESTILOS PARA POWER VARIABLES --- */
+/* --- ESTILOS REVISADOS PARA POWER VARIABLES --- */
 
-/* "Pílula" para a Power Variable na sidebar */
+/* Estilo base para variáveis de USUÁRIO (fundo rosa claro) */
 .model-item.model-item--power-variable {
-    background-color: rgba(206, 42, 102, 0.1); /* Fundo fúcsia bem sutil */
-    border: 1px solid rgba(206, 42, 102, 0.4);
-    border-radius: 20px; /* Cantos arredondados para o estilo de "pílula" */
-    cursor: pointer; /* Indica que o item inteiro é clicável */
-    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+    background-color: rgba(206, 42, 102, 0.08);
+    border: 1px solid rgba(206, 42, 102, 0.3);
+    border-radius: 20px;
+    color: #a12050;
+    /* Oculta os botões de ação para TODAS as variáveis */
+    .model-actions {
+        display: none;
+    }
+    .model-header {
+        margin-bottom: 0;
+    }
 }
-
 .model-item.model-item--power-variable:hover {
-    background-color: rgba(206, 42, 102, 0.2);
-    border-color: rgba(206, 42, 102, 0.7);
+    background-color: rgba(206, 42, 102, 0.15);
+    border-color: rgba(206, 42, 102, 0.5);
 }
 
-/* Adiciona um ícone de "engrenagem" para indicar que é uma variável */
-.model-item.model-item--power-variable .model-header .model-name::before {
-    content: '⚙️';
-    margin-right: 6px;
+/* NOVO: Estilo de "Tag" para VARIÁVEIS DE SISTEMA na Sidebar (Sobrescreve o estilo base) */
+.model-item.model-item--system-variable {
+    background-color: var(--primary-color); /* Fundo fúcsia forte */
+    border-color: var(--primary-color-dark);
+    color: white;
+    font-weight: bold;
+}
+.model-item.model-item--system-variable:hover {
+    background-color: var(--primary-color-dark);
+}
+.model-item.model-item--system-variable .model-name:hover {
+    background-color: transparent; /* Remove o hover do nome dentro da tag */
 }
 
-/* Oculta o container dos botões de ação (Editar, Mover, etc.) APENAS para as pílulas */
-.model-item.model-item--power-variable .model-actions {
-    display: none;
-}
-
-/* Ajusta o cabeçalho para não ter borda inferior quando os botões estão ocultos */
-.model-item.model-item--power-variable .model-header {
-    margin-bottom: 0;
-}
-
-/* Garante que o nome possa ser copiado, mas não interfere no clique principal */
-.model-item.model-item--power-variable .model-name {
-    cursor: copy;
-}
-
-/* Diferenciação na Paleta de Comandos */
+/* Estilo para variáveis de USUÁRIO na Paleta de Comandos */
 .cp-result-item.cp-result-item--power-variable {
     font-style: italic;
-    color: #a12050; /* Tom mais escuro da cor primária */
+    color: #a12050;
 }
-
-.cp-result-item.cp-result-item--power-variable.selected {
-    color: white; /* Garante que o texto fique branco ao ser selecionado */
-}
-
 .cp-result-item.cp-result-item--power-variable::before {
     content: '⚙️';
     margin-right: 10px;
+}
+.cp-result-item.cp-result-item--power-variable.selected {
+    color: white;
+}
+
+/* NOVO: Estilo de "Tag" para VARIÁVEIS DE SISTEMA na Paleta de Comandos */
+.cp-result-item.cp-result-item--system-variable {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: bold;
+    font-style: normal;
+    border-radius: 4px;
+    margin: 2px 8px; /* Adiciona espaçamento vertical e horizontal */
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+.cp-result-item.cp-result-item--system-variable.selected {
+    background-color: var(--primary-color-dark);
+}
+/* Remove o ícone de engrenagem APENAS das variáveis de sistema na paleta */
+.cp-result-item.cp-result-item--system-variable::before {
+    content: none;
 }
