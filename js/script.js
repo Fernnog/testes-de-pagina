@@ -322,7 +322,6 @@ function filterModels() {
             sourceModels = appState.models.filter(m => m.isFavorite);
             sourceFolders = [];
         } else if (appState.activeTabId === POWER_TAB_ID) {
-            // INÍCIO DA ALTERAÇÃO SOLICITADA
             const userPowerModels = appState.models.filter(m => m.tabId === appState.activeTabId);
             
             const systemVariables = POWER_VARIABLE_BLUEPRINTS
@@ -338,7 +337,6 @@ function filterModels() {
 
             sourceModels = [...systemVariables, ...userPowerModels];
             sourceFolders = (appState.folders || []).filter(f => f.tabId === appState.activeTabId);
-            // FIM DA ALTERAÇÃO SOLICITADA
 
         } else {
             sourceModels = appState.models.filter(m => m.tabId === appState.activeTabId);
@@ -352,7 +350,7 @@ function filterModels() {
     if (!query) {
         const foldersWithType = sourceFolders.map(f => ({ ...f, type: 'folder' }));
         const modelsWithType = sourceModels.map(m => ({ ...m, type: 'model' }));
-        return [...foldersWithType, ...modelsWithType].sort((a, b) => a.name.localeCompare(b.name));
+        return [...foldersWithType, ...modelsWithType];
     }
 
     let matchedModels;
