@@ -44,76 +44,89 @@ const TINYMCE_CONFIG = {
     height: "100%",
     autoresize_bottom_margin: 30,
 
-    setup: function(editor) {
-        // --- Função Auxiliar para Gerenciar Temas ---
-        const applyTheme = (themeName) => {
-            const body = document.body;
-            // Limpa temas antigos
-            body.classList.remove('theme-dark', 'theme-custom-yellow');
-            
-            // Adiciona o novo tema, se não for o padrão 'claro'
-            if (themeName && themeName !== 'light') {
-                body.classList.add(themeName);
-            }
-            
-            // Salva a escolha do usuário
-            localStorage.setItem('editorTheme', themeName);
-        };
-        
-        // --- Registro de Ícones Customizados ---
-        editor.ui.registry.addIcon('custom-mic', ICON_MIC);
-        editor.ui.registry.addIcon('custom-ai-brain', ICON_AI_BRAIN);
-        editor.ui.registry.addIcon('custom-replace', ICON_REPLACE);
-        editor.ui.registry.addIcon('custom-copy-formatted', ICON_COPY_FORMATTED);
-        editor.ui.registry.addIcon('custom-download-doc', ICON_DOWNLOAD_DOC);
-        editor.ui.registry.addIcon('custom-spinner', ICON_SPINNER);
-        editor.ui.registry.addIcon('custom-delete-doc', ICON_DELETE_DOC);
-        editor.ui.registry.addIcon('custom-paste-markdown', ICON_PASTE_MARKDOWN);
-        editor.ui.registry.addIcon('custom-join-lines', ICON_JOIN_LINES);
-        editor.ui.registry.addIcon('custom-paintbrush', ICON_PAINTBRUSH); // NOVO ÍCONE REGISTRADO
+     setup: (editor) => {
+        // --- INÍCIO DA NOVA LÓGICA DE VERSÃO ---
+        // O evento 'init' é disparado quando o editor está totalmente carregado e pronto.
+        editor.on('init', () => {
+            // Encontra o elemento de branding "Powered by Tiny" na barra de status.
+            const brandingElement = editor.getContainer().querySelector('.tox-statusbar__branding');
 
-        // --- Definição dos Botões ---
-
-        // Botão para recuo de primeira linha
-        editor.ui.registry.addButton('customIndent', {
-            icon: 'indent',
-            tooltip: 'Recuo da Primeira Linha (3cm)',
-            onAction: function() {
-                const node = editor.selection.getNode();
-                const blockElement = editor.dom.getParents(node, (e) => e.nodeName === 'P' || /^H[1-6]$/.test(e.nodeName), editor.getBody());
+            // Verifica se o elemento de branding foi encontrado antes de prosseguir.
+            if (brandingElement) {
+                // Cria um novo elemento <span> para conter o número da versão.
+                const versionLabel = document.createElement('span');
                 
-                if (blockElement.length > 0) {
-                    const element = blockElement[0];
-                    if (element.style.textIndent) {
-                        element.style.textIndent = '';
-                    } else {
-                        element.style.textIndent = '3cm';
-                    }
+                // Aplica a classe CSS que definimos em style.css para estilização.
+                versionLabel.className = 'app-version-label'; 
+                
+                // Define o texto do rótulo, buscando da nossa constante.
+                versionLabel.textContent = `v${APP_VERSION}`;
+                versionLabel.title = `Versão da Aplicação`;
+
+                // Insere o nosso rótulo de versão na árvore do DOM,
+                // posicionando-o exatamente ANTES do elemento de branding.
+                brandingElement.parentNode.insertBefore(versionLabel, brandingElement);
+            }
+        });
+        // --- FIM DA NOVA LÓGICA DE VERSÃO ---
+
+        // ==============================================================================
+        // Registro dos botões personalizados na barra de ferramentas (código original mantido)
+        // ==============================================================================
+
+        // Seletor de Tema
+        editor.ui.registry.addMenuButton('theme-selector', {
+            text: 'Tema',
+            tooltip: 'Selecionar Tema do Editor',
+            fetch: (callback) => {
+                const items = [
+                    { type: 'menuitem', text: 'Modo Claro', onAction: () => document.body.className = 'theme-light' },
+                    { type: 'menuitem', text: 'Modo Escuro', onAction: () => document.body.className = 'theme-dark' },
+                    { type: 'menuitem', text: 'Amarelo Suave', onAction: () => document.body.className = 'theme-custom-yellow' }
+                ];
+                callback(items);
+            }
+        });
+        
+        // Botão para corrigir texto de PDF
+        editor.ui.registry.addButton('fix-pdf-text-btn', {
+            text: 'Corrigir PDF',
+            tooltip: 'Remover quebras de linha de texto copiado de PDF',
+            onAction: () => {
+                if(typeof EditorActions !== 'undefined' && EditorActions.removeLineBreaks) {
+                    EditorActions.removeLineBreaks();
+                } else {
+                    console.error("EditorActions.removeLineBreaks não encontrado.");
                 }
             }
         });
 
-        // Botão de citação
-        editor.ui.registry.addButton('customBlockquote', {
-            icon: 'quote',
-            tooltip: 'Transformar em citação (7cm + itálico)',
-            onAction: function() {
-                editor.execCommand('mceBlockQuote');
+        // Botão para gerenciar substituições
+        editor.ui.registry.addButton('manage-replacements-btn', {
+            text: 'Substituições',
+            tooltip: 'Gerenciar Substituições Automáticas',
+            onAction: () => {
+                 if(typeof ModalManager !== 'undefined') {
+                    ModalManager.show({ type: 'replacementManager' });
+                } else {
+                    console.error("ModalManager não encontrado.");
+                }
             }
         });
 
         // Botão de Ditado por Voz
-        editor.ui.registry.addButton('customMicButton', {
-            icon: 'custom-mic',
+        editor.ui.registry.addButton('dictate-btn', {
+            icon: 'microphone',
             tooltip: 'Ditar texto',
-            onAction: function() {
-                if (typeof SpeechDictation !== 'undefined' && SpeechDictation.isSupported()) {
-                    SpeechDictation.start();
+            onAction: () => {
+                if(typeof SpeechRecognitionModule !== 'undefined') {
+                    SpeechRecognitionModule.toggleDictationModal();
                 } else {
-                    NotificationService.show('O reconhecimento de voz não é suportado neste navegador.', 'error');
+                    console.error("SpeechRecognitionModule não encontrado.");
                 }
             }
         });
+    },
 
         // Botão de Ajustar Texto Quebrado (substituindo o de IA)
         editor.ui.registry.addButton('customAiButton', {
