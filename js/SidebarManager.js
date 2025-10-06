@@ -101,9 +101,12 @@ const SidebarManager = (() => {
             const li = document.createElement('li');
             const isVar = isPowerVariable(model) || model.isSystemVariable;
             
-            li.className = isVar 
-                ? 'model-item model-item--power-variable' 
-                : 'model-item' + (isChild ? ' model-item-child' : '');
+            // Lógica de classes aprimorada para legibilidade
+            let liClasses = ['model-item'];
+            if (isChild) liClasses.push('model-item-child');
+            if (isVar) liClasses.push('model-item--power-variable');
+            if (model.isSystemVariable) liClasses.push('model-item--system-variable');
+            li.className = liClasses.join(' ');
             
             li.dataset.modelId = model.id;
     
@@ -133,7 +136,7 @@ const SidebarManager = (() => {
                 nameSpan.appendChild(colorIndicator);
             }
 
-            if (model.content && model.content.includes('{{')) {
+            if (model.content && model.content.includes('{{') && !model.isSystemVariable) {
                 const variableIndicator = document.createElement('span');
                 variableIndicator.className = 'model-variable-indicator';
                 variableIndicator.title = 'Este modelo contém variáveis dinâmicas';
