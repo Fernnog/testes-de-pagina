@@ -7,7 +7,6 @@ const POWER_VARIABLE_BLUEPRINTS = [
         label: 'Caixa de Pergunta',
         description: 'Pede ao usuário para digitar um texto livre.',
         icon: '💬',
-        // A função 'build' gera o conteúdo final do modelo
         build: (name) => `{{${name.replace(/\s+/g, '_').toLowerCase()}:prompt}}`
     },
     {
@@ -22,7 +21,7 @@ const POWER_VARIABLE_BLUEPRINTS = [
         label: 'Data Atual (Simples)',
         description: 'Insere a data de hoje no formato DD/MM/AAAA.',
         icon: '📅',
-        build: (name) => `{{data_atual}}` // Nome é para o rótulo, o sistema preenche o resto
+        build: (name) => `{{data_atual}}`
     },
     {
         type: 'data_por_extenso',
@@ -37,7 +36,72 @@ const POWER_VARIABLE_BLUEPRINTS = [
         description: 'Insere a hora e os minutos atuais.',
         icon: '⏰',
         build: (name) => `{{hora_atual}}`
+    },
+    // --- INÍCIO DAS NOVAS VARIÁVEIS (v1.0.2) ---
+    {
+        type: 'dia_da_semana',
+        label: 'Dia da Semana',
+        description: 'Insere o dia atual por extenso (ex: segunda-feira).',
+        icon: '🗓️',
+        build: (name) => `{{dia_da_semana}}`
+    },
+    {
+        type: 'mes_por_extenso',
+        label: 'Mês por Extenso',
+        description: 'Insere o mês atual por extenso (ex: julho).',
+        icon: '📜',
+        build: (name) => `{{mes_por_extenso}}`
+    },
+    {
+        type: 'ano_atual',
+        label: 'Ano Atual',
+        description: 'Insere o ano corrente com quatro dígitos.',
+        icon: '📅',
+        build: (name) => `{{ano_atual}}`
+    },
+    {
+        type: 'numero_processo',
+        label: 'Número do Processo',
+        description: 'Pede ao usuário para digitar o número do processo.',
+        icon: '⚖️',
+        build: (name) => `{{numero_processo:prompt}}`
+    },
+    {
+        type: 'nome_autor',
+        label: 'Nome da Parte (Autor)',
+        description: 'Pede ao usuário para digitar o nome do autor.',
+        icon: '👤',
+        build: (name) => `{{nome_autor:prompt}}`
+    },
+    {
+        type: 'nome_reu',
+        label: 'Nome da Parte (Réu)',
+        description: 'Pede ao usuário para digitar o nome do réu.',
+        icon: '👤',
+        build: (name) => `{{nome_reu:prompt}}`
+    },
+    {
+        type: 'status_decisao',
+        label: 'Status da Decisão',
+        description: 'Apresenta um menu de opções para o status.',
+        icon: '✅',
+        build: (name) => `{{status_decisao:choice(DEFIRO|INDEFIRO|DEFIRO PARCIALMENTE)}}`
+    },
+    {
+        type: 'id_unico',
+        label: 'ID Único',
+        description: 'Gera um código de referência único (timestamp).',
+        icon: '🆔',
+        build: (name) => `{{id_unico}}`
+    },
+    {
+        type: 'cursor',
+        label: 'Posição do Cursor',
+        description: 'Marca onde o cursor deve ficar após a inserção.',
+        icon: '✍️',
+        build: (name) => `{{cursor}}`
     }
+    // --- FIM DAS NOVAS VARIÁVEIS (v1.0.2) ---
 ];
 
 // --- DADOS E ESTADO DA APLICAÇÃO ---
@@ -243,10 +307,22 @@ function _processSystemVariables(content) {
     const dataExtenso = now.toLocaleDateString('pt-BR', optionsExtenso);
     const horaSimples = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
+    // Novas variáveis (v1.0.2)
+    const diaSemana = now.toLocaleDateString('pt-BR', { weekday: 'long' });
+    const mesExtenso = now.toLocaleDateString('pt-BR', { month: 'long' });
+    const ano = now.getFullYear();
+    const idUnico = `ID-${Date.now()}`;
+
     let processedContent = content;
     processedContent = processedContent.replace(/{{data_atual}}/gi, dataSimples);
     processedContent = processedContent.replace(/{{hora_atual}}/gi, horaSimples);
     processedContent = processedContent.replace(/{{data_por_extenso}}/gi, dataExtenso);
+    // Novas substituições (v1.0.2)
+    processedContent = processedContent.replace(/{{dia_da_semana}}/gi, diaSemana);
+    processedContent = processedContent.replace(/{{mes_por_extenso}}/gi, mesExtenso);
+    processedContent = processedContent.replace(/{{ano_atual}}/gi, ano);
+    processedContent = processedContent.replace(/{{id_unico}}/gi, idUnico);
+    
     return processedContent;
 }
 
@@ -276,7 +352,7 @@ async function insertModelContent(model) {
 
     const variableRegex = /{{\s*([^}]+?)\s*}}/g;
     const matches = [...processedContent.matchAll(variableRegex)];
-    const uniqueVariablesForModal = [...new Set(matches.map(match => match[1]).filter(v => !v.startsWith('snippet:') && !v.endsWith(':prompt') && v !== 'data_atual' && v !== 'hora_atual' && v !== 'data_por_extenso'))];
+    const uniqueVariablesForModal = [...new Set(matches.map(match => match[1]).filter(v => !v.startsWith('snippet:') && !v.endsWith(':prompt') && v !== 'data_atual' && v !== 'hora_atual' && v !== 'data_por_extenso' && v !== 'dia_da_semana' && v !== 'mes_por_extenso' && v !== 'ano_atual' && v !== 'id_unico' && v !== 'cursor'))];
 
     if (uniqueVariablesForModal.length > 0) {
         ModalManager.show({
@@ -300,7 +376,20 @@ async function insertModelContent(model) {
     } else {
         processedContent = _processSystemVariables(processedContent);
         if (tinymce.activeEditor) {
+            const hasCursor = processedContent.includes('{{cursor}}');
+            const cursorMarker = `<span id="cursor-marker" style="display:none;">\uFEFF</span>`;
+            processedContent = processedContent.replace(/{{cursor}}/g, hasCursor ? cursorMarker : '');
+
             tinymce.activeEditor.execCommand('mceInsertContent', false, processedContent);
+
+            if (hasCursor) {
+                const markerEl = tinymce.activeEditor.dom.get('cursor-marker');
+                if (markerEl) {
+                    tinymce.activeEditor.selection.select(markerEl);
+                    tinymce.activeEditor.selection.collapse(true);
+                    tinymce.activeEditor.dom.remove(markerEl);
+                }
+            }
             tinymce.activeEditor.focus();
         }
     }
@@ -324,8 +413,13 @@ function filterModels() {
         } else if (appState.activeTabId === POWER_TAB_ID) {
             const userPowerModels = appState.models.filter(m => m.tabId === appState.activeTabId);
             
+            // Lógica refatorada para buscar variáveis de sistema dinamicamente (v1.0.2)
+            const systemVariableTypes = [
+                'data_atual', 'data_por_extenso', 'hora_atual', 'dia_da_semana', 
+                'mes_por_extenso', 'ano_atual', 'id_unico', 'cursor'
+            ];
             const systemVariables = POWER_VARIABLE_BLUEPRINTS
-                .filter(bp => ['data_atual', 'data_por_extenso', 'hora_atual'].includes(bp.type))
+                .filter(bp => systemVariableTypes.includes(bp.type))
                 .map(bp => ({
                     id: `system-var-${bp.type}`,
                     name: bp.label,
@@ -350,7 +444,7 @@ function filterModels() {
     if (!query) {
         const foldersWithType = sourceFolders.map(f => ({ ...f, type: 'folder' }));
         const modelsWithType = sourceModels.map(m => ({ ...m, type: 'model' }));
-        return [...foldersWithType, ...modelsWithType];
+        return [...foldersWithType, ...modelsWithType].sort((a, b) => a.name.localeCompare(b.name));
     }
 
     let matchedModels;
@@ -783,6 +877,12 @@ window.addEventListener('DOMContentLoaded', () => {
     BackupManager.init({ statusElement: backupStatusEl });
 
     loadStateFromStorage(); 
+
+    // MELHORIA DE UX (PRIORIDADE 2): Adicionar tooltip descritivo ao FAB
+    const fab = document.getElementById('open-palette-fab');
+    if (fab) {
+        fab.title = 'Abrir Power Palette (Ctrl + .)';
+    }
 
     if (typeof TINYMCE_CONFIG !== 'undefined') {
         tinymce.init(TINYMCE_CONFIG);
