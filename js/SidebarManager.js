@@ -63,7 +63,6 @@ const SidebarManager = (() => {
                 tabEl.classList.add('tab-item-icon-only');
             } else if (tab.id === callbacks.getPowerTabId()) {
                 tabEl.innerHTML += ICON_LIGHTNING;
-                // MELHORIA DE UX (PRIORIDADE 2): Adicionar tooltip descritivo
                 tabEl.title = 'Power Palette (Ações Rápidas)';
                 tabEl.classList.add('tab-item-icon-only');
             } else {
@@ -102,12 +101,13 @@ const SidebarManager = (() => {
             const li = document.createElement('li');
             const isVar = isPowerVariable(model) || model.isSystemVariable;
             
-            li.className = isVar
-                ? 'model-item model-item--power-variable'
+            li.className = isVar 
+                ? 'model-item model-item--power-variable' 
                 : 'model-item' + (isChild ? ' model-item-child' : '');
             
             li.dataset.modelId = model.id;
-
+    
+            // Se for uma variável, o clique no item inteiro insere o conteúdo.
             if (isVar) {
                 li.addEventListener('click', () => callbacks.onModelInsert(model));
                 li.title = `Clique para inserir a variável "${model.name}"`;
@@ -119,18 +119,13 @@ const SidebarManager = (() => {
             nameSpan.className = 'model-name';
             nameSpan.title = `Clique para copiar: ${model.content}`;
             nameSpan.addEventListener('click', (e) => {
-                e.stopPropagation();
+                e.stopPropagation(); // Impede que o clique para copiar também insira o modelo
                 navigator.clipboard.writeText(model.content).then(() => {
                     NotificationService.show(`Conteúdo de "${model.name}" copiado!`, 'success', 2500);
                 });
             });
 
-            // --- INÍCIO DA ALTERAÇÃO (PRIORIDADE 1) ---
-            // A lógica a seguir garante que indicadores visuais (círculo de cor e engrenagem)
-            // apareçam APENAS em modelos normais, e não nas novas tags de variáveis.
-
-            // 1. Adiciona o indicador de cor da aba somente se NÃO for uma variável.
-            if (!isVar) {
+            if (!model.isSystemVariable) {
                 const colorIndicator = document.createElement('span');
                 colorIndicator.className = 'model-color-indicator';
                 const parentTab = appState.tabs.find(t => t.id === model.tabId);
@@ -138,16 +133,13 @@ const SidebarManager = (() => {
                 nameSpan.appendChild(colorIndicator);
             }
 
-            // 2. Adiciona o indicador de engrenagem somente em modelos normais que contenham variáveis.
-            if (model.content && model.content.includes('{{') && !isVar) {
+            if (model.content && model.content.includes('{{')) {
                 const variableIndicator = document.createElement('span');
                 variableIndicator.className = 'model-variable-indicator';
                 variableIndicator.title = 'Este modelo contém variáveis dinâmicas';
                 variableIndicator.textContent = '⚙️';
                 nameSpan.appendChild(variableIndicator);
             }
-            // --- FIM DA ALTERAÇÃO ---
-
             const textNode = document.createTextNode(" " + model.name);
             nameSpan.appendChild(textNode);
             headerDiv.appendChild(nameSpan);
@@ -155,32 +147,31 @@ const SidebarManager = (() => {
             const actionsDiv = document.createElement('div');
             actionsDiv.className = 'model-actions';
             
-            // A lógica a seguir garante que os botões de ação (editar, mover, etc.)
-            // apareçam APENAS em modelos normais.
+            // Só cria os botões de ação se NÃO for uma variável
             if (!isVar) {
                 const insertButton = { icon: ICON_PLUS, title: 'Inserir', action: () => callbacks.onModelInsert(model) };
                 let actionButtons = [insertButton];
-
+    
                 actionButtons.push(
                     { icon: ICON_PENCIL, title: 'Editar modelo', action: () => callbacks.onModelEdit(model.id) },
                     { icon: ICON_MOVE, title: 'Mover para outra aba', action: () => callbacks.onModelMove(model.id) },
                     { icon: ICON_TRASH, title: 'Excluir modelo', action: () => callbacks.onModelDelete(model.id) },
                     { icon: model.isFavorite ? ICON_STAR_FILLED : ICON_STAR_OUTLINE, title: model.isFavorite ? 'Desfavoritar' : 'Favoritar', action: () => callbacks.onModelFavoriteToggle(model.id) }
                 );
-
+    
                 actionButtons.forEach(btnInfo => {
                     const button = document.createElement('button');
                     button.className = 'action-btn';
                     button.innerHTML = btnInfo.icon;
                     button.title = btnInfo.title;
                     button.onclick = (e) => {
-                        e.stopPropagation();
+                        e.stopPropagation(); // Impede que o clique no botão se propague
                         btnInfo.action();
                     };
                     actionsDiv.appendChild(button);
                 });
             }
-
+            
             li.appendChild(headerDiv);
             li.appendChild(actionsDiv);
             return li;
@@ -192,20 +183,22 @@ const SidebarManager = (() => {
             li.dataset.folderId = folder.id;
             const modelInFolderCount = itemsToRender.filter(m => m.type === 'model' && m.folderId === folder.id).length;
         
+            // Aplicação da cor dinâmica com transparência
             const parentTabForFolder = appState.tabs.find(t => t.id === folder.tabId);
             if (parentTabForFolder && parentTabForFolder.color) {
                 const hex = parentTabForFolder.color.replace('#', '');
-                if (hex.length === 6) {
+                if (hex.length === 6) { // Garante que a cor é um hex válido
                     const r = parseInt(hex.substring(0, 2), 16);
                     const g = parseInt(hex.substring(2, 4), 16);
                     const b = parseInt(hex.substring(4, 6), 16);
-                    li.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.5)`;
+                    li.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.5)`; // 50% de transparência
                     li.style.borderColor = `rgba(${r}, ${g}, ${b}, 0.7)`;
                 }
             }
         
             li.innerHTML = `<span class="folder-toggle">${folder.isExpanded ? '▼' : '▶'}</span><span class="folder-icon">${ICON_FOLDER}</span><span class="folder-name">${folder.name}</span><span class="folder-counter">(${modelInFolderCount})</span>`;
             
+            // Usa a nova função `modifyUIState` para não acionar o backup
             li.addEventListener('click', (e) => {
                  e.stopPropagation();
                  const folderInState = appState.folders.find(f => f.id === folder.id);
