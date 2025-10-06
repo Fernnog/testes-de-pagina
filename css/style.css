@@ -1209,3 +1209,18 @@ blockquote p {
 .cp-result-item.cp-result-item--system-variable::before {
     content: none;
 }
+
+/* --- ESTILOS PARA O CONTROLE DE VERSÃO NO STATUSBAR --- */
+.version-changelog-link {
+    margin-left: 10px;
+    color: #555;
+    font-size: 12px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.version-changelog-link:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
