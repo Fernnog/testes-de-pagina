@@ -148,22 +148,13 @@ const TINYMCE_CONFIG = {
 
         // Botão de Substituir Termos
         editor.ui.registry.addButton('customReplaceButton', {
-            icon: 'custom-replace',
-            tooltip: 'Gerenciar Substituições',
-            onAction: function () {
-                ModalManager.show({
-                    type: 'replacementManager',
-                    title: 'Gerenciador de Substituições',
-                    initialData: { replacements: appState.replacements || [] },
-                    onSave: (data) => {
-                        modifyStateAndBackup(() => {
-                            appState.replacements = data.replacements;
-                        });
-                        NotificationService.show('Regras de substituição salvas!', 'success');
-                    }
-                });
-            }
-        });
+    icon: 'custom-replace',
+    tooltip: 'Gerenciar Substituições',
+    onAction: function () {
+        // Delega a responsabilidade para a função que será criada em script.js
+        handleOpenReplacementManager(); 
+    }
+});
 
         // NOVO BOTÃO: Colar do Markdown
         editor.ui.registry.addButton('customPasteMarkdown', {
