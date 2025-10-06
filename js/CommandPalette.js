@@ -144,7 +144,11 @@ const CommandPalette = (() => {
                 li.dataset.modelId = model.id;
                 li.setAttribute('role', 'option');
 
-                if (isPowerVariable(model)) {
+                // Lógica de classes modificada para diferenciar variáveis de sistema
+                if (model.isSystemVariable) {
+                    li.classList.add('cp-result-item--system-variable');
+                    li.title = 'Variável de Sistema: ' + model.name;
+                } else if (isPowerVariable(model)) {
                     li.classList.add('cp-result-item--power-variable');
                     li.title = 'Inserir variável: ' + model.name;
                 }
