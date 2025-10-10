@@ -132,6 +132,7 @@ const ModalManager = (() => {
                 </button>
                 <div id="accordion-content-${index}" class="accordion-content" role="region">
                     ${card.content}
+                    <button class="copy-code-btn">Copiar Exemplo</button>
                 </div>
             </div>
         `).join('');
@@ -359,7 +360,7 @@ const ModalManager = (() => {
             }
         }
 
-        // LÓGICA PARA CONTROLAR O ACORDEÃO NO MODAL DE INFORMAÇÕES
+        // LÓGICA PARA CONTROLAR O ACORDEÃO E O BOTÃO DE COPIAR NO MODAL DE INFORMAÇÕES
         if (currentConfig.type === 'info' && modalDynamicContent.querySelector('.accordion-container')) {
             const headers = modalDynamicContent.querySelectorAll('.accordion-header');
             headers.forEach(header => {
@@ -377,6 +378,27 @@ const ModalManager = (() => {
                          header.setAttribute('aria-expanded', 'false');
                     }
                 });
+            });
+
+            // Lógica para os botões de copiar
+            modalDynamicContent.addEventListener('click', (e) => {
+                if (e.target.classList.contains('copy-code-btn')) {
+                    const accordionContent = e.target.closest('.accordion-content');
+                    if (accordionContent) {
+                        const preElement = accordionContent.querySelector('pre');
+                        if (preElement) {
+                            const codeText = preElement.textContent;
+                            navigator.clipboard.writeText(codeText).then(() => {
+                                NotificationService.show('Exemplo copiado para a área de transferência!', 'success');
+                                e.target.textContent = 'Copiado!';
+                                setTimeout(() => { e.target.textContent = 'Copiar Exemplo'; }, 2000);
+                            }).catch(err => {
+                                NotificationService.show('Falha ao copiar o texto.', 'error');
+                                console.error('Erro ao copiar:', err);
+                            });
+                        }
+                    }
+                }
             });
         }
     }
