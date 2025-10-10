@@ -1,9 +1,31 @@
 // js/tinymce-config.js
 
 const CHANGELOG_DATA = {
-    currentVersion: '1.0.3',
+    currentVersion: '1.0.5',
     history: [
         {
+            version: '1.0.5',
+            title: '🚀 Aprimoramento de Variáveis de Sistema',
+            content: `
+                <ul>
+                    <li><strong>Clique para Copiar:</strong> Clicar em uma variável de sistema (ex: "Data Atual") na aba Power ⚡️ agora copia seu código (<code>{{data_atual}}</code>) para a área de transferência.</li>
+                    <li><strong>Arrastar e Soltar Inteligente:</strong> Arrastar uma variável de sistema para o editor agora insere seu valor final processado (ex: "10/10/2025") em vez do código, agilizando a criação de documentos.</li>
+                </ul>
+            `
+        },
+        {
+            version: '1.0.4',
+            title: '⚡️ Power Tab Overhaul & UX Polish',
+            content: `
+                <ul>
+                    <li><strong>Arrastar e Soltar Inteligente:</strong> Corrigido o comportamento crítico de arrastar e soltar. Agora, ao arrastar uma variável de sistema (como "Data Atual") para o editor, o valor final (ex: "05/09/2024") é inserido, em vez do código <code>{{data_atual}}</code>.</li>
+                    <li><strong>Fluxo de Criação Simplificado:</strong> O botão "Adicionar" na aba Power agora funciona de forma intuitiva. Ele abre a janela padrão para criar um <strong>novo modelo rápido</strong>, em vez do antigo pop-up confuso.</li>
+                    <li><strong>Clique para Copiar:</strong> Clicar em uma variável de sistema (as tags fúcsia) agora copia seu código (ex: <code>{{hora_atual}}</code>) diretamente para a área de transferência, facilitando a construção de modelos complexos.</li>
+                    <li><strong>Consistência Visual:</strong> As variáveis de sistema são apresentadas como "tags" sem botões de ação, reforçando que são elementos nativos e não editáveis, distinguindo-as claramente dos seus modelos personalizados.</li>
+                </ul>
+            `
+        },
+         {
             version: '1.0.3',
             title: '🛠️ Manutenção e Correções',
             content: `
@@ -22,17 +44,6 @@ const CHANGELOG_DATA = {
                     <li><strong>Variáveis de Contexto Jurídico:</strong> Pré-configuradas ações rápidas para inserir Número do Processo, Nomes das Partes e Status da Decisão.</li>
                     <li><strong>Posicionamento de Cursor:</strong> Introduzida a variável especial <code>{{cursor}}</code> para posicionar o cursor de digitação após inserir um modelo.</li>
                     <li><strong>Refatoração:</strong> A lógica de exibição de variáveis de sistema na Aba Power agora é dinâmica, facilitando futuras expansões.</li>
-                </ul>
-            `
-        },
-        {
-            version: '1.0.1',
-            title: '✨ Lançamento Inicial e Qualidade de Vida',
-            content: `
-                <ul>
-                    <li><strong>Versão Inicial:</strong> Lançamento da plataforma base do Power Editor.</li>
-                    <li><strong>Controle de Versão:</strong> Adicionado o indicador de versão e o changelog clicável no rodapé do editor.</li>
-                    <li><strong>UX:</strong> Melhoria no tooltip do botão da Power Palette (FAB) para incluir o atalho de teclado (Ctrl + .).</li>
                 </ul>
             `
         }
@@ -345,6 +356,40 @@ const TINYMCE_CONFIG = {
                 if (closeBtn) closeBtn.addEventListener('click', () => { SpeechDictation.stop(); });
             }
         });
+
+        // ============================ INÍCIO DA LÓGICA DE DRAG & DROP ============================
+        // Adiciona um manipulador de eventos 'drop' para capturar o momento em que o usuário
+        // solta uma variável de sistema dentro do editor.
+        editor.on('drop', function(event) {
+            // Previne o comportamento padrão do editor/navegador para que possamos
+            // implementar nossa própria lógica customizada.
+            event.preventDefault();
+
+            // Pega o ID da variável que foi armazenado durante o evento 'dragstart' em SidebarManager.js
+            const modelId = event.dataTransfer.getData('text/plain');
+            
+            // Verifica se o item arrastado é de fato uma variável de sistema.
+            // Se não for, interrompemos a função para não interferir com outros comportamentos (ex: arrastar uma imagem).
+            if (!modelId || !modelId.startsWith('system-var-')) {
+                return;
+            }
+
+            // Extrai o tipo da variável do ID (ex: 'data_atual' de 'system-var-data_atual').
+            const type = modelId.replace('system-var-', '');
+            const blueprint = POWER_VARIABLE_BLUEPRINTS.find(bp => bp.type === type);
+            
+            if (blueprint) {
+                // Cria um modelo temporário contendo apenas o código da variável (ex: {{data_atual}}).
+                const tempModel = { content: blueprint.build(blueprint.label) };
+                
+                // Usa a função global _processSystemVariables (de script.js) para converter o código no seu valor final.
+                const processedContent = _processSystemVariables(tempModel.content);
+                
+                // Insere o conteúdo JÁ PROCESSADO na posição do cursor no editor.
+                editor.execCommand('mceInsertContent', false, processedContent);
+            }
+        });
+        // ============================ FIM DA LÓGICA DE DRAG & DROP ============================
         
         // --- LÓGICA DE DETECÇÃO AUTOMÁTICA DE MARKDOWN (CORRIGIDA) ---
         editor.on('paste_preprocess', function (plugin, args) {
