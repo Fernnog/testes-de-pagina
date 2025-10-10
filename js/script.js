@@ -126,9 +126,9 @@ const TAB_COLORS = [
 let colorIndex = 0;
 
 const defaultModels = [
-    { name: "IDPJ - Criação de Relatório de Sentença", content: "Este é o texto para a criação do relatório de sentença. Inclui seções sobre <b>fatos</b>, <i>fundamentos</i> e <u>dispositivo</u>.", hasDynamicVariables: false },
-    { name: "IDPJ - Criar texto de ADMISSIBILIDADE", content: "Texto padrão para a análise de admissibilidade do Incidente de Desconsideração da Personalidade Jurídica.", hasDynamicVariables: false },
-    { name: "IDPJ - RELATÓRIO de endereços", content: "Relatório gerado a partir da consulta de endereços nos sistemas conveniados. Segue abaixo a tabela:", hasDynamicVariables: false }
+    { name: "IDPJ - Criação de Relatório de Sentença", content: "Este é o texto para a criação do relatório de sentença. Inclui seções sobre <b>fatos</b>, <i>fundamentos</i> e <u>dispositivo</u>." },
+    { name: "IDPJ - Criar texto de ADMISSIBILIDADE", content: "Texto padrão para a análise de admissibilidade do Incidente de Desconsideração da Personalidade Jurídica." },
+    { name: "IDPJ - RELATÓRIO de endereços", content: "Relatório gerado a partir da consulta de endereços nos sistemas conveniados. Segue abaixo a tabela:" }
 ];
 
 // --- REFERÊNCIAS AOS ELEMENTOS DO HTML ---
@@ -192,7 +192,7 @@ function loadStateFromStorage() {
         const defaultTabId = `tab-${Date.now()}`;
         colorIndex = 0;
         appState = {
-            models: defaultModels.map((m, i) => ({ id: `model-${Date.now() + i}`, name: m.name, content: m.content, tabId: defaultTabId, isFavorite: false, folderId: null, hasDynamicVariables: m.hasDynamicVariables || false })),
+            models: defaultModels.map((m, i) => ({ id: `model-${Date.now() + i}`, name: m.name, content: m.content, tabId: defaultTabId, isFavorite: false, folderId: null })),
             tabs: [
                 { id: FAVORITES_TAB_ID, name: 'Favoritos', color: '#6c757d' },
                 { id: POWER_TAB_ID, name: 'Power ⚡', color: '#ce2a66' },
@@ -238,10 +238,11 @@ function loadStateFromStorage() {
                 });
 
                 appState.folders = parsedState.folders || [];
-                // Garante que modelos antigos tenham a propriedade folderId e hasDynamicVariables
+                // Garante que modelos antigos tenham a propriedade folderId
                 appState.models.forEach(m => {
-                    if (m.folderId === undefined) m.folderId = null;
-                    if (m.hasDynamicVariables === undefined) m.hasDynamicVariables = false;
+                    if (m.folderId === undefined) {
+                        m.folderId = null;
+                    }
                 });
                 appState.replacements = parsedState.replacements || [];
                 appState.variableMemory = parsedState.variableMemory || {};
@@ -325,112 +326,139 @@ function _processSystemVariables(content) {
     return processedContent;
 }
 
+// ========================================================================================
+// === FUNÇÃO DE INSERÇÃO DE MODELO COMPLETAMENTE REATORADA (v1.0.6) ===
+// ========================================================================================
 async function insertModelContent(model) {
+    // Passo 0: Preparações iniciais
     if (searchBox.value && appState.activeTabId !== model.tabId) {
         appState.activeTabId = model.tabId;
         searchBox.value = '';
         render();
     }
-    let processedContent = _resolveSnippets(model.content);
 
-    // Processamento de Variáveis Globais
+    // Passo 1: Resolver snippets e variáveis globais
+    let content = _resolveSnippets(model.content);
     if (appState.globalVariables && appState.globalVariables.length > 0) {
         appState.globalVariables.forEach(gVar => {
             const globalVarRegex = new RegExp(`{{\\s*${gVar.find}\\s*}}`, 'gi');
-            processedContent = processedContent.replace(globalVarRegex, gVar.replace);
+            content = content.replace(globalVarRegex, gVar.replace);
         });
     }
 
-    // NOVA LÓGICA DE PROCESSAMENTO DE VARIÁVEIS CONDICIONAIS
-    const conditionalRegex = /{{#if:([^:]+):choice\(([^}]+)\)}}([\s\S]*?){{\/if}}/gi;
-    const conditionalMatches = [...processedContent.matchAll(conditionalRegex)];
-
-    for (const match of conditionalMatches) {
-        const [fullBlock, varName, optionsStr, innerContent] = match;
-        const options = optionsStr.split('|');
+    // Passo 2: Loop de processamento para variáveis interativas (condicionais e prompts)
+    while (true) {
+        const choiceRegex = /{{\s*([^:]+?):choice\(([^)]+?)\)\s*}}/;
+        const promptRegex = /{{\s*([^:]+?):prompt\s*}}/;
         
-        const promptMessage = `Para "${varName.replace(/_/g, ' ')}", escolha uma opção:\n` +
-                              options.map((opt, i) => `${i + 1}: ${opt.trim()}`).join('\n');
-        
-        const userChoice = prompt(promptMessage);
+        let match = content.match(choiceRegex);
+        let varType = 'choice';
 
-        if (userChoice) {
-            const choiceIndex = parseInt(userChoice, 10) - 1;
-            if (choiceIndex >= 0 && choiceIndex < options.length) {
-                const chosenOption = options[choiceIndex].trim();
-                let replacementText = ''; // Default to empty string if no matching case is found
+        if (!match) {
+            match = content.match(promptRegex);
+            varType = 'prompt';
+        }
+
+        if (!match) {
+            // Se não houver mais variáveis interativas, sai do loop
+            break; 
+        }
+
+        // Processa a variável interativa encontrada
+        if (varType === 'choice') {
+            const [fullMatch, varName, optionsStr] = match;
+            
+            const userChoice = await new Promise(resolve => {
+                ModalManager.show({
+                    type: 'variableForm',
+                    title: `Selecione: ${varName.replace(/_/g, ' ')}`,
+                    initialData: { variables: [fullMatch.slice(2,-2)], modelId: model.id },
+                    onSave: (data) => resolve(data.values[varName]),
+                    onCancel: () => resolve(null) // Adicionado para tratar cancelamento
+                });
+            });
+            
+            if (userChoice !== null) {
+                // Sintaxe da condição: {{#if:nome_variavel=ValorDaOpcao}}...bloco...{{/if}}
+                const ifBlockRegex = new RegExp(`{{\#if:${varName}=${userChoice}}}(.*?){{\/if}}`, 'gs');
+                content = content.replace(ifBlockRegex, '$1');
                 
-                const caseRegex = /{{#case:([^}]+)}}([\s\S]*?){{\/case}}/gi;
-                let caseMatch;
-                while ((caseMatch = caseRegex.exec(innerContent)) !== null) {
-                    const [ , caseOption, caseContent] = caseMatch;
-                    if (caseOption.trim().toLowerCase() === chosenOption.toLowerCase()) {
-                        replacementText = caseContent;
-                        break;
-                    }
-                }
-                processedContent = processedContent.replace(fullBlock, replacementText);
+                // Limpa os blocos condicionais não escolhidos e a variável de escolha
+                content = content.replace(new RegExp(`{{\#if:${varName}=[^}]+?}}.*?{{\/if}}`, 'gs'), '');
+                content = content.replace(fullMatch, '');
             } else {
-                 processedContent = processedContent.replace(fullBlock, ''); // Invalid choice, remove block
+                NotificationService.show('Inserção cancelada.', 'info');
+                return; // Encerra a função se o usuário cancelar
             }
-        } else {
-            processedContent = processedContent.replace(fullBlock, ''); // User cancelled, remove block
+        } else if (varType === 'prompt') {
+            const [fullMatch, varName] = match;
+            const userValue = prompt(`Por favor, insira o valor para "${varName.replace(/_/g, ' ')}":`);
+            
+            if (userValue !== null) {
+                content = content.replace(fullMatch, userValue || '');
+            } else {
+                NotificationService.show('Inserção cancelada.', 'info');
+                return;
+            }
         }
     }
 
-    // Processamento de Variáveis :prompt
-    const promptRegex = /{{\s*([^:]+?):prompt\s*}}/g;
-    let promptMatches;
-    while ((promptMatches = promptRegex.exec(processedContent)) !== null) {
-        const variableName = promptMatches[1];
-        const userValue = prompt(`Por favor, insira o valor para "${variableName.replace(/_/g, ' ')}":`);
-        const replaceRegex = new RegExp(`{{\\s*${variableName}:prompt\s*}}`, 'g');
-        processedContent = processedContent.replace(replaceRegex, userValue || '');
-    }
-
-    // Processamento de outras variáveis via formulário modal
-    const variableRegex = /{{\s*([^}]+?)\s*}}/g;
-    const remainingMatches = [...processedContent.matchAll(variableRegex)];
-    const uniqueVariablesForModal = [...new Set(remainingMatches.map(match => match[1]).filter(v => !v.startsWith('snippet:') && !v.endsWith(':prompt') && !v.startsWith('#') && v !== 'data_atual' && v !== 'hora_atual' && v !== 'data_por_extenso' && v !== 'dia_da_semana' && v !== 'mes_por_extenso' && v !== 'ano_atual' && v !== 'id_unico' && v !== 'cursor'))];
+    // Passo 3: Coletar e processar todas as variáveis simples restantes de uma só vez
+    const simpleVarRegex = /{{\s*([^}]+?)\s*}}/g;
+    const systemVars = ['data_atual', 'hora_atual', 'data_por_extenso', 'dia_da_semana', 'mes_por_extenso', 'ano_atual', 'id_unico', 'cursor'];
+    const remainingMatches = [...content.matchAll(simpleVarRegex)];
+    const uniqueVariablesForModal = [...new Set(
+        remainingMatches
+            .map(match => match[1])
+            .filter(v => !systemVars.includes(v) && !v.startsWith('snippet:'))
+    )];
 
     if (uniqueVariablesForModal.length > 0) {
         ModalManager.show({
             type: 'variableForm',
-            title: 'Preencha as Informações do Modelo',
+            title: 'Preencha as Informações Finais',
             initialData: { variables: uniqueVariablesForModal, modelId: model.id },
             saveButtonText: 'Inserir Texto',
             onSave: (data) => {
-                let finalContent = processedContent;
+                let finalContent = content;
                 for (const key in data.values) {
-                    const placeholder = new RegExp(`{{\\s*${key.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}(:choice\\(.*?\\))?\\s*}}`, 'g');
+                    const placeholder = new RegExp(`{{\\s*${key.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}\\s*}}`, 'g');
                     finalContent = finalContent.replace(placeholder, data.values[key] || '');
                 }
-                finalContent = _processSystemVariables(finalContent);
-                if (tinymce.activeEditor) {
-                    tinymce.activeEditor.execCommand('mceInsertContent', false, finalContent);
-                    tinymce.activeEditor.focus();
-                }
+                // Processa variáveis de sistema e insere o conteúdo final
+                _insertFinalContentIntoEditor(finalContent);
             }
         });
     } else {
-        processedContent = _processSystemVariables(processedContent);
-        if (tinymce.activeEditor) {
-            const hasCursor = processedContent.includes('{{cursor}}');
-            const cursorMarker = `<span id="cursor-marker" style="display:none;">\uFEFF</span>`;
-            processedContent = processedContent.replace(/{{cursor}}/g, hasCursor ? cursorMarker : '');
+        // Se não houver mais variáveis, processa as de sistema e insere
+        _insertFinalContentIntoEditor(content);
+    }
+}
 
-            tinymce.activeEditor.execCommand('mceInsertContent', false, processedContent);
+/**
+ * Função auxiliar para processar variáveis de sistema e inserir no editor,
+ * incluindo o posicionamento do cursor.
+ * @param {string} content - O conteúdo a ser finalizado e inserido.
+ */
+function _insertFinalContentIntoEditor(content) {
+    let finalContent = _processSystemVariables(content);
 
-            if (hasCursor) {
-                const markerEl = tinymce.activeEditor.dom.get('cursor-marker');
-                if (markerEl) {
-                    tinymce.activeEditor.selection.select(markerEl);
-                    tinymce.activeEditor.selection.collapse(true);
-                    tinymce.activeEditor.dom.remove(markerEl);
-                }
+    if (tinymce.activeEditor) {
+        const hasCursor = finalContent.includes('{{cursor}}');
+        const cursorMarker = `<span id="cursor-marker" style="display:none;">\uFEFF</span>`;
+        finalContent = finalContent.replace(/{{cursor}}/g, hasCursor ? cursorMarker : '');
+
+        tinymce.activeEditor.execCommand('mceInsertContent', false, finalContent);
+
+        if (hasCursor) {
+            const markerEl = tinymce.activeEditor.dom.get('cursor-marker');
+            if (markerEl) {
+                tinymce.activeEditor.selection.select(markerEl);
+                tinymce.activeEditor.selection.collapse(true);
+                tinymce.activeEditor.dom.remove(markerEl);
             }
-            tinymce.activeEditor.focus();
         }
+        tinymce.activeEditor.focus();
     }
 }
 
@@ -679,7 +707,7 @@ function addNewModelToPowerTab() {
     ModalManager.show({
         type: 'modelEditor',
         title: 'Criar Novo Modelo Rápido',
-        initialData: { name: '', content: '', hasDynamicVariables: false }, // Inicia com o conteúdo vazio
+        initialData: { name: '', content: '' }, // Inicia com o conteúdo vazio
         onSave: (data) => {
             if (!data.name) {
                 NotificationService.show('O nome do modelo não pode ser vazio.', 'error'); return;
@@ -691,8 +719,7 @@ function addNewModelToPowerTab() {
                     content: data.content, 
                     tabId: POWER_TAB_ID, // Salva diretamente na aba Power
                     isFavorite: false, 
-                    folderId: null,
-                    hasDynamicVariables: data.hasDynamicVariables
+                    folderId: null 
                 };
                 appState.models.push(newModel);
             });
@@ -701,11 +728,12 @@ function addNewModelToPowerTab() {
     });
 }
 
-/**
- * Lógica original para salvar o conteúdo do editor como um novo modelo.
- */
+// ========================================================================================
+// === FUNÇÃO DE ADICIONAR MODELO MODIFICADA PARA PRÉ-PREENCHER CONTEÚDO (v1.0.6) ===
+// ========================================================================================
 function addNewModelFromEditor() {
-    const contentFromEditor = tinymce.activeEditor.getContent();
+    const content = tinymce.activeEditor.getContent();
+    // A verificação de conteúdo vazio foi removida para permitir salvar modelos em branco.
     
     let targetTabId = appState.activeTabId;
     if (targetTabId === FAVORITES_TAB_ID || targetTabId === POWER_TAB_ID) {
@@ -717,21 +745,14 @@ function addNewModelFromEditor() {
     ModalManager.show({
         type: 'modelEditor',
         title: 'Salvar Novo Modelo',
-        initialData: { name: '', content: contentFromEditor, hasDynamicVariables: false },
+        // MODIFICAÇÃO CHAVE: O conteúdo do editor principal é passado para o modal.
+        initialData: { name: '', content: content },
         onSave: (data) => {
             if (!data.name) {
                 NotificationService.show('O nome do modelo não pode ser vazio.', 'error'); return;
             }
             modifyDataState(() => {
-                const newModel = { 
-                    id: `model-${Date.now()}`, 
-                    name: data.name, 
-                    content: data.content, 
-                    tabId: targetTabId, 
-                    isFavorite: false, 
-                    folderId: null,
-                    hasDynamicVariables: data.hasDynamicVariables 
-                };
+                const newModel = { id: `model-${Date.now()}`, name: data.name, content: data.content, tabId: targetTabId, isFavorite: false, folderId: null };
                 appState.models.push(newModel);
                 searchBox.value = '';
             });
@@ -746,7 +767,7 @@ function editModel(modelId) {
     ModalManager.show({
         type: 'modelEditor',
         title: 'Editar Modelo',
-        initialData: { name: model.name, content: model.content, hasDynamicVariables: model.hasDynamicVariables },
+        initialData: { name: model.name, content: model.content },
         onSave: (data) => {
             if (!data.name) {
                 NotificationService.show('O nome do modelo não pode ser vazio.', 'error'); return;
@@ -754,7 +775,6 @@ function editModel(modelId) {
             modifyDataState(() => {
                 model.name = data.name;
                 model.content = data.content;
-                model.hasDynamicVariables = data.hasDynamicVariables;
             });
             NotificationService.show('Modelo atualizado!', 'success');
         }
