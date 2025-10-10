@@ -105,6 +105,7 @@ const SidebarManager = (() => {
             if (isChild) liClasses.push('model-item-child');
             if (isVar) liClasses.push('model-item--power-variable');
             if (model.isSystemVariable) liClasses.push('model-item--system-variable');
+            if (model.hasDynamicVariables) liClasses.push('model-item--has-variables');
             li.className = liClasses.join(' ');
             
             li.dataset.modelId = model.id;

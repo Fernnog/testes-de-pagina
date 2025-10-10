@@ -13,12 +13,18 @@ const ModalManager = (() => {
 
     /**
      * Constrói o HTML para o editor de modelos (Criar/Editar), incluindo o ícone de ajuda.
-     * @param {object} data - Dados iniciais { name, content }.
+     * @param {object} data - Dados iniciais { name, content, hasDynamicVariables }.
      */
     function _buildModelEditorContent(data = {}) {
         modalDynamicContent.innerHTML = `
             <label for="modal-input-name">Nome do Modelo:</label>
             <input type="text" id="modal-input-name" placeholder="Digite o nome aqui..." value="${data.name || ''}">
+            
+            <!-- NOVO CHECKBOX CONTAINER -->
+            <div class="modal-checkbox-container">
+                <input type="checkbox" id="modal-checkbox-variables" ${data.hasDynamicVariables ? 'checked' : ''}>
+                <label for="modal-checkbox-variables">Este modelo contém variáveis dinâmicas (ex: {{nome}})</label>
+            </div>
             
             <label for="modal-input-content">
                 Conteúdo do Modelo:
@@ -387,7 +393,8 @@ const ModalManager = (() => {
     function _getModelEditorData() {
         return {
             name: modalDynamicContent.querySelector('#modal-input-name').value.trim(),
-            content: modalDynamicContent.querySelector('#modal-input-content').innerHTML
+            content: modalDynamicContent.querySelector('#modal-input-content').innerHTML,
+            hasDynamicVariables: modalDynamicContent.querySelector('#modal-checkbox-variables').checked
         };
     }
     
