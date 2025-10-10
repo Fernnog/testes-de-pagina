@@ -13,18 +13,22 @@ const ModalManager = (() => {
 
     /**
      * Constrói o HTML para o editor de modelos (Criar/Editar), incluindo o ícone de ajuda.
-     * @param {object} data - Dados iniciais { name, content, hasDynamicVariables }.
+     * @param {object} data - Dados iniciais { name, content }.
      */
     function _buildModelEditorContent(data = {}) {
+        // NOVA FUNÇÃO INTERNA: Envolve as variáveis dinâmicas com um span para destaque.
+        const highlightVariables = (text) => {
+            if (!text) return '';
+            // A regex captura o padrão {{...}} e o envolve no span.
+            return text.replace(/({{[^}]+?}})/g, '<span class="dynamic-variable-highlight">$1</span>');
+        };
+
+        // Aplica o destaque ao conteúdo inicial que será renderizado no editor do modal.
+        const initialContent = highlightVariables(data.content || '');
+
         modalDynamicContent.innerHTML = `
             <label for="modal-input-name">Nome do Modelo:</label>
             <input type="text" id="modal-input-name" placeholder="Digite o nome aqui..." value="${data.name || ''}">
-            
-            <!-- NOVO CHECKBOX CONTAINER -->
-            <div class="modal-checkbox-container">
-                <input type="checkbox" id="modal-checkbox-variables" ${data.hasDynamicVariables ? 'checked' : ''}>
-                <label for="modal-checkbox-variables">Este modelo contém variáveis dinâmicas (ex: {{nome}})</label>
-            </div>
             
             <label for="modal-input-content">
                 Conteúdo do Modelo:
@@ -35,7 +39,7 @@ const ModalManager = (() => {
                 <button onclick="document.execCommand('italic')"><i>I</i></button>
                 <button onclick="document.execCommand('underline')"><u>U</u></button>
             </div>
-            <div id="modal-input-content" class="text-editor-modal" contenteditable="true">${data.content || ''}</div>
+            <div id="modal-input-content" class="text-editor-modal" contenteditable="true">${initialContent}</div>
         `;
     }
 
@@ -391,10 +395,19 @@ const ModalManager = (() => {
     }
     
     function _getModelEditorData() {
+        const contentEl = modalDynamicContent.querySelector('#modal-input-content');
+        // Clona o elemento para não modificar o DOM original enquanto removemos os spans
+        const tempEl = contentEl.cloneNode(true);
+        
+        // Encontra e remove todos os spans de destaque, substituindo-os pelo seu conteúdo de texto.
+        // Isso garante que apenas o texto puro da variável (ex: {{nome}}) seja salvo.
+        tempEl.querySelectorAll('.dynamic-variable-highlight').forEach(span => {
+            span.replaceWith(document.createTextNode(span.textContent));
+        });
+
         return {
             name: modalDynamicContent.querySelector('#modal-input-name').value.trim(),
-            content: modalDynamicContent.querySelector('#modal-input-content').innerHTML,
-            hasDynamicVariables: modalDynamicContent.querySelector('#modal-checkbox-variables').checked
+            content: tempEl.innerHTML
         };
     }
     
