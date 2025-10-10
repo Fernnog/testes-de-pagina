@@ -105,7 +105,6 @@ const SidebarManager = (() => {
             if (isChild) liClasses.push('model-item-child');
             if (isVar) liClasses.push('model-item--power-variable');
             if (model.isSystemVariable) liClasses.push('model-item--system-variable');
-            if (model.hasDynamicVariables) liClasses.push('model-item--has-variables');
             li.className = liClasses.join(' ');
             
             li.dataset.modelId = model.id;
@@ -148,11 +147,13 @@ const SidebarManager = (() => {
                 nameSpan.appendChild(colorIndicator);
             }
 
-            if (model.content && model.content.includes('{{') && !model.isSystemVariable) {
+            // MODIFICAÇÃO: Substitui o ícone de engrenagem pelo ícone de raio (⚡️)
+            // para indicar a presença de qualquer variável dinâmica.
+            if (model.content && /{{.*?}}/.test(model.content) && !model.isSystemVariable) {
                 const variableIndicator = document.createElement('span');
                 variableIndicator.className = 'model-variable-indicator';
                 variableIndicator.title = 'Este modelo contém variáveis dinâmicas';
-                variableIndicator.textContent = '⚙️';
+                variableIndicator.innerHTML = ICON_LIGHTNING; // Usa a constante do ícone de raio
                 nameSpan.appendChild(variableIndicator);
             }
             const textNode = document.createTextNode(" " + model.name);
