@@ -16,16 +16,6 @@ const ModalManager = (() => {
      * @param {object} data - Dados iniciais { name, content }.
      */
     function _buildModelEditorContent(data = {}) {
-        // NOVA FUNÇÃO INTERNA: Envolve as variáveis dinâmicas com um span para destaque.
-        const highlightVariables = (text) => {
-            if (!text) return '';
-            // A regex captura o padrão {{...}} e o envolve no span.
-            return text.replace(/({{[^}]+?}})/g, '<span class="dynamic-variable-highlight">$1</span>');
-        };
-
-        // Aplica o destaque ao conteúdo inicial que será renderizado no editor do modal.
-        const initialContent = highlightVariables(data.content || '');
-
         modalDynamicContent.innerHTML = `
             <label for="modal-input-name">Nome do Modelo:</label>
             <input type="text" id="modal-input-name" placeholder="Digite o nome aqui..." value="${data.name || ''}">
@@ -39,7 +29,7 @@ const ModalManager = (() => {
                 <button onclick="document.execCommand('italic')"><i>I</i></button>
                 <button onclick="document.execCommand('underline')"><u>U</u></button>
             </div>
-            <div id="modal-input-content" class="text-editor-modal" contenteditable="true">${initialContent}</div>
+            <div id="modal-input-content" class="text-editor-modal" contenteditable="true">${data.content || ''}</div>
         `;
     }
 
@@ -319,6 +309,29 @@ const ModalManager = (() => {
                                 `
                             },
                             {
+                                title: '📝 Modelos Condicionais (Lógica "Se...Então...")',
+                                content: `
+                                    <p>Leve seus modelos a outro nível. Em vez de criar um para o singular e outro para o plural, por exemplo, crie um único modelo que se adapta com base em uma escolha inicial.</p>
+                                    <h4>Como usar:</h4>
+                                    <p>A lógica condicional funciona em duas partes:</p>
+                                    <p>1. <strong>O Gatilho:</strong> Uma variável do tipo <code>choice</code> que define a condição.</p>
+                                    <p>2. <strong>Os Blocos de Conteúdo:</strong> Trechos de texto envolvidos pela sintaxe <code>{{#if:nome_da_variavel=ValorDaOpcao}} ... {{/if}}</code>.</p>
+                                    
+                                    <h4>Exemplo Prático (Singular vs. Plural):</h4>
+                                    <pre><code>Determine-se a citação {{partes:choice(do réu|dos réus)}}.
+
+{{#if:partes=do réu}}
+1. Cite-se a parte executada para que, no prazo de 48h, efetue o pagamento da dívida.
+{{/if}}
+
+{{#if:partes=dos réus}}
+1. Citem-se as partes executadas para que, no prazo de 48h, efetuem o pagamento da dívida.
+{{/if}}
+                                    </code></pre>
+                                    <p><strong>Como funciona:</strong> Ao usar este modelo, o sistema primeiro perguntará: "do réu ou dos réus?". Se você escolher "do réu", ele incluirá APENAS o primeiro bloco de texto e descartará o segundo, montando o documento corretamente.</p>
+                                `
+                            },
+                            {
                                 title: '⚡ Variáveis Automáticas e de Preenchimento Rápido',
                                 content: `
                                     <p>Automatize seus documentos com variáveis que são preenchidas pelo próprio sistema ou através de uma pergunta rápida. Elas são 'mágicas': o sistema as insere no último segundo, por isso <strong>nunca aparecem no formulário de perguntas.</strong></p>
@@ -395,19 +408,9 @@ const ModalManager = (() => {
     }
     
     function _getModelEditorData() {
-        const contentEl = modalDynamicContent.querySelector('#modal-input-content');
-        // Clona o elemento para não modificar o DOM original enquanto removemos os spans
-        const tempEl = contentEl.cloneNode(true);
-        
-        // Encontra e remove todos os spans de destaque, substituindo-os pelo seu conteúdo de texto.
-        // Isso garante que apenas o texto puro da variável (ex: {{nome}}) seja salvo.
-        tempEl.querySelectorAll('.dynamic-variable-highlight').forEach(span => {
-            span.replaceWith(document.createTextNode(span.textContent));
-        });
-
         return {
             name: modalDynamicContent.querySelector('#modal-input-name').value.trim(),
-            content: tempEl.innerHTML
+            content: modalDynamicContent.querySelector('#modal-input-content').innerHTML
         };
     }
     
