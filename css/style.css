@@ -1224,3 +1224,52 @@ blockquote p {
     color: var(--primary-color);
     text-decoration: underline;
 }
+
+/* --- NOVO: Feedback Visual para Drag & Drop no Editor (Prioridade 2) --- */
+.editor-wrapper.drag-over {
+    transition: all 0.2s ease-in-out;
+    outline: 3px dashed var(--primary-color);
+    outline-offset: -8px; /* Deslocamento para dentro */
+    background-color: rgba(206, 42, 102, 0.05); /* Fundo sutil */
+    box-shadow: inset 0 0 25px rgba(206, 42, 102, 0.1); /* Sombra interna */
+}
+
+/* --- NOVAS REGRAS PARA MELHORIAS SOLICITADAS --- */
+
+/* Container para o novo checkbox no modal */
+.modal-checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
+
+.modal-checkbox-container input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.modal-checkbox-container label {
+    margin: 0;
+    font-weight: normal;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Destaque visual FÚCSIA para modelos com variáveis */
+@keyframes pulse-fuchsia {
+    0% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.7); }
+    70% { box-shadow: 0 0 0 7px rgba(236, 72, 153, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(236, 72, 153, 0); }
+}
+
+.model-item.model-item--has-variables {
+    border-left: 5px solid #EC4899; /* Borda fúcsia vibrante */
+    background-color: rgba(236, 72, 153, 0.05);
+    animation: pulse-fuchsia 2s infinite;
+}
