@@ -48,7 +48,17 @@ Este projeto foi construído com HTML, CSS e JavaScript (ES Modules), utilizando
 
 ## Arquitetura do Código
 
-A arquitetura do código foi modularizada para garantir a separação de responsabilidades e facilitar a manutenção:
+A arquitetura do código foi modularizada para garantir a separação de responsabilidades e facilitar a manutenção, dividida entre a lógica da aplicação (JavaScript) e a estilização (CSS).
+
+### Estrutura de Estilos (CSS)
+
+A estilização foi dividida em uma pasta `styles/` para promover a organização e a reutilização de código:
+
+-   `styles/base.css`: Contém os estilos fundamentais e globais da aplicação, como a definição de fontes, cores base, layout geral e estilos de formulários. Serve como a fundação visual do projeto.
+-   `styles/components.css`: Isola os estilos de cada "componente" da interface, como os cartões de alvos, modais, a barra de perseverança e outros elementos específicos.
+-   `styles/orei.css`: Armazena os estilos que são exclusivos da página de relatório (`orei.html`).
+
+### Estrutura de Scripts (JavaScript)
 
 -   `script.js`: O **orquestrador principal** da aplicação (`index.html`). Gerencia o estado, o fluxo de dados e os eventos do usuário na página principal.
 -   `ui.js`: A **camada de visualização**. Responsável por toda a manipulação do DOM e renderização da interface na página principal.
