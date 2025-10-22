@@ -323,34 +323,11 @@ select
     box-sizing: border-box;
 }
 
-/* --- INÍCIO DA ALTERAÇÃO --- */
 textarea {
-    resize: none; /* Desativa o redimensionamento manual */
-    overflow-y: auto; /* Mostra a barra de rolagem APENAS quando o conteúdo ultrapassar a altura */
-    min-height: 70px; /* Define uma altura inicial mínima */
-    max-height: 40vh; /* Limita o crescimento a 40% da altura da tela */
-    transition: height 0.2s ease; /* Adiciona uma transição suave ao crescer */
+    resize: none;
+    overflow-y: hidden;
+    min-height: 70px;
 }
-
-/* Customização da barra de rolagem para o textarea */
-textarea::-webkit-scrollbar {
-    width: 10px; /* Largura da barra de rolagem */
-}
-
-textarea::-webkit-scrollbar-track {
-    background: #f1f1f1; /* Fundo da trilha */
-    border-radius: 10px;
-}
-
-textarea::-webkit-scrollbar-thumb {
-    background: #ccc; /* Cor da barra de rolagem */
-    border-radius: 10px;
-}
-
-textarea::-webkit-scrollbar-thumb:hover {
-    background: #aaa; /* Cor ao passar o mouse */
-}
-/* --- FIM DA ALTERAÇÃO --- */
 
 .search-input {
     margin: 10px auto 15px auto;
@@ -393,6 +370,24 @@ input[type="date"] {
     vertical-align: middle;
 }
 
+/* ==== CUSTOM SCROLLBAR FOR TEXTAREA ==== */
+textarea::-webkit-scrollbar {
+    width: 10px;
+}
+
+textarea::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+textarea::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+
+textarea::-webkit-scrollbar-thumb:hover {
+    background: #aaa;
+}
 
 /* ==== TARGET STYLES ==== */
 .target {
