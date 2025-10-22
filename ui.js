@@ -75,7 +75,7 @@ function isDateExpired(date) {
  */
 function createObservationsHTML(observations, parentTargetId, dailyTargetsData = {}, isEditingEnabled = false) {
     if (!Array.isArray(observations) || observations.length === 0) return '';
-
+    
     // Separa as observações: sub-alvos ficam sempre visíveis.
     const alwaysVisibleItems = observations.filter(obs => obs.isSubTarget);
     const collapsibleItems = observations
@@ -164,7 +164,7 @@ function createObservationsHTML(observations, parentTargetId, dailyTargetsData =
         html += `<div id="hidden-obs-${parentTargetId}" class="hidden-observations">`;
         olderHiddenItems.forEach(obs => html += renderObservation(obs));
         html += `</div>`;
-        html += `<button class="toggle-observations-btn" data-action="toggle-observations" data-target-id="${parentTargetId}">Ver mais ${olderHiddenItems.length} antigas</button>`;
+        html += `<button class="toggle-observations-btn" data-action="toggle-observations" data-id="${parentTargetId}">Ver mais ${olderHiddenItems.length} antigas</button>`;
     }
 
     return html + `</div>`;
