@@ -848,7 +848,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!action || !id) return;
 
         const { target, isArchived, panelId } = findTargetInState(id);
-        if (!target && !['select-manual-target', 'add-new-observation', 'toggle-observations'].includes(action)) return;
+        if (!target && !['select-manual-target', 'add-new-observation'].includes(action)) return;
 
         switch(action) {
             case 'pray':
