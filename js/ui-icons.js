@@ -29,3 +29,5 @@ const ICON_SPINNER = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height=
 
 const ICON_EXPAND_ALL = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 10L20 4"/><path d="M15 4H20V9"/><path d="M10 14L4 20"/><path d="M4 15V20H9"/></svg>`;
 const ICON_COLLAPSE_ALL = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20L10 14"/><path d="M5 14H10V19"/><path d="M20 4L14 10"/><path d="M19 10H14V5"/></svg>`;
+
+const ICON_MAGIC_WAND = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4V2m0 14v-2m-7.5-10.5L6 4m0 12l1.5-1.5M2 15h2m14 0h2M6.34 17.66l-1.41-1.41M19.07 6.34l-1.41-1.41"/><path d="M12 22a7 7 0 0 0-7-7c0-2 1-3 3-4s3-2 4-3 2-2 3-3a7 7 0 0 0 7 7c0 2-1 3-3 4s-3 2-4 3-2 2-3 3Z"/></svg>`;
