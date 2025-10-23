@@ -66,7 +66,7 @@ const TINYMCE_CONFIG = {
     
     plugins: 'lists pagebreak visualblocks wordcount',
     
-    toolbar: 'undo redo | blocks | bold italic underline | bullist numlist | alignjustify | customIndent customBlockquote | pagebreak visualblocks | customMicButton customAiButton customReplaceButton | customPasteMarkdown customCopyFormatted customOdtButton | customThemeButton customDeleteButton',
+    toolbar: 'undo redo | blocks | bold italic underline | bullist numlist | alignjustify | customIndent customBlockquote | pagebreak visualblocks | customMicButton customAiButton customReplaceButton | customPowerVariableButton | customPasteMarkdown customCopyFormatted customOdtButton | customThemeButton customDeleteButton',
     
     menubar: false,
     statusbar: true,
@@ -108,7 +108,8 @@ const TINYMCE_CONFIG = {
         editor.ui.registry.addIcon('custom-delete-doc', ICON_DELETE_DOC);
         editor.ui.registry.addIcon('custom-paste-markdown', ICON_PASTE_MARKDOWN);
         editor.ui.registry.addIcon('custom-join-lines', ICON_JOIN_LINES);
-        editor.ui.registry.addIcon('custom-paintbrush', ICON_PAINTBRUSH); // NOVO ÍCONE REGISTRADO
+        editor.ui.registry.addIcon('custom-paintbrush', ICON_PAINTBRUSH);
+        editor.ui.registry.addIcon('custom-magic-wand', ICON_MAGIC_WAND); // NOVO ÍCONE REGISTRADO
 
         // --- Definição dos Botões ---
 
@@ -192,6 +193,37 @@ const TINYMCE_CONFIG = {
                             appState.replacements = data.replacements;
                         });
                         NotificationService.show('Regras de substituição salvas!', 'success');
+                    }
+                });
+            }
+        });
+
+        // NOVO BOTÃO: Inserir Ação Rápida (Variável Dinâmica)
+        editor.ui.registry.addButton('customPowerVariableButton', {
+            icon: 'custom-magic-wand',
+            tooltip: 'Inserir Ação Rápida (Variável Dinâmica)',
+            onAction: function() {
+                ModalManager.show({
+                    type: 'powerVariableCreator',
+                    title: 'Criador de Ações Rápidas',
+                    onSave: (data) => {
+                        if (!data || !data.name) {
+                            // O usuário pode ter fechado o modal no passo de configuração
+                            return;
+                        }
+
+                        const blueprint = POWER_VARIABLE_BLUEPRINTS.find(b => b.type === data.type);
+                        if (!blueprint) {
+                            NotificationService.show('Tipo de ação inválido.', 'error');
+                            return;
+                        }
+
+                        // Constrói a string da variável (ex: "{{nome:prompt}}")
+                        const variableString = blueprint.build(data.name, data.options);
+
+                        // Insere a string gerada no local do cursor do editor
+                        editor.execCommand('mceInsertContent', false, variableString);
+                        NotificationService.show('Ação Rápida inserida!', 'success');
                     }
                 });
             }
