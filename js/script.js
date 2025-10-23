@@ -4,6 +4,7 @@
 const POWER_VARIABLE_BLUEPRINTS = [
     {
         type: 'prompt',
+        category: 'interactive', // Categoria para ações que pedem input
         label: 'Caixa de Pergunta',
         description: 'Pede ao usuário para digitar um texto livre.',
         icon: '💬',
@@ -11,6 +12,7 @@ const POWER_VARIABLE_BLUEPRINTS = [
     },
     {
         type: 'choice',
+        category: 'interactive', // Categoria para ações que pedem input
         label: 'Menu de Opções',
         description: 'Apresenta uma lista de opções para o usuário escolher.',
         icon: '✅',
@@ -18,49 +20,55 @@ const POWER_VARIABLE_BLUEPRINTS = [
     },
     {
         type: 'data_atual',
+        category: 'system', // Categoria para inserção direta
         label: 'Data Atual (Simples)',
         description: 'Insere a data de hoje no formato DD/MM/AAAA.',
         icon: '📅',
-        build: (name) => `{{data_atual}}`
+        build: () => `{{data_atual}}`
     },
     {
         type: 'data_por_extenso',
+        category: 'system', // Categoria para inserção direta
         label: 'Data por Extenso',
         description: 'Insere a data completa (ex: sexta-feira, 2 de agosto de 2024).',
         icon: '📜',
-        build: (name) => `{{data_por_extenso}}`
+        build: () => `{{data_por_extenso}}`
     },
     {
         type: 'hora_atual',
+        category: 'system', // Categoria para inserção direta
         label: 'Hora Atual',
         description: 'Insere a hora e os minutos atuais.',
         icon: '⏰',
-        build: (name) => `{{hora_atual}}`
+        build: () => `{{hora_atual}}`
     },
-    // --- INÍCIO DAS NOVAS VARIÁVEIS (v1.0.2) ---
     {
         type: 'dia_da_semana',
+        category: 'system', // Categoria para inserção direta
         label: 'Dia da Semana',
         description: 'Insere o dia atual por extenso (ex: segunda-feira).',
         icon: '🗓️',
-        build: (name) => `{{dia_da_semana}}`
+        build: () => `{{dia_da_semana}}`
     },
     {
         type: 'mes_por_extenso',
+        category: 'system', // Categoria para inserção direta
         label: 'Mês por Extenso',
         description: 'Insere o mês atual por extenso (ex: julho).',
         icon: '📜',
-        build: (name) => `{{mes_por_extenso}}`
+        build: () => `{{mes_por_extenso}}`
     },
     {
         type: 'ano_atual',
+        category: 'system', // Categoria para inserção direta
         label: 'Ano Atual',
         description: 'Insere o ano corrente com quatro dígitos.',
         icon: '📅',
-        build: (name) => `{{ano_atual}}`
+        build: () => `{{ano_atual}}`
     },
     {
         type: 'numero_processo',
+        category: 'interactive', // Categoria para ações que pedem input
         label: 'Número do Processo',
         description: 'Pede ao usuário para digitar o número do processo.',
         icon: '⚖️',
@@ -68,6 +76,7 @@ const POWER_VARIABLE_BLUEPRINTS = [
     },
     {
         type: 'nome_autor',
+        category: 'interactive', // Categoria para ações que pedem input
         label: 'Nome da Parte (Autor)',
         description: 'Pede ao usuário para digitar o nome do autor.',
         icon: '👤',
@@ -75,6 +84,7 @@ const POWER_VARIABLE_BLUEPRINTS = [
     },
     {
         type: 'nome_reu',
+        category: 'interactive', // Categoria para ações que pedem input
         label: 'Nome da Parte (Réu)',
         description: 'Pede ao usuário para digitar o nome do réu.',
         icon: '👤',
@@ -82,6 +92,7 @@ const POWER_VARIABLE_BLUEPRINTS = [
     },
     {
         type: 'status_decisao',
+        category: 'interactive', // Categoria para ações que pedem input
         label: 'Status da Decisão',
         description: 'Apresenta um menu de opções para o status.',
         icon: '✅',
@@ -89,19 +100,20 @@ const POWER_VARIABLE_BLUEPRINTS = [
     },
     {
         type: 'id_unico',
+        category: 'system', // Categoria para inserção direta
         label: 'ID Único',
         description: 'Gera um código de referência único (timestamp).',
         icon: '🆔',
-        build: (name) => `{{id_unico}}`
+        build: () => `{{id_unico}}`
     },
     {
         type: 'cursor',
+        category: 'system', // Categoria para inserção direta
         label: 'Posição do Cursor',
         description: 'Marca onde o cursor deve ficar após a inserção.',
         icon: '✍️',
-        build: (name) => `{{cursor}}`
+        build: () => `{{cursor}}`
     }
-    // --- FIM DAS NOVAS VARIÁVEIS (v1.0.2) ---
 ];
 
 // --- DADOS E ESTADO DA APLICAÇÃO ---
