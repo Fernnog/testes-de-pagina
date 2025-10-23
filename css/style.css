@@ -1309,3 +1309,64 @@ blockquote p {
     stroke: #a855f7 !important; /* Roxo vibrante para o ícone */
     stroke-width: 2.2px;
 }
+
+/* CORREÇÃO CRÍTICA: Adiciona barra de rolagem ao conteúdo do modal de ajuda */
+.info-modal-content {
+    max-height: 70vh; /* Limita a altura a 70% da altura da tela */
+    overflow-y: auto; /* Adiciona a barra de rolagem vertical quando necessário */
+    padding-right: 15px; /* Espaço para a barra de rolagem não sobrepor o conteúdo */
+}
+
+/* --- Novos Estilos para as Abas Internas do Assistente --- */
+.pv-creator-tabs {
+    display: flex;
+    border-bottom: 2px solid #e9ecef;
+    margin-bottom: 15px;
+}
+
+.pv-creator-tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #6c757d;
+    position: relative;
+    transition: color 0.2s ease;
+}
+
+.pv-creator-tab:hover {
+    color: #343a40;
+}
+
+.pv-creator-tab.active {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+/* Linha indicadora da aba ativa */
+.pv-creator-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: var(--primary-color);
+}
+
+.pv-creator-panel {
+    display: none; /* Painéis iniciam ocultos */
+    animation: fadeIn 0.3s ease;
+}
+
+.pv-creator-panel.active {
+    display: block; /* Apenas o painel ativo é exibido */
+}
+
+/* Animação sutil de entrada */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
