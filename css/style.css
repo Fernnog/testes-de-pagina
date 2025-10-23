@@ -1370,3 +1370,33 @@ blockquote p {
     from { opacity: 0; transform: translateY(5px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* --- NOVOS ESTILOS PARA O ASSISTENTE DE LÓGICA CONDICIONAL --- */
+.condition-block {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background-color: #f8f9fa;
+}
+
+.condition-label {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 10px;
+    display: block;
+    color: #495057;
+}
+
+.condition-label strong {
+    color: var(--primary-color);
+    font-family: monospace;
+    background-color: #fbe0e3;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.condition-content {
+    min-height: 80px; /* Altura mínima menor para cada bloco */
+    font-family: 'Courier New', Courier, monospace;
+}
