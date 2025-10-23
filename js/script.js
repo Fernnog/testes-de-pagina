@@ -19,6 +19,26 @@ const POWER_VARIABLE_BLUEPRINTS = [
         build: (name, options) => `{{${name.replace(/\s+/g, '_').toLowerCase()}:choice(${options.join('|')})}}`
     },
     {
+        type: 'conditional_logic',
+        category: 'interactive',
+        label: 'Lógica Condicional (Se...Então...)',
+        description: 'Cria um bloco de texto que muda com base em uma escolha.',
+        icon: '🔀', // Ícone para representar ramificação/condição
+        build: (trigger, blocks) => {
+            let finalString = trigger + '\n\n';
+            const triggerVarNameMatch = trigger.match(/{{([^:]+):/);
+            if (!triggerVarNameMatch) return trigger; // Fallback se o trigger for inválido
+            const triggerVarName = triggerVarNameMatch[1];
+            
+            blocks.forEach(block => {
+                if (block.content.trim()) { // Só adiciona o bloco se tiver conteúdo
+                    finalString += `{{#if:${triggerVarName}=${block.option}}}\n${block.content}\n{{/if}}\n\n`;
+                }
+            });
+            return finalString.trim();
+        }
+    },
+    {
         type: 'data_atual',
         category: 'system', // Categoria para inserção direta
         label: 'Data Atual (Simples)',
@@ -65,38 +85,6 @@ const POWER_VARIABLE_BLUEPRINTS = [
         description: 'Insere o ano corrente com quatro dígitos.',
         icon: '📅',
         build: () => `{{ano_atual}}`
-    },
-    {
-        type: 'numero_processo',
-        category: 'interactive', // Categoria para ações que pedem input
-        label: 'Número do Processo',
-        description: 'Pede ao usuário para digitar o número do processo.',
-        icon: '⚖️',
-        build: (name) => `{{numero_processo:prompt}}`
-    },
-    {
-        type: 'nome_autor',
-        category: 'interactive', // Categoria para ações que pedem input
-        label: 'Nome da Parte (Autor)',
-        description: 'Pede ao usuário para digitar o nome do autor.',
-        icon: '👤',
-        build: (name) => `{{nome_autor:prompt}}`
-    },
-    {
-        type: 'nome_reu',
-        category: 'interactive', // Categoria para ações que pedem input
-        label: 'Nome da Parte (Réu)',
-        description: 'Pede ao usuário para digitar o nome do réu.',
-        icon: '👤',
-        build: (name) => `{{nome_reu:prompt}}`
-    },
-    {
-        type: 'status_decisao',
-        category: 'interactive', // Categoria para ações que pedem input
-        label: 'Status da Decisão',
-        description: 'Apresenta um menu de opções para o status.',
-        icon: '✅',
-        build: (name) => `{{status_decisao:choice(DEFIRO|INDEFIRO|DEFIRO PARCIALMENTE)}}`
     },
     {
         type: 'id_unico',
