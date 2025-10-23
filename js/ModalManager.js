@@ -155,30 +155,48 @@ const ModalManager = (() => {
         `;
     }
     
-    // --- INÍCIO DA LÓGICA DO ASSISTENTE DE CRIAÇÃO DE POWER VARIABLES ---
+    // --- LÓGICA DO ASSISTENTE DE CRIAÇÃO DE POWER VARIABLES (REATORADA COM ABAS) ---
 
     /**
-     * Passo 1: Mostra a tela de seleção de tipo de Power Variable.
+     * Passo 1: Mostra a tela de seleção com abas para as categorias de Power Variables.
      */
     function _buildPowerVariableCreatorSelectionScreen() {
         // Usa a constante global POWER_VARIABLE_BLUEPRINTS de script.js
-        let cardsHtml = POWER_VARIABLE_BLUEPRINTS.map(bp => `
-            <div class="pv-creator-card" data-type="${bp.type}" role="button" tabindex="0">
-                <span class="pv-creator-icon">${bp.icon}</span>
-                <div class="pv-creator-text">
-                    <strong>${bp.label}</strong>
-                    <p>${bp.description}</p>
+        const categoryMap = {
+            'system': 'Variáveis de Sistema',
+            'interactive': 'Ações Interativas'
+        };
+        const categories = [...new Set(POWER_VARIABLE_BLUEPRINTS.map(bp => bp.category))];
+
+        const tabsHtml = categories.map((cat, index) =>
+            `<button class="pv-creator-tab ${index === 0 ? 'active' : ''}" data-category="${cat}">${categoryMap[cat] || cat}</button>`
+        ).join('');
+
+        const panelsHtml = categories.map((cat, index) => {
+            const blueprintsInCategory = POWER_VARIABLE_BLUEPRINTS.filter(bp => bp.category === cat);
+            const cardsHtml = blueprintsInCategory.map(bp => `
+                <div class="pv-creator-card" data-type="${bp.type}" data-category="${bp.category}" role="button" tabindex="0">
+                    <span class="pv-creator-icon">${bp.icon}</span>
+                    <div class="pv-creator-text">
+                        <strong>${bp.label}</strong>
+                        <p>${bp.description}</p>
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `).join('');
+            return `<div class="pv-creator-panel ${index === 0 ? 'active' : ''}" data-category-panel="${cat}">${cardsHtml}</div>`;
+        }).join('');
 
         modalDynamicContent.innerHTML = `
-            <p class="modal-description">Selecione o tipo de ação rápida que deseja criar:</p>
-            <div id="pv-creator-selection">${cardsHtml}</div>
+            <div class="info-modal-content">
+                <div class="pv-creator-tabs">${tabsHtml}</div>
+                <div class="pv-creator-panels-container">${panelsHtml}</div>
+            </div>
         `;
-        // O botão "Salvar" é desabilitado na tela de seleção
+        
+        // Botão "Salvar" fica oculto na tela de seleção/inserção direta
         modalBtnSave.style.display = 'none';
     }
+
 
     /**
      * Passo 2: Mostra o formulário de configuração para o tipo de Power Variable selecionado.
@@ -220,19 +238,51 @@ const ModalManager = (() => {
     }
 
     /**
-     * Adiciona listeners de eventos, incluindo a lógica para o acordeão de ajuda.
+     * Adiciona listeners de eventos, incluindo a lógica para o acordeão de ajuda e o assistente.
      */
     function _attachDynamicEventListeners() {
-        // Lógica para o novo assistente de Power Variables
+        // Lógica para o novo assistente de Power Variables com abas
         if (currentConfig.type === 'powerVariableCreator') {
-            modalDynamicContent.addEventListener('click', (e) => {
-                const card = e.target.closest('.pv-creator-card');
-                if (card) {
-                    _renderPowerVariableConfigScreen(card.dataset.type);
-                }
-            });
+            const tabsContainer = modalDynamicContent.querySelector('.pv-creator-tabs');
+            const panelsContainer = modalDynamicContent.querySelector('.pv-creator-panels-container');
+
+            // Lógica para alternar abas
+            if (tabsContainer) {
+                tabsContainer.addEventListener('click', (e) => {
+                    const tab = e.target.closest('.pv-creator-tab');
+                    if (!tab) return;
+                    
+                    tabsContainer.querySelectorAll('.pv-creator-tab').forEach(t => t.classList.remove('active'));
+                    panelsContainer.querySelectorAll('.pv-creator-panel').forEach(p => p.classList.remove('active'));
+
+                    tab.classList.add('active');
+                    panelsContainer.querySelector(`[data-category-panel="${tab.dataset.category}"]`).classList.add('active');
+                });
+            }
+
+            // Lógica para clicar nos cartões
+            if (panelsContainer) {
+                panelsContainer.addEventListener('click', (e) => {
+                    const card = e.target.closest('.pv-creator-card');
+                    if (!card) return;
+
+                    const type = card.dataset.type;
+                    const category = card.dataset.category;
+                    const blueprint = POWER_VARIABLE_BLUEPRINTS.find(b => b.type === type);
+
+                    if (category === 'system') {
+                        // Inserção direta: chama onSave e fecha o modal
+                        currentConfig.onSave({ type, name: blueprint.label, options: null });
+                        hide();
+                    } else if (category === 'interactive') {
+                        // Ação interativa: vai para a tela de configuração
+                        _renderPowerVariableConfigScreen(type);
+                    }
+                });
+            }
             return; // Encerra aqui para este tipo de modal
         }
+
 
         // Lógica genérica para gerenciadores de lista (Substituições e Variáveis Globais)
         if (currentConfig.type === 'replacementManager' || currentConfig.type === 'globalVarManager') {
