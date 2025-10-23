@@ -1297,3 +1297,15 @@ blockquote p {
         background-color: rgba(206, 42, 102, 0.15);
     }
 }
+
+/* Efeito "Neon" para o novo botão na barra de ferramentas do TinyMCE */
+.tox-tbtn[aria-label="Inserir Ação Rápida"] {
+    background-color: #f0abfc !important; /* Cor de fundo lilás claro */
+    box-shadow: 0 0 5px #d946ef, 0 0 10px #d946ef, inset 0 0 5px rgba(255, 255, 255, 0.5);
+    border: 1px solid #d946ef !important;
+}
+
+.tox-tbtn[aria-label="Inserir Ação Rápida"] .tox-icon svg {
+    stroke: #a855f7 !important; /* Roxo vibrante para o ícone */
+    stroke-width: 2.2px;
+}
