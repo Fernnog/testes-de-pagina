@@ -1,8 +1,18 @@
 // js/tinymce-config.js
 
 const CHANGELOG_DATA = {
-    currentVersion: '1.0.7',
+    currentVersion: '1.0.8',
     history: [
+       {
+    version: '1.0.8',
+    title: '🚀 Assistente de Lógica Condicional e Simplificação da Interface',
+    content: `
+        <ul>
+            <li><strong>NOVO - Assistente de Lógica Condicional (Se...Então...):</strong> Cansado de decorar a sintaxe <code>{{#if...}}</code>? A nova opção "Lógica Condicional" abre um assistente passo a passo. Basta criar sua pergunta (ex: "Singular ou Plural?"), definir as opções e preencher o texto para cada uma. O sistema monta o código complexo para você, tornando a criação de documentos inteligentes mais rápida e visual do que nunca.</li>
+            <li><strong>Interface Simplificada e Intuitiva:</strong> As opções "Número do Processo", "Nome da Parte" e "Status da Decisão" foram removidas da lista de Ações Rápidas. Elas eram redundantes, pois as mesmas funcionalidades podem ser alcançadas de forma mais flexível com as ferramentas "Caixa de Pergunta" e "Menu de Opções". O resultado é uma interface mais limpa e focada no que é essencial.</li>
+        </ul>
+    `
+},
         {
             version: '1.0.7',
             title: '✨ Polimento de Interface e Qualidade de Vida',
