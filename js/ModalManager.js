@@ -174,13 +174,17 @@ const ModalManager = (() => {
 
         const panelsHtml = categories.map((cat, index) => {
             const blueprintsInCategory = POWER_VARIABLE_BLUEPRINTS.filter(bp => bp.category === cat);
+            // MODIFICADO: Estrutura de "cartão" com botão de ajuda
             const cardsHtml = blueprintsInCategory.map(bp => `
-                <div class="pv-creator-card" data-type="${bp.type}" data-category="${bp.category}" role="button" tabindex="0">
-                    <span class="pv-creator-icon">${bp.icon}</span>
-                    <div class="pv-creator-text">
-                        <strong>${bp.label}</strong>
-                        <p>${bp.description}</p>
+                <div class="pv-creator-card" data-type="${bp.type}" role="button" tabindex="0">
+                    <div class="pv-card-main-content">
+                        <span class="pv-creator-icon">${bp.icon}</span>
+                        <div class="pv-creator-text">
+                            <strong>${bp.label}</strong>
+                            <p>${bp.description}</p>
+                        </div>
                     </div>
+                    ${bp.helpContent ? `<button class="pv-card-help-btn" data-type="${bp.type}" title="Saiba mais sobre: ${bp.label}">i</button>` : ''}
                 </div>
             `).join('');
             return `<div class="pv-creator-panel ${index === 0 ? 'active' : ''}" data-category-panel="${cat}">${cardsHtml}</div>`;
@@ -194,6 +198,8 @@ const ModalManager = (() => {
         `;
         
         modalBtnSave.style.display = 'none';
+        // MODIFICADO: O botão cancelar é renomeado para "Fechar" nesta tela específica
+        modalBtnCancel.textContent = 'Fechar';
     }
 
 
@@ -298,8 +304,35 @@ const ModalManager = (() => {
                 });
             }
 
+            // MODIFICADO: Lógica de clique para separar a ação principal do botão de ajuda
             if (panelsContainer) {
                 panelsContainer.addEventListener('click', (e) => {
+                    const helpBtn = e.target.closest('.pv-card-help-btn');
+                    
+                    if (helpBtn) {
+                        e.stopPropagation(); // Impede a seleção da ação ao clicar no 'i'
+                        const type = helpBtn.dataset.type;
+                        const blueprint = POWER_VARIABLE_BLUEPRINTS.find(b => b.type === type);
+                        
+                        if (blueprint && blueprint.helpContent) {
+                            ModalManager.show({
+                                type: 'info',
+                                title: `Ajuda: ${blueprint.label}`,
+                                initialData: {
+                                    title: blueprint.helpContent.title,
+                                    cards: [{
+                                        title: 'Como Funciona',
+                                        content: blueprint.helpContent.explanation
+                                    }, {
+                                        title: 'Exemplo de Uso',
+                                        content: blueprint.helpContent.example
+                                    }]
+                                }
+                            });
+                        }
+                        return; // Encerra a execução aqui
+                    }
+
                     const card = e.target.closest('.pv-creator-card');
                     if (!card) return;
 
