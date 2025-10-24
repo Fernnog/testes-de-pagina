@@ -3,7 +3,7 @@
 const CHANGELOG_DATA = {
     currentVersion: '1.0.9',
     history: [
-    {
+       {
             version: '1.0.9',
             title: '✨ Clareza Total: Redesign do Criador de Ações Rápidas com Ajuda Integrada',
             content: `
@@ -14,7 +14,7 @@ const CHANGELOG_DATA = {
                 </ul>
             `
         },
-        {
+       {
     version: '1.0.8',
     title: '🚀 Assistente de Lógica Condicional e Simplificação da Interface',
     content: `
@@ -129,8 +129,8 @@ const TINYMCE_CONFIG = {
         editor.ui.registry.addIcon('custom-delete-doc', ICON_DELETE_DOC);
         editor.ui.registry.addIcon('custom-paste-markdown', ICON_PASTE_MARKDOWN);
         editor.ui.registry.addIcon('custom-join-lines', ICON_JOIN_LINES);
-        editor.ui.registry.addIcon('custom-paintbrush', ICON_PAINTBRUSH);
-        editor.ui.registry.addIcon('custom-magic-wand', ICON_MAGIC_WAND); // NOVO ÍCONE REGISTRADO
+        editor.ui.registry.addIcon('custom-lightning', ICON_LIGHTNING);
+        editor.ui.registry.addIcon('custom-theme-switcher', ICON_THEME_SWITCHER);
 
         // --- Definição dos Botões ---
 
@@ -221,7 +221,7 @@ const TINYMCE_CONFIG = {
 
         // NOVO BOTÃO: Inserir Ação Rápida (Variável Dinâmica)
         editor.ui.registry.addButton('customPowerVariableButton', {
-            icon: 'custom-magic-wand',
+            icon: 'custom-lightning',
             tooltip: 'Inserir Ação Rápida (Variável Dinâmica)',
             onAction: function() {
                 ModalManager.show({
@@ -317,7 +317,7 @@ const TINYMCE_CONFIG = {
 
         // NOVO BOTÃO: Seletor de Tema
         editor.ui.registry.addMenuButton('customThemeButton', {
-            icon: 'custom-paintbrush',
+            icon: 'custom-theme-switcher',
             tooltip: 'Mudar Tema do Editor',
             fetch: function (callback) {
                 const items = [
