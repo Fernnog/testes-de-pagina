@@ -8,7 +8,14 @@ const POWER_VARIABLE_BLUEPRINTS = [
         label: 'Caixa de Pergunta',
         description: 'Pede ao usuário para digitar um texto livre.',
         icon: '💬',
-        build: (name) => `{{${name.replace(/\s+/g, '_').toLowerCase()}:prompt}}`
+        build: (name) => `{{${name.replace(/\s+/g, '_').toLowerCase()}:prompt}}`,
+        helpContent: {
+            title: 'Criando uma Caixa de Pergunta',
+            explanation: `<p>Esta ação cria uma variável que fará uma pergunta direta ao usuário através de uma caixa de diálogo simples. É ideal para solicitar informações curtas e diretas, como um nome ou número.</p>`,
+            example: `<p>Use a sintaxe <code>{{nome:prompt}}</code>.</p>
+                      <pre><code>Contrato referente ao serviço prestado para {{cliente_nome:prompt}}.</code></pre>
+                      <p>Ao usar o modelo, o sistema exibirá uma caixa pedindo: "Por favor, insira o valor para 'cliente nome'".</p>`
+        }
     },
     {
         type: 'choice',
@@ -16,7 +23,14 @@ const POWER_VARIABLE_BLUEPRINTS = [
         label: 'Menu de Opções',
         description: 'Apresenta uma lista de opções para o usuário escolher.',
         icon: '✅',
-        build: (name, options) => `{{${name.replace(/\s+/g, '_').toLowerCase()}:choice(${options.join('|')})}}`
+        build: (name, options) => `{{${name.replace(/\s+/g, '_').toLowerCase()}:choice(${options.join('|')})}}`,
+        helpContent: {
+            title: 'Criando um Menu de Seleção Rápida',
+            explanation: `<p>Esta ação cria uma variável que, ao ser processada, exibirá um <strong>menu suspenso com opções pré-definidas</strong> para o usuário. É ideal para situações onde a resposta precisa ser padronizada, evitando erros de digitação.</p>`,
+            example: `<p>Use a sintaxe <code>{{nome:choice(OpçãoA|OpçãoB)}}</code>.</p>
+                      <pre><code>O status do processo é: {{status:choice(Pendente|Aprovado|Recusado)}}</code></pre>
+                      <p>Ao usar o modelo, o sistema apresentará um menu para escolher entre "Pendente", "Aprovado" ou "Recusado".</p>`
+        }
     },
     {
         type: 'conditional_logic',
@@ -36,6 +50,21 @@ const POWER_VARIABLE_BLUEPRINTS = [
                 }
             });
             return finalString.trim();
+        },
+        helpContent: {
+            title: 'Criando Lógica Condicional (Se...Então...)',
+            explanation: `<p>Esta é a ação mais poderosa. Ela permite criar blocos de texto que <strong>só aparecem se uma condição específica for atendida</strong>, com base em uma escolha do usuário. É perfeita para lidar com variações como singular/plural ou masculino/feminino em um único modelo.</p>`,
+            example: `<p>A sintaxe usa um gatilho 'choice' e blocos '#if':</p>
+                      <pre><code>Determine-se a citação {{partes:choice(do réu|dos réus)}}.
+
+{{#if:partes=do réu}}
+1. Cite-se a parte executada.
+{{/if}}
+
+{{#if:partes=dos réus}}
+1. Citem-se as partes executadas.
+{{/if}}</code></pre>
+                      <p>O sistema primeiro perguntará "do réu ou dos réus?". Com base na resposta, apenas o bloco de texto correspondente será inserido no documento final.</p>`
         }
     },
     {
