@@ -1,9 +1,20 @@
 // js/tinymce-config.js
 
 const CHANGELOG_DATA = {
-    currentVersion: '1.0.8',
+    currentVersion: '1.0.9',
     history: [
-       {
+    {
+            version: '1.0.9',
+            title: '✨ Clareza Total: Redesign do Criador de Ações Rápidas com Ajuda Integrada',
+            content: `
+                <ul>
+                    <li><strong>NOVO - Layout de Cartões e Organização Visual:</strong> A janela "Criador de Ações Rápidas" foi completamente redesenhada. Cada opção agora é apresentada em um "cartão" individual com separadores visuais, tornando a interface mais limpa, organizada e fácil de navegar.</li>
+                    <li><strong>NOVO - Ajuda Contextual e Detalhada:</strong> Chega de dúvidas! Cada cartão agora possui um <strong>ícone de ajuda (i)</strong>. Ao clicar, uma janela se abre com uma explicação detalhada sobre o que a funcionalidade faz, como usá-la e um <strong>exemplo prático de código</strong>, eliminando a confusão entre "Menu de Opções" e "Lógica Condicional".</li>
+                    <li><strong>Experiência Aprimorada:</strong> Com o novo design e a ajuda integrada, criar modelos inteligentes tornou-se um processo muito mais intuitivo e guiado, reduzindo a curva de aprendizado e permitindo que você aproveite ao máximo as funcionalidades avançadas.</li>
+                </ul>
+            `
+        },
+        {
     version: '1.0.8',
     title: '🚀 Assistente de Lógica Condicional e Simplificação da Interface',
     content: `
