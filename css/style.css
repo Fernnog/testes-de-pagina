@@ -1400,3 +1400,63 @@ blockquote p {
     min-height: 80px; /* Altura mínima menor para cada bloco */
     font-family: 'Courier New', Courier, monospace;
 }
+
+.pv-creator-panel.active {
+    display: flex;
+    flex-direction: column;
+}
+
+.pv-creator-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #e9ecef; /* Linha separadora */
+    transition: background-color 0.2s ease;
+}
+
+.pv-creator-card:hover {
+    background-color: #f8f9fa;
+}
+
+.pv-creator-card:last-child {
+    border-bottom: none;
+}
+
+.pv-card-main-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.pv-creator-text p {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: #6c757d;
+}
+
+.pv-card-help-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background-color: #6c757d;
+    color: white;
+    border-radius: 50%;
+    border: none;
+    font-weight: bold;
+    font-family: serif;
+    font-style: italic;
+    font-size: 16px;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-left: 15px;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.pv-card-help-btn:hover {
+    background-color: var(--primary-color);
+    transform: scale(1.1);
+}
