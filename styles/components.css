@@ -1600,3 +1600,33 @@
     50% { transform: scale(1.05); }
     100% { transform: scale(1); }
 }
+
+/* ESTILOS PARA A MENSAGEM DE CONCLUSÃO DO PAINEL PRIORITÁRIO */
+.priority-completion-message {
+    padding: 20px;
+    background-color: #e8f5e9; /* Verde claro sutil */
+    border: 1px dashed #a5d6a7;
+    border-radius: 5px;
+    text-align: center;
+    margin-top: 15px;
+    animation: fadeInItem 0.5s ease-out forwards;
+}
+
+.priority-completion-message h3 {
+    margin-top: 0;
+    color: #2e7d32; /* Verde escuro */
+}
+
+.priority-completion-message p {
+    color: #388e3c;
+    margin-bottom: 0;
+}
+
+/* CLASSE DE ESTADO PARA O PAINEL CONCLUÍDO */
+.priority-section.completed #priorityTargetsList {
+    display: none; /* Esconde a lista de alvos */
+}
+
+.priority-section.completed #priorityCompletionMessage {
+    display: block; /* Mostra a mensagem de conclusão */
+}
