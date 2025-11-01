@@ -590,11 +590,13 @@
     height: 100%;
     overflow: auto;
     background-color: rgba(0, 0, 0, 0.4);
+    align-items: center;
+    justify-content: center;
 }
 
 .modal-content {
     background-color: #fefefe;
-    margin: 15% auto;
+    margin: auto;
     padding: 20px;
     border: 1px solid #888;
     width: 80%;
@@ -666,6 +668,7 @@
     max-height: 85vh;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
 }
 
 .manual-search-results {
@@ -674,7 +677,6 @@
     background-color: #fdfdfd;
     min-height: 50px;
     flex-grow: 1;
-    overflow-y: auto;
 }
 
 .manual-search-results::-webkit-scrollbar {
@@ -1356,6 +1358,13 @@
 
 
 /* ==== RESPONSIVENESS (Components) ==== */
+@media (min-width: 768px) {
+    #manualTargetModal .modal-content {
+        max-width: 700px;
+        min-height: 500px;
+    }
+}
+
 @media (max-width: 768px) {
     .target { padding: 10px 5px; }
     .target-actions { gap: 3px; }
@@ -1691,66 +1700,4 @@
     0% { transform: scale(1); }
     50% { transform: scale(1.05); }
     100% { transform: scale(1); }
-}
-
-/* --- NOVAS REGRAS PARA A BUSCA MANUAL POR CATEGORIA --- */
-
-/* Estilo para o container dos filtros de categoria */
-.manual-category-filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 10px 0;
-    margin-bottom: 10px;
-    border-bottom: 1px solid #eee;
-}
-
-/* Estilo para cada botão (pill) de filtro de categoria */
-.category-filter-pill {
-    background-color: #f0f0f0;
-    border: 1px solid #ddd;
-    padding: 5px 12px;
-    border-radius: 15px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.category-filter-pill:hover {
-    background-color: #e0e0e0;
-}
-
-/* Estilo para a etiqueta de categoria dentro do resultado da busca */
-.manual-target-item .category-tag {
-    display: inline-block;
-    float: right; /* Alinha a tag à direita */
-    font-size: 0.75em; /* Usa o mesmo tamanho das outras tags */
-    margin-top: 2px;
-}
-
-/* MELHORIA (Desktop): Aumenta a largura máxima do modal de adição manual em telas maiores. */
-@media (min-width: 768px) {
-  #manualTargetModal .modal-content {
-    max-width: 700px;
-  }
-}
-
-/* CORREÇÃO (UX): Remove o overflow que causa a barra de rolagem interna desnecessária,
-   permitindo que o conteúdo determine a altura do modal até o seu limite máximo (max-height). */
-.manual-search-results {
-    border: 1px solid #eee;
-    padding: 5px;
-    background-color: #fdfdfd;
-    min-height: 50px;
-    flex-grow: 1;
-    /* A propriedade overflow-y: auto; foi removida daqui para evitar a rolagem interna. */
-}
-
-/* Ajusta o container do modal para ter rolagem caso o conteúdo exceda a altura máxima da tela. */
-#manualTargetModal .modal-content {
-    max-width: 600px;
-    max-height: 85vh;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto; /* Adiciona a rolagem ao próprio modal, se necessário */
 }
