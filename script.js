@@ -50,7 +50,7 @@ let state = {
         resolvedPanel: { currentPage: 1, targetsPerPage: 10 },
     },
     filters: {
-        mainPanel: { searchTerm: '', showDeadlineOnly: false, showExpiredOnly: false, startDate: null, endDate: null },
+        mainPanel: { searchTerm: '', showDeadlineOnly: false, showExpiredOnly: false, startDate: null, endDate: null, activeCategory: null },
         archivedPanel: { searchTerm: '', startDate: null, endDate: null },
         resolvedPanel: { searchTerm: '' },
     },
@@ -350,6 +350,11 @@ function applyFiltersAndRender(panelId) {
         if (!matchesSearch) return false;
 
         if (panelId === 'mainPanel') {
+            const activeCategory = panelFilters.activeCategory;
+            if (activeCategory && target.category !== activeCategory) {
+                return false;
+            }
+            
             const now = new Date();
             const todayUTCStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
             if (panelFilters.showDeadlineOnly && !target.hasDeadline) return false;
@@ -417,6 +422,9 @@ async function loadDataForUser(user) {
         state.archivedTargets = allArchived.filter(t => !t.resolved);
         state.resolvedTargets = allArchived.filter(t => t.resolved);
         
+        const activeCategories = [...new Set(state.prayerTargets.map(t => t.category).filter(Boolean))];
+        UI.renderCategoryFilters('mainCategoryFilters', activeCategories);
+        
         state.perseveranceData = perseveranceData;
         state.weeklyPrayerData = weeklyData;
         const dailyTargetsData = await Service.loadDailyTargets(user.uid, state.prayerTargets);
@@ -466,7 +474,7 @@ async function loadDataForUser(user) {
 }
 
 function handleLogoutState() {
-    state = { user: null, prayerTargets: [], archivedTargets: [], resolvedTargets: [], perseveranceData: { consecutiveDays: 0, recordDays: 0, lastInteractionDate: null }, weeklyPrayerData: { weekId: null, interactions: {} }, dailyTargets: { pending: [], completed: [], targetIds: [] }, pagination: { mainPanel: { currentPage: 1, targetsPerPage: 10 }, archivedPanel: { currentPage: 1, targetsPerPage: 10 }, resolvedPanel: { currentPage: 1, targetsPerPage: 10 }}, filters: { mainPanel: { searchTerm: '', showDeadlineOnly: false, showExpiredOnly: false, startDate: null, endDate: null }, archivedPanel: { searchTerm: '', startDate: null, endDate: null }, resolvedPanel: { searchTerm: '' }}, isDriveEnabled: false };
+    state = { user: null, prayerTargets: [], archivedTargets: [], resolvedTargets: [], perseveranceData: { consecutiveDays: 0, recordDays: 0, lastInteractionDate: null }, weeklyPrayerData: { weekId: null, interactions: {} }, dailyTargets: { pending: [], completed: [], targetIds: [] }, pagination: { mainPanel: { currentPage: 1, targetsPerPage: 10 }, archivedPanel: { currentPage: 1, targetsPerPage: 10 }, resolvedPanel: { currentPage: 1, targetsPerPage: 10 }}, filters: { mainPanel: { searchTerm: '', showDeadlineOnly: false, showExpiredOnly: false, startDate: null, endDate: null, activeCategory: null }, archivedPanel: { searchTerm: '', startDate: null, endDate: null }, resolvedPanel: { searchTerm: '' }}, isDriveEnabled: false };
     UI.renderTargets([], 0, 1, 10); UI.renderArchivedTargets([], 0, 1, 10); UI.renderResolvedTargets([], 0, 1, 10); UI.renderDailyTargets([], []); UI.resetPerseveranceUI(); UI.resetWeeklyChart(); UI.showPanel('authSection');
     // **MELHORIA APLICADA:** Garante que a UI de conexão seja redefinida no logout
     UI.updateDriveStatusUI('disconnected');
@@ -885,6 +893,24 @@ document.addEventListener('DOMContentLoaded', () => {
             searchInput.value = category;
             // Dispara o evento de input para reusar a lógica de busca existente
             searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+            return;
+        }
+
+        if (action === 'filter-main-by-category') {
+            const category = e.target.dataset.category;
+            const currentFilter = state.filters.mainPanel.activeCategory;
+
+            if (category === currentFilter) {
+                state.filters.mainPanel.activeCategory = null;
+                e.target.classList.remove('active');
+            } else {
+                state.filters.mainPanel.activeCategory = category;
+                document.querySelectorAll('#mainCategoryFilters .category-filter-pill').forEach(pill => pill.classList.remove('active'));
+                e.target.classList.add('active');
+            }
+            
+            state.pagination.mainPanel.currentPage = 1;
+            applyFiltersAndRender('mainPanel');
             return;
         }
         

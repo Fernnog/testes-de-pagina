@@ -836,6 +836,23 @@ export function toggleCategoryModal(show, allTargets = []) {
     }
 }
 
+/**
+ * Renderiza os botões de filtro de categoria em um contêiner específico.
+ * @param {string} containerId - O ID do elemento que abrigará os filtros.
+ * @param {string[]} categories - Um array com os nomes das categorias.
+ */
+export function renderCategoryFilters(containerId, categories = []) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    container.innerHTML = ''; // Limpa filtros anteriores
+    if (categories.length > 0) {
+        container.innerHTML = categories.sort().map(cat => 
+            `<span class="category-filter-pill" data-action="filter-main-by-category" data-category="${cat}">${cat}</span>`
+        ).join('');
+    }
+}
+
 export function generateViewHTML(targets, pageTitle, selectedCategories = []) {
     const groupedTargets = {};
     const useGrouping = selectedCategories.length > 0;
