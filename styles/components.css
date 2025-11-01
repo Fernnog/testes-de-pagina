@@ -697,6 +697,12 @@
     background-color: #e0e0e0;
 }
 
+.category-filter-pill.active {
+    background-color: #654321;
+    color: white;
+    border-color: #4a301a;
+}
+
 .manual-search-results {
     border: 1px solid #eee;
     padding: 5px;
@@ -762,6 +768,8 @@
     float: right; /* Alinha a tag à direita */
     font-size: 0.75em; /* Usa o mesmo tamanho das outras tags */
     margin-top: 2px;
+    background-color: #C71585;
+    color: #FFFFFF;
 }
 
 #categorySelectionModal .modal-content {
