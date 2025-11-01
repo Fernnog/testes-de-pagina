@@ -1692,3 +1692,38 @@
     50% { transform: scale(1.05); }
     100% { transform: scale(1); }
 }
+
+/* --- NOVAS REGRAS PARA A BUSCA MANUAL POR CATEGORIA --- */
+
+/* Estilo para o container dos filtros de categoria */
+.manual-category-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 0;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+/* Estilo para cada botão (pill) de filtro de categoria */
+.category-filter-pill {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.category-filter-pill:hover {
+    background-color: #e0e0e0;
+}
+
+/* Estilo para a etiqueta de categoria dentro do resultado da busca */
+.manual-target-item .category-tag {
+    display: inline-block;
+    float: right; /* Alinha a tag à direita */
+    font-size: 0.75em; /* Usa o mesmo tamanho das outras tags */
+    margin-top: 2px;
+}
