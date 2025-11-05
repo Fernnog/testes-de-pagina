@@ -18,10 +18,14 @@ export const MILESTONES = [
 
 // --- GERENCIAMENTO DE VERSÃO E CHANGELOG ---
 
-export const APP_VERSION = '1.1.1';
+export const APP_VERSION = '1.1.2'; // VERSÃO ATUALIZADA
 
 export const CHANGELOG = {
- '1.1.1': [
+ '1.1.2': [ // NOVO BLOCO ADICIONADO
+    'ARQUITETURA: Realizada uma refatoração estrutural movendo todos os arquivos JavaScript para um novo diretório `js/`. Essa mudança melhora drasticamente a organização do projeto, separa as responsabilidades e alinha o código com as melhores práticas de desenvolvimento, facilitando a manutenção futura.',
+    'MANUTENÇÃO: Consolidamos a organização dos arquivos de estilo ao mover `orei.css` para a pasta `styles/`. Agora, todos os arquivos CSS da aplicação residem em um único local, garantindo maior consistência no projeto.'
+  ],
+    '1.1.1': [
     'ARQUITETURA: Realizada uma importante refatoração no coração da aplicação. Toda a lógica de negócios para as ações do usuário (como arquivar, resolver, editar) foi centralizada em um novo módulo especialista (`action-handler.js`), transformando o `script.js` em um orquestrador mais limpo e eficiente.',
     'MANUTENÇÃO: Como parte da reorganização, funções de interface (como a que controla a tela de carregamento) foram movidas para o módulo de UI (`ui.js`), consolidando as responsabilidades visuais. Isso torna o código mais previsível e acelera o desenvolvimento de novas funcionalidades.'
   ],
