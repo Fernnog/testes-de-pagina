@@ -53,13 +53,5 @@ export const CHANGELOG = {
  '1.0.5': [
     'CORREÇÃO (UX): A janela para "Adicionar Alvo Manualmente" foi aprimorada para se adaptar melhor a telas de computador, eliminando a barra de rolagem interna desnecessária e melhorando a visualização da lista de alvos.',
     'PERFORMANCE: A busca de alvos na janela de adição manual está mais inteligente e rápida. A pesquisa agora aguarda uma breve pausa na digitação, melhorando a fluidez e a performance geral da funcionalidade.'
-  ],
- '1.0.4': [
-    'CORREÇÃO: Resolvido um problema crítico que fazia a tela de carregamento (splash screen) travar indefinidamente em dispositivos móveis, impedindo o acesso ao aplicativo.',
-    'ROBUSTEZ: O processo de inicialização do aplicativo foi aprimorado para lidar com falhas de carregamento. Agora, em caso de erro, a tela de carregamento será sempre finalizada, permitindo que o usuário interaja com a tela de login.'
-  ],
- '1.0.3': [
-    'UX: Alvos adicionados manualmente à lista do dia agora aparecem em primeiro lugar, permitindo um acesso mais rápido e focado.',
-    'ARQUITETURA: O processo de adicionar um alvo manual à lista diária foi otimizado, tornando a ação instantânea e evitando recarregar todos os dados do usuário.'
   ]
 };
