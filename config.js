@@ -18,9 +18,13 @@ export const MILESTONES = [
 
 // --- GERENCIAMENTO DE VERSÃO E CHANGELOG ---
 
-export const APP_VERSION = '1.1.0';
+export const APP_VERSION = '1.1.1';
 
 export const CHANGELOG = {
+ '1.1.1': [
+    'ARQUITETURA: Realizada uma importante refatoração no coração da aplicação. Toda a lógica de negócios para as ações do usuário (como arquivar, resolver, editar) foi centralizada em um novo módulo especialista (`action-handler.js`), transformando o `script.js` em um orquestrador mais limpo e eficiente.',
+    'MANUTENÇÃO: Como parte da reorganização, funções de interface (como a que controla a tela de carregamento) foram movidas para o módulo de UI (`ui.js`), consolidando as responsabilidades visuais. Isso torna o código mais previsível e acelera o desenvolvimento de novas funcionalidades.'
+  ],
  '1.1.0': [
     'FUNCIONALIDADE: Adicionados filtros de categoria diretamente na tela "Ver Todos os Alvos". Agora você pode encontrar alvos específicos de forma muito mais rápida, clicando nas categorias desejadas para filtrar a lista instantaneamente.',
     'CORREÇÃO (Layout): O título do painel "Alvos Prioritários" agora permanece perfeitamente centralizado, com ou sem o badge de "Concluído", garantindo uma interface mais consistente e agradável visualmente.',
