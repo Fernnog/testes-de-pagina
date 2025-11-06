@@ -18,10 +18,16 @@ export const MILESTONES = [
 
 // --- GERENCIAMENTO DE VERSÃO E CHANGELOG ---
 
-export const APP_VERSION = '1.1.2'; // VERSÃO ATUALIZADA
+export const APP_VERSION = '1.1.3'; // VERSÃO ATUALIZADA
 
 export const CHANGELOG = {
- '1.1.2': [ // NOVO BLOCO ADICIONADO
+ '1.1.3': [ // NOVO BLOCO PARA A VERSÃO ATUAL
+    'DESIGN SYSTEM: Implementada uma nova identidade visual completa! A aplicação agora conta com uma paleta de cores mais serena e elegante (tons de marfim, ocre e marrom), melhorando a experiência de uso.',
+    'MELHORIA (UI/UX): A tipografia foi refinada para otimizar a legibilidade. Textos longos agora usam uma fonte mais limpa (Lato), tornando a leitura de detalhes e observações muito mais confortável.',
+    'ARQUITETURA (CSS): O arquivo `components.css` foi refatorado e dividido em `ui-components.css` e `target-components.css`, organizando melhor os estilos e facilitando a manutenção futura.',
+    'MELHORIA (Layout): Os Alvos Prioritários agora são exibidos como cards individuais com cores alternadas, seguindo o mesmo padrão visual dos Alvos do Dia e melhorando a consistência da interface.'
+  ],
+    '1.1.2': [ // NOVO BLOCO ADICIONADO
     'ARQUITETURA: Realizada uma refatoração estrutural movendo todos os arquivos JavaScript para um novo diretório `js/`. Essa mudança melhora drasticamente a organização do projeto, separa as responsabilidades e alinha o código com as melhores práticas de desenvolvimento, facilitando a manutenção futura.',
     'MANUTENÇÃO: Consolidamos a organização dos arquivos de estilo ao mover `orei.css` para a pasta `styles/`. Agora, todos os arquivos CSS da aplicação residem em um único local, garantindo maior consistência no projeto.'
   ],
@@ -41,17 +47,5 @@ export const CHANGELOG = {
  '1.0.8': [
     'MELHORIA (UX): A visualização de observações foi otimizada para uma interface mais limpa. Agora, são exibidas por padrão apenas as 3 mais recentes e os sub-alvos, focando no conteúdo mais relevante.',
     'FUNCIONALIDADE: Adicionado um sistema "Ver Mais/Ver Menos" nas observações. Um novo botão permite expandir e recolher o histórico de anotações mais antigas, melhorando a navegação em alvos com muitos registros.'
-  ],
- '1.0.7': [
-    'ARQUITETURA: A estrutura dos arquivos de estilo (CSS) foi completamente reorganizada. O código foi dividido em `styles/base.css` (estilos globais) e `styles/components.css` (elementos específicos), melhorando a organização, performance e facilitando futuras manutenções.',
-    'CORREÇÃO (Layout): Corrigido um desalinhamento visual na página principal, garantindo que o painel de "Alvos Prioritários" tenha a mesma largura dos demais painéis, como o de "Alvos do Dia".'
-  ],
- '1.0.6': [
-    'MELHORIA (UX): Os campos de texto longos (como "Observações") agora crescem automaticamente para se ajustar ao conteúdo, facilitando a digitação e a visualização de textos extensos.',
-    'CORREÇÃO (Mobile): A barra de rolagem nos campos de texto foi otimizada para dispositivos móveis, tornando-se mais espessa e fácil de usar com o toque, resolvendo a dificuldade de rolagem em telas pequenas.'
-  ],
- '1.0.5': [
-    'CORREÇÃO (UX): A janela para "Adicionar Alvo Manualmente" foi aprimorada para se adaptar melhor a telas de computador, eliminando a barra de rolagem interna desnecessária e melhorando a visualização da lista de alvos.',
-    'PERFORMANCE: A busca de alvos na janela de adição manual está mais inteligente e rápida. A pesquisa agora aguarda uma breve pausa na digitação, melhorando a fluidez e a performance geral da funcionalidade.'
   ]
 };
