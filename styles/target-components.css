@@ -174,8 +174,13 @@
 }
 #priorityTargetsList .target {
     background-color: var(--color-surface);
-    border-left: 4px solid var(--color-primary);
+    border: 1px solid var(--color-border-soft); /* Adiciona a borda completa */
+    border-left: 4px solid var(--color-primary); /* Mantém o destaque de prioridade */
     text-align: left;
+    border-radius: 6px; /* Adiciona cantos arredondados */
+    padding: 15px;      /* Garante um bom espaçamento interno */
+    margin-bottom: 15px; /* Separa um card do outro */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.04); /* Adiciona uma sombra sutil */
 }
 .priority-target-item h3::before {
     content: '⭐';
