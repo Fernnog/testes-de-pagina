@@ -163,7 +163,8 @@
      border-radius: 4px;
      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
 }
-#dailyTargets .target:nth-child(odd) {
+#dailyTargets .target:nth-child(odd),
+#priorityTargetsList .target:nth-child(odd) { /* <- ADICIONADO */
     background-color: rgba(212, 175, 55, 0.05);
 }
 #dailyTargets .target h3::before {
