@@ -8,13 +8,6 @@
      background-color: #756b6b;
 }
 
-/* Os estilos de painel (cor, borda, sombra) foram movidos para a regra genérica em base.css */
-.perseverance-section, .weekly-perseverance-chart {
-    text-align: center;
-    width: 95%;
-    max-width: 800px;
-}
-
 /* ==== PAINEL DE PRIORIDADES ==== */
 .priority-section {
     /* Estilos de fundo, borda e sombra são herdados de base.css */
