@@ -193,9 +193,9 @@ hr.menu-separator.dark {
 .targets-section,
 .daily-section,
 .completed-daily-targets-section,
-.priority-section
-.weekly-perseverance-chart,
-.perseverance-section {
+.priority-section,
+.perseverance-section,
+.weekly-perseverance-chart { /* <- GARANTA QUE ESTE SELETOR ESTEJA AQUI */
     margin: 30px auto;
     padding: 25px;
     border-radius: 8px;
