@@ -1,68 +1,86 @@
 :root {
-    /* --- Paleta de Cores e Variáveis --- */
-    --gradient-start: #FF8C00; /* Laranja Vibrante */
-    --gradient-mid: #E6007E;   /* Magenta/Rosa */
-    --gradient-end: #00BFFF;   /* Azul Céu */
-    --primary-action: #8A2BE2; /* Roxo Azulado (Violeta) */
-    --primary-action-dark: #701ebd;
-    --primary-action-rgb: 138, 43, 226;
-    --accent-color: var(--gradient-start); /* Laranja como acento */
-    --accent-color-dark: #E07B00;
-    --accent-color-rgb: 255, 140, 0;
-    --background-light: #f8f7fc; /* Fundo quase branco, levemente roxo */
-    --background-card: #FFFFFF; /* Branco puro para cards */
-    --text-color-light: #ffffff;
-    --text-color-dark: #2a2a2a; /* Cor de texto principal (escuro) */
-    --text-color-muted: #6c757d; /* Cinza para textos secundários */
-    --border-color: #e8eaf6; /* Cor de borda suave */
-    --success-color: #28a745; /* Verde sucesso */
-    --success-color-dark: #1e7e34; /* Verde sucesso mais escuro para hover */
-    --success-color-rgb: 40, 167, 69;
-    --danger-color: #dc3545; /* Vermelho perigo */
-    --danger-color-dark: #bb2d3b;
-    --danger-color-rgb: 220, 53, 69; /* ADICIONADO PARA A MELHORIA */
-    --warning-bg-light: #fffbeb; /* Fundo aviso Atrasadas */
-    --warning-border-light: #fde68a; /* Borda aviso Atrasadas */
-    --warning-text-dark: #d97706; /* Texto aviso Atrasadas */
-    --warning-border-strong: #fcd34d; /* Borda H2 Atrasadas */
-    --warning-item-border: #ef4444; /* Borda item Atrasado */
-    --warning-item-text: #dc2626; /* Cor data Atrasada */
-    --drive-blue: #4285F4; /* Azul Google Drive */
-    --drive-blue-rgb: 66, 133, 244;
-    --drive-text-blue: #0b57d0; /* Azul texto link Drive */
-    --disabled-color: #e0e0e0; /* Cinza para desabilitado */
-    --disabled-text-color: #9e9e9e;
-    --marker-inactive-color: #f0f0f5; /* Cor de fundo marcador inativo (padrão) */
-    --marker-inactive-border: #dbe0e4;
-    --marker-active-bg: var(--primary-action); /* Fundo marcador ativo (lido) */
-    --marker-active-border: var(--gradient-mid); /* Borda marcador ativo (lido) */
-    --marker-active-shadow: rgba(var(--primary-action-rgb), 0.4); /* Sombra marcador ativo (lido) */
-    /* Cores para Dia Perdido */
-    --marker-missed-bg: #fee2e2; /* Fundo vermelho bem claro */
-    --marker-missed-border: #fca5a5; /* Borda vermelha clara */
-    --marker-missed-text: #b91c1c; /* Texto 'X' vermelho escuro */
-    --marker-missed-shadow: rgba(220, 53, 69, 0.2); /* Sombra sutil vermelha */
+    /* --- NOVA PALETA SÓBRIA E FOCADA --- */
+    --primary-color: #3A506B;      /* Azul Ardósia Profundo */
+    --primary-color-dark: #2A3A4F;  /* Versão mais escura do azul para hover */
+    --primary-color-rgb: 58, 80, 107;
 
+    --accent-color: #E09F3E;       /* Dourado/Mostarda Quente */
+    --accent-color-dark: #C78C30;   /* Versão mais escura do dourado para hover */
+    --accent-color-rgb: 224, 159, 62;
+
+    --background-light: #FDF8F0;   /* Fundo Pergaminho/Creme Suave */
+    --background-card: #FFFFFF;     /* Branco para cards, mantendo o contraste */
+    --text-color-light: #ffffff;
+    --text-color-dark: #1C2541;      /* Azul quase preto para texto principal, melhor legibilidade */
+    --text-color-muted: #6B7280;     /* Cinza neutro para textos secundários */
+    --border-color: #e0d8cc;        /* Cor de borda suave que combina com o fundo */
+
+    --success-color: #52B788;       /* Verde suave e moderno */
+    --success-color-dark: #40916C;  /* Verde escuro para hover */
+    --success-color-rgb: 82, 183, 136;
+
+    --danger-color: #D90429;        /* Vermelho forte para alertas */
+    --danger-color-dark: #B40322;
+    --danger-color-rgb: 217, 4, 41;
+    
+    /* Cores de aviso (leituras atrasadas) ajustadas para a nova paleta */
+    --warning-bg-light: #FFFBEB;
+    --warning-border-light: #FDE68A;
+    --warning-text-dark: #B45309;
+    --warning-border-strong: #FBBF24;
+    --warning-item-border: #EF4444;
+    --warning-item-text: #DC2626;
+
+    /* Cores do Google Drive mantidas para consistência da marca */
+    --drive-blue: #4285F4;
+    --drive-blue-rgb: 66, 133, 244;
+    --drive-text-blue: #0b57d0;
+
+    /* Cores de estado (desabilitado, marcadores) ajustadas */
+    --disabled-color: #e0e0e0;
+    --disabled-text-color: #9e9e9e;
+    --marker-inactive-color: #f0f0f5;
+    --marker-inactive-border: #dbe0e4;
+    --marker-active-bg: var(--primary-color); /* Usa a nova cor primária */
+    --marker-active-border: var(--accent-color);
+    --marker-active-shadow: rgba(var(--primary-color-rgb), 0.4);
+    --marker-missed-bg: #fee2e2;
+    --marker-missed-border: #fca5a5;
+    --marker-missed-text: #b91c1c;
+    --marker-missed-shadow: rgba(217, 4, 41, 0.2);
+
+    /* --- VARIÁVEIS DE GRADIENTE (SUBSTITUÍDAS POR CORES SÓLIDAS) --- */
+    /* As variáveis antigas são comentadas para referência, mas não mais usadas ativamente */
+    /* --gradient-start: #FF8C00; */
+    /* --gradient-mid: #E6007E; */
+    /* --gradient-end: #00BFFF; */
+    
+    /* A cor primária agora é a cor principal de ação, substituindo o roxo antigo */
+    --primary-action: var(--primary-color);
+    --primary-action-dark: var(--primary-color-dark);
+    --primary-action-rgb: var(--primary-color-rgb);
+
+    /* --- Variáveis de Layout e Tipografia (mantidas) --- */
     --font-sans-serif: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --box-shadow-sm: 0 2px 5px rgba(var(--primary-action-rgb), 0.08);
-    --box-shadow: 0 5px 15px rgba(var(--primary-action-rgb), 0.1);
-    --box-shadow-lg: 0 8px 25px rgba(var(--primary-action-rgb), 0.12);
+    --box-shadow-sm: 0 2px 5px rgba(var(--primary-color-rgb), 0.08);
+    --box-shadow: 0 5px 15px rgba(var(--primary-color-rgb), 0.1);
+    --box-shadow-lg: 0 8px 25px rgba(var(--primary-color-rgb), 0.12);
     --transition-fast: all 0.2s ease-in-out;
     --transition-base: all 0.3s ease-in-out;
-    --input-height: 46px; /* Altura padrão para inputs */
+    --input-height: 46px;
     --button-padding-y: 12px;
     --button-padding-x: 22px;
-    --base-border-radius: 10px; /* Bordas mais arredondadas */
+    --base-border-radius: 10px;
     --header-logo-size: 40px;
     --header-logo-border: 4px;
     --header-logo-padding: 2px;
 
-    /* NOVAS VARIÁVEIS PARA PAINÉIS MELHORADOS */
-    --panel-border-gradient: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-mid) 50%, var(--primary-action) 100%);
+    /* Painéis Melhorados (agora usam a nova paleta) */
+    --panel-border-gradient: linear-gradient(135deg, var(--accent-color) 0%, var(--primary-color) 100%);
     --panel-border-width: 3px;
     --panel-padding-enhanced: 25px;
 
-    /* VARIÁVEIS PARA O PAGINADOR FLUTUANTE (Melhoria de Arquitetura) */
+    /* Paginador Flutuante (mantido) */
     --navigator-button-size: 58px;
     --navigator-padding: 13px;
     --navigator-gap: 16px;
@@ -137,7 +155,7 @@ body {
 
 /* --- Header Simplificado --- */
 header {
-    background: linear-gradient(110deg, var(--gradient-start) 0%, var(--gradient-mid) 50%, var(--gradient-end) 100%);
+    background: var(--primary-color);
     color: var(--text-color-light);
     padding: 10px 18px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -210,6 +228,10 @@ section {
     border-radius: var(--base-border-radius);
     box-shadow: var(--box-shadow);
     transition: box-shadow var(--transition-base), transform var(--transition-base);
+    /* INÍCIO DA ADIÇÃO (PRIORIDADE 2): ANIMAÇÃO DE ENTRADA */
+    animation: fadeInUp 0.7s ease-out forwards;
+    opacity: 0;
+    animation-fill-mode: backwards;
 }
 section:not(.enhanced-panel):hover {
     box-shadow: var(--box-shadow-lg);
@@ -247,7 +269,7 @@ section h2, section h3 {
     transform: translateY(-4px);
     box-shadow: var(--box-shadow-lg);
     /* Efeito de fundo e cor de texto adicionado para unificar a experiência */
-    background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-mid) 50%, var(--primary-action) 100%);
+    background: var(--panel-border-gradient);
     color: var(--text-color-light);
 }
 .enhanced-panel:hover::before {
@@ -362,7 +384,7 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
 .plans-display-container { display: grid; grid-template-columns: 1fr; gap: 30px; background-color: transparent; padding: 0; box-shadow: none; border: none; margin-bottom: 25px; }
 
 /* Card de Plano reutilizável */
-.plan-card { padding: var(--panel-padding-enhanced); background-color: var(--background-card); border-radius: var(--base-border-radius); box-shadow: var(--box-shadow); transition: var(--transition-base); border: 3px solid transparent; }
+.plan-card { padding: var(--panel-padding-enhanced); background-color: var(--background-card); border-radius: var(--base-border-radius); box-shadow: var(--box-shadow); transition: var(--transition-base); border: 3px solid transparent; /* INÍCIO DA ADIÇÃO (PRIORIDADE 2): ANIMAÇÃO DE ENTRADA */ animation: fadeInUp 0.7s 0.2s ease-out forwards; opacity: 0; animation-fill-mode: backwards; }
 .plan-card:hover { box-shadow: var(--box-shadow-lg); transform: translateY(-2px); }
 .plan-card.active-plan { border-color: var(--primary-action); box-shadow: var(--box-shadow-lg); transform: translateY(-2px); }
 .plan-card .plan-header-info { align-items: center; display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 2px solid var(--accent-color); padding-bottom: 10px; flex-wrap: wrap; }
@@ -412,7 +434,7 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
 /* Barra de Progresso (dentro de .plan-card) */
 .plan-card .progress-container { width: 100%; margin-bottom: 20px; }
 .plan-card .progress-bar-track { background-color: var(--marker-inactive-color); border-radius: var(--base-border-radius); height: 12px; overflow: hidden; border: 1px solid var(--border-color); width: 100%; }
-.plan-card .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary-action), var(--gradient-mid)); transition: width 0.5s ease-out; border-radius: inherit; }
+.plan-card .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary-action), var(--accent-color)); transition: width 0.5s ease-out; border-radius: inherit; }
 
 .plan-card .progress-labels {
     display: flex;
@@ -469,7 +491,7 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
     margin: 0;
     background-color: var(--background-card);
     border-left: 6px solid;
-    border-image: linear-gradient(to bottom, var(--primary-action), var(--gradient-mid)) 1;
+    border-image: linear-gradient(to bottom, var(--primary-action), var(--accent-color)) 1;
     color: var(--text-color-dark);
     border-radius: var(--base-border-radius) var(--base-border-radius) 0 0;
     box-shadow: var(--box-shadow-sm);
@@ -635,7 +657,7 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
 @keyframes icon-pop { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1.1); } }
 .perseverance-bar-container { width: 100%; margin-bottom: 12px; }
 .progress-bar { position: relative; height: 28px; background-color: var(--marker-inactive-color); border: 1px solid var(--border-color); border-radius: var(--base-border-radius); overflow: hidden; }
-.progress { position: absolute; top: 0; left: 0; height: 100%; width: 0; border-radius: var(--base-border-radius); background: linear-gradient(135deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end)); transition: width 1.2s cubic-bezier(0.25, 1, 0.5, 1); overflow: hidden; }
+.progress { position: absolute; top: 0; left: 0; height: 100%; width: 0; border-radius: var(--base-border-radius); background: linear-gradient(135deg, var(--accent-color), var(--primary-color)); transition: width 1.2s cubic-bezier(0.25, 1, 0.5, 1); overflow: hidden; }
 .progress-shine-overlay { position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%); animation: shineEffect 4s infinite linear; }
 @keyframes shineEffect { from { left: -100%; } to { left: 100%; } }
 .progress-percentage-left { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-color-light); font-weight: 600; font-size: 0.9em; text-shadow: 1px 1px 2px rgba(0,0,0,0.4); z-index: 2; transition: color var(--transition-fast); }
@@ -689,7 +711,7 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
 .weekly-tracker-container .day-label { font-size: 0.75em; font-weight: 600; color: var(--text-color-muted); margin-bottom: 6px; text-transform: uppercase; transition: color var(--transition-fast); }
 .weekly-tracker-container .day-marker { width: 32px; height: 32px; border-radius: 50%; background-color: var(--marker-inactive-color); border: 2px solid var(--marker-inactive-border); display: flex; justify-content: center; align-items: center; color: var(--text-color-light); font-weight: bold; transition: var(--transition-base); position: relative; }
 .weekly-tracker-container .day-marker::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 18px; font-weight: bold; line-height: 1; transition: color var(--transition-fast); }
-.weekly-tracker-container .day-indicator.active .day-marker { background: linear-gradient(135deg, var(--primary-action), var(--gradient-mid)); border-color: transparent; color: var(--text-color-light); box-shadow: 0 0 12px var(--marker-active-shadow); transform: scale(1.1); }
+.weekly-tracker-container .day-indicator.active .day-marker { background: linear-gradient(135deg, var(--primary-action), var(--accent-color)); border-color: transparent; color: var(--text-color-light); box-shadow: 0 0 12px var(--marker-active-shadow); transform: scale(1.1); }
 .weekly-tracker-container .day-indicator.active .day-marker::after { content: '✓'; color: var(--text-color-light); text-shadow: 1px 1px 1px rgba(0,0,0,0.2); }
 .weekly-tracker-container .day-indicator.missed-day .day-marker { background-color: var(--marker-missed-bg); border-color: var(--marker-missed-border); box-shadow: 0 0 8px var(--marker-missed-shadow); transform: scale(1.05); }
 .weekly-tracker-container .day-indicator.missed-day .day-marker::after { content: '✕'; color: var(--marker-missed-text); text-shadow: none; }
@@ -1381,5 +1403,21 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
     .plan-card .drive-link-icon {
         width: 24px;
         height: 24px;
+    }
+}
+
+/* 
+================================================================================
+  INÍCIO DA ADIÇÃO (PRIORIDADE 2): ANIMAÇÃO DE ENTRADA
+================================================================================
+*/
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
