@@ -1,12 +1,12 @@
 :root {
-    /* --- NOVA PALETA SÓBRIA E FOCADA --- */
-    --primary-color: #3A506B;      /* Azul Ardósia Profundo */
-    --primary-color-dark: #2A3A4F;  /* Versão mais escura do azul para hover */
-    --primary-color-rgb: 58, 80, 107;
+    /* --- NOVA PALETA REFINADA (ALTO CONTRASTE) --- */
+    --primary-color: #0B3954;      /* Azul Marinho Profundo */
+    --primary-color-dark: #082f44;  /* Versão mais escura para hover */
+    --primary-color-rgb: 11, 57, 84;
 
-    --accent-color: #E09F3E;       /* Dourado/Mostarda Quente */
-    --accent-color-dark: #C78C30;   /* Versão mais escura do dourado para hover */
-    --accent-color-rgb: 224, 159, 62;
+    --accent-color: #BF5700;       /* Laranja Terroso / Ferrugem */
+    --accent-color-dark: #A34A00;   /* Versão mais escura para hover */
+    --accent-color-rgb: 191, 87, 0;
 
     --background-light: #FDF8F0;   /* Fundo Pergaminho/Creme Suave */
     --background-card: #FFFFFF;     /* Branco para cards, mantendo o contraste */
@@ -48,14 +48,8 @@
     --marker-missed-border: #fca5a5;
     --marker-missed-text: #b91c1c;
     --marker-missed-shadow: rgba(217, 4, 41, 0.2);
-
-    /* --- VARIÁVEIS DE GRADIENTE (SUBSTITUÍDAS POR CORES SÓLIDAS) --- */
-    /* As variáveis antigas são comentadas para referência, mas não mais usadas ativamente */
-    /* --gradient-start: #FF8C00; */
-    /* --gradient-mid: #E6007E; */
-    /* --gradient-end: #00BFFF; */
     
-    /* A cor primária agora é a cor principal de ação, substituindo o roxo antigo */
+    /* A cor primária agora é a cor principal de ação */
     --primary-action: var(--primary-color);
     --primary-action-dark: var(--primary-color-dark);
     --primary-action-rgb: var(--primary-color-rgb);
@@ -103,7 +97,7 @@ body {
     overflow-x: hidden;
 }
 
-/* --- INÍCIO DA ALTERAÇÃO: Estilos da Splash Screen (Prioridades 1 e 2) --- */
+/* --- Estilos da Splash Screen --- */
 #splash-screen {
     position: fixed;
     top: 0;
@@ -151,9 +145,8 @@ body {
     color: var(--text-color-muted);
     font-weight: 600;
 }
-/* --- FIM DA ALTERAÇÃO --- */
 
-/* --- Header Simplificado --- */
+/* --- Header --- */
 header {
     background: var(--primary-color);
     color: var(--text-color-light);
@@ -221,6 +214,17 @@ header h1 {
 
 /* --- Main Content --- */
 main { max-width: 850px; margin: 25px auto; padding: 0 15px; }
+
+/* ADIÇÃO: Oculta os painéis principais por padrão para evitar o "flash" inicial */
+#perseverance-section,
+#global-weekly-tracker-section,
+#overdue-readings,
+#upcoming-readings,
+#plans-display-section,
+#plan-creation-actions {
+    display: none;
+}
+
 section {
     margin-bottom: 25px;
     padding: var(--panel-padding-enhanced);
@@ -228,7 +232,6 @@ section {
     border-radius: var(--base-border-radius);
     box-shadow: var(--box-shadow);
     transition: box-shadow var(--transition-base), transform var(--transition-base);
-    /* INÍCIO DA ADIÇÃO (PRIORIDADE 2): ANIMAÇÃO DE ENTRADA */
     animation: fadeInUp 0.7s ease-out forwards;
     opacity: 0;
     animation-fill-mode: backwards;
@@ -252,8 +255,7 @@ section h2, section h3 {
     position: relative;
     box-shadow: var(--box-shadow);
     overflow: hidden;
-    /* Adicionada transição para o fundo e cor de texto */
-    transition: transform var(--transition-base), box-shadow var(--transition-base), background var(--transition-base), color var(--transition-base);
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
 }
 .enhanced-panel::before {
     content: "";
@@ -268,9 +270,6 @@ section h2, section h3 {
 .enhanced-panel:hover {
     transform: translateY(-4px);
     box-shadow: var(--box-shadow-lg);
-    /* Efeito de fundo e cor de texto adicionado para unificar a experiência */
-    background: var(--panel-border-gradient);
-    color: var(--text-color-light);
 }
 .enhanced-panel:hover::before {
     filter: brightness(1.15) saturate(1.1);
@@ -286,40 +285,19 @@ section h2, section h3 {
 /* MELHORIA DE LEGIBILIDADE DOS TÍTULOS E TEXTOS NO HOVER */
 .enhanced-panel:hover h2,
 .enhanced-panel:hover h3 {
-    color: var(--text-color-light) !important;
-    border-bottom-color: rgba(255, 255, 255, 0.6) !important;
+    color: var(--primary-action) !important; /* Mantém a cor original */
+    border-bottom-color: rgba(var(--primary-action-rgb), 0.3) !important;
 }
 
 .enhanced-panel:hover .milestone-legend,
 .enhanced-panel:hover .progress-percentage-left,
 .enhanced-panel:hover .day-label {
-    color: var(--text-color-light);
+    color: inherit; /* Mantém a cor original */
 }
 
 .enhanced-panel#overdue-readings:hover h2 {
-    color: var(--text-color-light) !important;
-    border-bottom-color: rgba(255, 255, 255, 0.6) !important;
-}
-
-/* CORREÇÃO: Garante que os marcadores 'missed' fiquem brancos no hover */
-.enhanced-panel:hover .day-indicator.missed-day .day-label {
-    color: var(--text-color-light);
-}
-.enhanced-panel:hover .day-indicator.missed-day .day-marker::after {
-    color: var(--text-color-light);
-}
-
-/* NOVO: Estilo para o dia atual quando o painel está em modo hover/clicado */
-.enhanced-panel:hover .day-indicator.current-day-highlight {
-    background-color: transparent; /* Remove o fundo roxo sólido */
-    border: 2px solid rgba(255, 255, 255, 0.85); /* Adiciona a borda branca translúcida */
-    box-shadow: none; /* Remove a sombra roxa que não é mais necessária */
-    padding: 6px 3px; /* Ajusta o padding para manter o alinhamento com a nova borda */
-}
-
-/* Garante que o texto do dia atual também fique branco no hover, sobrepondo outras regras */
-.enhanced-panel:hover .day-indicator.current-day-highlight .day-label {
-    color: var(--text-color-light);
+    color: var(--warning-text-dark) !important;
+    border-bottom-color: var(--warning-border-strong) !important;
 }
 
 /* --- Botões --- */
@@ -384,7 +362,7 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
 .plans-display-container { display: grid; grid-template-columns: 1fr; gap: 30px; background-color: transparent; padding: 0; box-shadow: none; border: none; margin-bottom: 25px; }
 
 /* Card de Plano reutilizável */
-.plan-card { padding: var(--panel-padding-enhanced); background-color: var(--background-card); border-radius: var(--base-border-radius); box-shadow: var(--box-shadow); transition: var(--transition-base); border: 3px solid transparent; /* INÍCIO DA ADIÇÃO (PRIORIDADE 2): ANIMAÇÃO DE ENTRADA */ animation: fadeInUp 0.7s 0.2s ease-out forwards; opacity: 0; animation-fill-mode: backwards; }
+.plan-card { padding: var(--panel-padding-enhanced); background-color: var(--background-card); border-radius: var(--base-border-radius); box-shadow: var(--box-shadow); transition: var(--transition-base); border: 3px solid transparent; animation: fadeInUp 0.7s 0.2s ease-out forwards; opacity: 0; animation-fill-mode: backwards; }
 .plan-card:hover { box-shadow: var(--box-shadow-lg); transform: translateY(-2px); }
 .plan-card.active-plan { border-color: var(--primary-action); box-shadow: var(--box-shadow-lg); transform: translateY(-2px); }
 .plan-card .plan-header-info { align-items: center; display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 2px solid var(--accent-color); padding-bottom: 10px; flex-wrap: wrap; }
@@ -430,7 +408,6 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
     height: 36px;
 }
 
-
 /* Barra de Progresso (dentro de .plan-card) */
 .plan-card .progress-container { width: 100%; margin-bottom: 20px; }
 .plan-card .progress-bar-track { background-color: var(--marker-inactive-color); border-radius: var(--base-border-radius); height: 12px; overflow: hidden; border: 1px solid var(--border-color); width: 100%; }
@@ -440,7 +417,7 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap; /* Permite quebrar a linha em telas pequenas */
+    flex-wrap: wrap;
     gap: 5px 10px;
     width: 100%;
     margin-bottom: 8px;
@@ -448,12 +425,12 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
 
 .plan-card .progress-text {
     display: block;
-    text-align: left; /* Alterado de 'center' */
-    margin-bottom: 0; /* Alterado de '5px' */
+    text-align: left;
+    margin-bottom: 0;
     font-size: 0.9em;
     color: var(--text-color-muted);
     font-weight: 600;
-    flex-grow: 1; /* Faz com que ele tente ocupar o máximo de espaço */
+    flex-grow: 1;
 }
 
 .plan-card .forecast-date {
@@ -461,8 +438,8 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
     font-weight: 700;
     padding: 3px 8px;
     border-radius: 12px;
-    white-space: nowrap; /* Impede que o texto quebre */
-    flex-shrink: 0; /* Impede que a etiqueta seja esmagada */
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .plan-card .forecast-ahead {
@@ -576,7 +553,7 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
     position: relative;
     width: 100%;
     max-width: 100%;
-    height: 280px; /* Altura inicial, pode ser ajustada */
+    height: 280px;
     margin: 25px 0;
     padding: 15px;
     background-color: var(--background-light);
@@ -818,14 +795,13 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
 
 .reassessment-header h2 {
     margin: 0;
-    flex-grow: 1; /* Permite que o título ocupe o espaço restante */
+    flex-grow: 1;
 }
 
-/* NOVO: Container para os botões de ação na reavaliação */
 .reassessment-actions {
     display: flex;
     gap: 10px;
-    flex-shrink: 0; /* Impede que os botões quebrem linha facilmente */
+    flex-shrink: 0;
 }
 
 .reassessment-description {
@@ -1001,7 +977,6 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
     transition: background-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-/* Torna o item clicável para marcar/desmarcar o checkbox */
 .sync-plan-item {
     cursor: pointer;
 }
@@ -1015,7 +990,7 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
     width: 20px;
     height: 20px;
     flex-shrink: 0;
-    pointer-events: none; /* O clique é gerenciado pelo label pai */
+    pointer-events: none;
 }
 
 .sync-plan-info {
@@ -1039,7 +1014,6 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
     font-size: 1.1em;
 }
 
-/* Estilo para a pré-visualização do novo ritmo (Melhoria de UX) */
 .sync-new-pace-preview {
     display: block;
     margin-top: 5px;
@@ -1057,7 +1031,7 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
     margin-top: 20px;
 }
 
-/* --- START OF ADDITION: Estilos para o Explorador de Livros da Bíblia --- */
+/* --- Estilos para o Explorador de Livros da Bíblia --- */
 .explorer-grid-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
@@ -1077,7 +1051,6 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
     font-size: 0.9em;
     -webkit-user-select: none;
     user-select: none;
-    /* --- MODIFICAÇÕES --- */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -1140,17 +1113,15 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
     background-color: rgba(var(--primary-action-rgb), 0.08);
 }
 
-/* NOVO: Contêiner para os ícones dentro do card */
 .book-card-icons-container {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 4px;
-    margin-top: 8px; /* Espaçamento do nome do livro */
-    min-height: 20px; /* Garante espaço mesmo que vazio */
+    margin-top: 8px;
+    min-height: 20px;
 }
 
-/* NOVO: Estilo para cada ícone de plano marcador */
 .plan-marker-icon {
     display: inline-flex;
     align-items: center;
@@ -1162,14 +1133,12 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
     background-color: var(--background-card);
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     border: 1px solid var(--border-color);
-    /* Permite tooltips (ver melhoria de UX) */
     cursor: help;
 }
-/* --- END OF ADDITION --- */
 
 /* 
 ================================================================================
-  INÍCIO: Animação de Feedback de UI (Prioridade 2)
+  Animação de Feedback de UI
 ================================================================================
 */
 .recalculated-highlight {
@@ -1190,11 +1159,10 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
         border-color: var(--primary-action);
     }
 }
-/* --- FIM DA ADIÇÃO --- */
 
 /* 
 ================================================================================
-  INÍCIO: NOVOS ESTILOS PARA CARD DE VERSÃO E MODAL
+  NOVOS ESTILOS PARA CARD DE VERSÃO E MODAL
 ================================================================================
 */
 .version-card {
@@ -1239,7 +1207,6 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
     font-size: 0.95em;
     line-height: 1.5;
 }
-/* --- FIM DA ADIÇÃO --- */
 
 /* --- Media Queries (Ajustes Responsivos) --- */
 @media (max-width: 768px) {
@@ -1327,7 +1294,6 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
         justify-content: flex-start;
     }
     
-    /* Ajustes para os botões de reavaliação em telas pequenas */
     .reassessment-header {
         flex-direction: column;
         align-items: stretch;
@@ -1348,7 +1314,7 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
 
 /* 
 ================================================================================
-  INÍCIO: NOVOS ESTILOS PARA SEÇÃO DE LINK DO GOOGLE DRIVE
+  SEÇÃO DE LINK DO GOOGLE DRIVE
 ================================================================================
 */
 .drive-link-section {
@@ -1372,7 +1338,7 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
     text-decoration: none;
     border-radius: var(--base-border-radius);
     transition: background-color var(--transition-fast);
-    margin-top: 15px; /* Espaçamento após a primeira linha */
+    margin-top: 15px;
 }
 
 .drive-link-content:hover {
@@ -1408,7 +1374,7 @@ fieldset:disabled { opacity: 0.5; pointer-events: none; }
 
 /* 
 ================================================================================
-  INÍCIO DA ADIÇÃO (PRIORIDADE 2): ANIMAÇÃO DE ENTRADA
+  ANIMAÇÃO DE ENTRADA (PRIORIDADE 2)
 ================================================================================
 */
 @keyframes fadeInUp {
