@@ -50,33 +50,68 @@
     </section>
 
     <!-- =========================================
-         TELA 2: HUB (MENU PRINCIPAL)
+         TELA 2: HUB (MENU PRINCIPAL) - NOVO DESIGN
     ========================================= -->
     <section id="hub-screen" style="display: none;">
         <header class="hub-header">
-            <img src="assets/images/logo_perola_rara.png" alt="Logo Pérola Rara">
-            <h1>Olá! Bem-vindo(a)</h1>
-            <p>Logado como: <span id="user-email-display">...</span></p>
-            <p>Selecione o módulo que deseja acessar:</p>
+            <div class="logo-wrapper">
+                <img src="assets/images/logo_perola_rara.png" alt="Logo Pérola Rara">
+            </div>
+            <div class="welcome-text">
+                <h1>Bem-vindo(a) ao Atelier</h1>
+                <p class="user-badge">Logado como: <span id="user-email-display">...</span></p>
+                <p class="instruction">Selecione o módulo para iniciar seus trabalhos:</p>
+            </div>
         </header>
 
         <div class="hub-cards-container">
-            <!-- Cartão 1 -->
+            <!-- Cartão 1: Orçamentos -->
             <div class="hub-card" id="btn-go-orcamentos">
-                <h2 style="font-size: 3rem;">📝</h2>
-                <h3>Orçamentos e Pedidos</h3>
-                <p>Gerenciamento de clientes, criação de orçamentos e controle de produção.</p>
+                <div class="card-decoration"></div>
+                <div class="card-icon">
+                    <!-- SVG: Prancheta / Lista -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                        <path d="M9 14h6"></path>
+                        <path d="M9 10h6"></path>
+                        <path d="M9 18h6"></path>
+                    </svg>
+                </div>
+                <h3>Gestão de Pedidos</h3>
+                <p>Gerencie clientes, crie orçamentos personalizados e controle a fila de produção.</p>
+                <div class="card-footer">
+                    <span class="card-action">Acessar Módulo &rarr;</span>
+                </div>
             </div>
 
-            <!-- Cartão 2 -->
+            <!-- Cartão 2: Precificação -->
             <div class="hub-card" id="btn-go-precificacao">
-                <h2 style="font-size: 3rem;">🧮</h2>
+                <div class="card-decoration"></div>
+                <div class="card-icon">
+                    <!-- SVG: Calculadora / Abacus -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                        <line x1="8" y1="6" x2="16" y2="6"></line>
+                        <line x1="16" y1="14" x2="16" y2="14"></line>
+                        <line x1="12" y1="14" x2="12" y2="14"></line>
+                        <line x1="8" y1="14" x2="8" y2="14"></line>
+                        <line x1="16" y1="18" x2="16" y2="18"></line>
+                        <line x1="12" y1="18" x2="12" y2="18"></line>
+                        <line x1="8" y1="18" x2="8" y2="18"></line>
+                    </svg>
+                </div>
                 <h3>Precificação</h3>
-                <p>Cálculo de custos de materiais, mão de obra e margem de lucro.</p>
+                <p>Calcule custos de materiais, mão de obra e defina o valor justo das suas peças.</p>
+                <div class="card-footer">
+                    <span class="card-action">Acessar Módulo &rarr;</span>
+                </div>
             </div>
         </div>
 
-        <button id="hubLogoutBtn">Sair do Sistema</button>
+        <div class="hub-footer-actions">
+            <button id="hubLogoutBtn" class="btn-logout-ghost">Desconectar</button>
+        </div>
     </section>
 
     <!-- =========================================
@@ -204,7 +239,7 @@
                     <button type="button" id="btnSalvarPedidoEdicao">Salvar Pedido</button>
                 </section>
 
-                 <!-- PÁGINA: RELATÓRIO (Placeholder) -->
+                 <!-- PÁGINA: RELATÓRIO -->
                  <section id="relatorio" class="pagina" style="display: none;">
                     <h2>Relatórios</h2>
                     <p>Funcionalidade em desenvolvimento.</p>
@@ -245,12 +280,10 @@
                         <label>Tipo:</label>
                         <label><input type="radio" name="tipo-material" value="unidade" checked> Unidade</label>
                         <label><input type="radio" name="tipo-material" value="comprimento"> Comprimento</label>
-                        <!-- Adicione mais tipos se o JS suportar -->
                     </div>
                     <div class="form-group">
                         <label>Custo Total Compra:</label><input type="number" id="valor-total-material" step="0.01">
                     </div>
-                    <!-- Campos adicionais de dimensão podem ser inseridos aqui se o JS exigir, ex: div id="campos-comprimento" -->
                     <button type="button" id="cadastrar-material-insumo-btn">Salvar Material</button>
                 </form>
                 <input type="text" id="busca-material" placeholder="Filtrar..." onkeyup="buscarMateriaisCadastrados()">
@@ -296,7 +329,6 @@
                 <form id="form-produtos-cadastrados">
                     <div class="form-group"><label>Nome do Produto:</label><input type="text" id="nome-produto"></div>
                     
-                    <!-- Área de Pesquisa de Material -->
                     <div style="position:relative;">
                         <input type="text" id="pesquisa-material" placeholder="Pesquisar material para adicionar...">
                         <div id="resultados-pesquisa" style="display:none; position:absolute; background:white; border:1px solid #ccc; width:100%; max-height:150px; overflow-y:auto; z-index:100;"></div>
