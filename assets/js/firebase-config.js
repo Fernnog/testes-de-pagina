@@ -5,13 +5,13 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.2/firebase
 // import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics.js"; // Opcional
 
 const firebaseConfig = {
-    // COLOQUE AQUI AS CREDENCIAIS DA SUA NOVA BASE UNIFICADA
-    apiKey: "SUA_NOVA_API_KEY",
-    authDomain: "seu-novo-projeto.firebaseapp.com",
-    projectId: "seu-novo-projeto",
-    storageBucket: "seu-novo-projeto.firebasestorage.app",
-    messagingSenderId: "SEU_SENDER_ID",
-    appId: "SEU_APP_ID"
+  apiKey: "AIzaSyCVwI8jMseTiXQbLF9789M1OrCo2xCZugQ",
+  authDomain: "perola-rara-atelier.firebaseapp.com",
+  projectId: "perola-rara-atelier",
+  storageBucket: "perola-rara-atelier.firebasestorage.app",
+  messagingSenderId: "469831378664",
+  appId: "1:469831378664:web:93faf8030a9132bd380b5d",
+  measurementId: "G-YCK2WYD6BN"
 };
 
 const app = initializeApp(firebaseConfig);
