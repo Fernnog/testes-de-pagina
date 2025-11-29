@@ -1,9 +1,8 @@
+// assets/js/main.js
 import { auth } from './firebase-config.js';
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-import { initOrcamentos } from './orcamentos.js';
-import { initPrecificacao } from './precificacao.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
-// Elementos das telas
+// Mapeamento das telas (Sections no HTML)
 const screens = {
     auth: document.getElementById('auth-screen'),
     hub: document.getElementById('hub-screen'),
@@ -11,29 +10,60 @@ const screens = {
     precificacao: document.getElementById('module-precificacao')
 };
 
-// Função para mostrar apenas uma tela
-function showScreen(screenName) {
-    Object.values(screens).forEach(el => el.style.display = 'none');
-    screens[screenName].style.display = 'block';
+// Botões de Navegação
+const btnLogout = document.getElementById('hubLogoutBtn');
+const btnGoOrcamentos = document.getElementById('btn-go-orcamentos');
+const btnGoPrecificacao = document.getElementById('btn-go-precificacao');
+const btnsBackToHub = document.querySelectorAll('.btn-back-hub');
+
+// Função para exibir uma tela específica e esconder as outras
+function navigateTo(screenName) {
+    console.log(`Navegando para: ${screenName}`);
+    
+    // Esconde todas
+    Object.values(screens).forEach(el => {
+        if(el) el.style.display = 'none';
+    });
+
+    // Mostra a desejada
+    if(screens[screenName]) {
+        screens[screenName].style.display = 'block';
+    }
 }
 
-// Monitor de Autenticação
+// Monitor de Autenticação (Centralizado)
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        // Se logado, vai para o Hub e inicializa os módulos (carrega dados)
-        showScreen('hub');
-        initOrcamentos();   // Carrega dados do Firebase de orçamentos
-        initPrecificacao(); // Carrega dados do Firebase de precificação
+        // Usuário logado: Mostra o Hub Inicial
+        document.getElementById('user-email-display').textContent = user.email;
+        navigateTo('hub');
     } else {
-        showScreen('auth');
+        // Usuário não logado: Mostra Login
+        navigateTo('auth');
     }
 });
 
-// Navegação do Hub
-document.getElementById('btn-go-orcamentos').addEventListener('click', () => showScreen('orcamentos'));
-document.getElementById('btn-go-precificacao').addEventListener('click', () => showScreen('precificacao'));
+// Eventos de Clique
+if(btnGoOrcamentos) {
+    btnGoOrcamentos.addEventListener('click', () => navigateTo('orcamentos'));
+}
 
-// Botões de Voltar ao Hub (adicionados nos headers dos módulos)
-document.querySelectorAll('.btn-back-hub').forEach(btn => {
-    btn.addEventListener('click', () => showScreen('hub'));
+if(btnGoPrecificacao) {
+    btnGoPrecificacao.addEventListener('click', () => navigateTo('precificacao'));
+}
+
+btnsBackToHub.forEach(btn => {
+    btn.addEventListener('click', () => navigateTo('hub'));
 });
+
+// Logout Global
+if(btnLogout) {
+    btnLogout.addEventListener('click', async () => {
+        try {
+            await signOut(auth);
+            // O onAuthStateChanged vai capturar e mandar para 'auth' automaticamente
+        } catch (error) {
+            console.error("Erro ao sair:", error);
+        }
+    });
+}
