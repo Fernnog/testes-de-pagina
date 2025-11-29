@@ -1,11 +1,11 @@
 /* assets/css/main.css */
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 
 :root {
-    --cor-principal: #7aa2a9;
-    --cor-secundaria: #dfb6b0;
-    --cor-fundo: #f0f2f5;
-    --cor-texto: #333;
+    --cor-principal: #7aa2a9;      /* Verde Azulado (Teal) */
+    --cor-secundaria: #dfb6b0;     /* Rosa Antigo */
+    --cor-fundo: #f8f9fa;          /* Fundo Off-white */
+    --cor-texto: #444;             /* Cinza Escuro Suave */
 }
 
 body {
@@ -13,91 +13,238 @@ body {
     background-color: var(--cor-fundo);
     margin: 0;
     padding: 0;
+    color: var(--cor-texto);
 }
 
-/* === ESTILOS DO HUB (SALA DE ESPERA) === */
+/* === ESTILOS DO HUB (REFINADO) === */
 #hub-screen {
-    max-width: 900px;
-    margin: 50px auto;
-    text-align: center;
+    max-width: 1000px;
+    margin: 40px auto;
     padding: 20px;
 }
 
-.hub-header img {
-    max-width: 180px;
+/* Animação de Entrada */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Cabeçalho do Hub */
+.hub-header {
+    text-align: center;
+    margin-bottom: 60px;
+    animation: fadeInUp 0.8s ease backwards;
+}
+
+.hub-header .logo-wrapper img {
+    max-width: 160px;
+    height: auto;
     margin-bottom: 20px;
 }
 
 .hub-header h1 {
+    font-size: 2.5rem;
     color: var(--cor-principal);
-    font-size: 2rem;
+    margin: 0 0 10px 0;
+    font-weight: 300; /* Leve e elegante */
+    letter-spacing: -0.5px;
+}
+
+.hub-header .user-badge {
+    display: inline-block;
+    background-color: #fff;
+    padding: 6px 18px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    color: #888;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
     margin-bottom: 10px;
+    border: 1px solid rgba(0,0,0,0.03);
 }
 
-.hub-header p {
+.hub-header .instruction {
+    font-size: 1.1rem;
     color: #666;
-    margin-bottom: 40px;
+    margin-top: 15px;
 }
 
+/* Container dos Cartões */
 .hub-cards-container {
     display: flex;
     justify-content: center;
-    gap: 30px;
+    gap: 40px;
     flex-wrap: wrap;
+    margin-bottom: 60px;
 }
 
+/* Estilo do Cartão */
 .hub-card {
-    background: white;
-    width: 250px;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    cursor: pointer;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 2px solid transparent;
-}
-
-.hub-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    border-color: var(--cor-secundaria);
-}
-
-.hub-card h3 {
-    color: var(--cor-principal);
-    margin-bottom: 10px;
-}
-
-/* Botão Sair no Hub */
-#hubLogoutBtn {
-    background-color: #e74c3c;
-    color: white;
-    border: none;
-    padding: 8px 20px;
+    background: #ffffff;
+    width: 320px;
+    padding: 40px 30px;
     border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(122, 162, 169, 0.08); /* Sombra sutil com a cor principal */
     cursor: pointer;
-    margin-top: 20px;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: 1px solid rgba(255,255,255,0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.8s ease backwards;
+}
+
+.hub-card:nth-child(1) { animation-delay: 0.1s; }
+.hub-card:nth-child(2) { animation-delay: 0.2s; }
+
+/* Decoração superior do cartão */
+.hub-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(90deg, var(--cor-principal), #8bcbd6);
+    transition: height 0.3s ease;
+}
+
+/* Hover no Cartão */
+.hub-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(223, 182, 176, 0.2); /* Sombra rosa no hover */
+}
+
+.hub-card:hover::before {
+    background: linear-gradient(90deg, var(--cor-secundaria), #ebd0cc);
+    height: 7px;
+}
+
+/* Ícone SVG e Círculo */
+.card-icon {
+    width: 80px;
+    height: 80px;
+    background-color: #f4fcfd; /* Fundo muito claro (azul) */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 25px;
+    transition: all 0.4s ease;
+}
+
+.card-icon svg {
+    width: 36px;
+    height: 36px;
+    stroke: var(--cor-principal);
+    transition: stroke 0.4s ease;
+}
+
+.hub-card:hover .card-icon {
+    background-color: #fdf5f4; /* Fundo muito claro (rosa) */
+    transform: scale(1.1);
+}
+
+.hub-card:hover .card-icon svg {
+    stroke: var(--cor-secundaria);
+}
+
+/* Textos do Cartão */
+.hub-card h3 {
+    font-size: 1.5rem;
+    color: #444;
+    margin: 0 0 15px 0;
+    font-weight: 500;
+}
+
+.hub-card p {
+    font-size: 0.95rem;
+    color: #777;
+    line-height: 1.6;
+    margin-bottom: 30px;
+    flex-grow: 1; /* Empurra o footer para baixo */
+}
+
+/* Ação do Cartão (Link Falso) */
+.card-footer {
+    width: 100%;
+}
+
+.card-action {
+    display: inline-block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--cor-principal);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+    padding-bottom: 3px;
+    border-bottom: 2px solid transparent;
+}
+
+.hub-card:hover .card-action {
+    color: var(--cor-secundaria);
+    border-bottom-color: var(--cor-secundaria);
+}
+
+/* Botão de Logout Estilizado (Ghost Button) */
+.hub-footer-actions {
+    text-align: center;
+    margin-top: 40px;
+    animation: fadeInUp 0.8s ease backwards;
+    animation-delay: 0.4s;
+}
+
+.btn-logout-ghost {
+    background: transparent;
+    border: 1px solid #d1d1d1;
+    color: #888;
+    padding: 10px 35px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    font-family: 'Roboto', sans-serif;
+    letter-spacing: 0.5px;
+}
+
+.btn-logout-ghost:hover {
+    border-color: #e74c3c;
+    color: #e74c3c;
+    background: rgba(231, 76, 60, 0.03);
 }
 
 /* Botão Voltar ao Menu (Dentro dos módulos) */
 .btn-back-hub {
     position: fixed;
-    top: 10px;
-    left: 10px;
+    top: 20px;
+    left: 20px;
     z-index: 1000;
-    background-color: var(--cor-principal);
-    color: white;
-    border: none;
-    padding: 8px 15px;
+    background-color: white;
+    color: var(--cor-principal);
+    border: 1px solid var(--cor-principal);
+    padding: 8px 18px;
     border-radius: 50px;
     cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
     font-size: 0.9em;
+    font-weight: 500;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 8px;
+    transition: all 0.3s ease;
 }
 
 .btn-back-hub:hover {
-    background-color: #5a8289;
+    background-color: var(--cor-principal);
+    color: white;
+    box-shadow: 0 4px 15px rgba(122, 162, 169, 0.3);
 }
