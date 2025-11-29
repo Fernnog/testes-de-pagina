@@ -1,13 +1,12 @@
 // assets/js/orcamentos.js
 
-// 1. IMPORTAÇÕES DA CENTRAL (Não inicializa mais o app aqui)
-import { db, auth } from './firebase-config.js'; 
-import { collection, addDoc, getDocs, doc, setDoc, query, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+import { db, auth } from './firebase-config.js';
+import { collection, addDoc, getDocs, doc, setDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
-// Referências Globais do Módulo
+// Referências
 const orcamentosPedidosRef = collection(db, "Orcamento-Pedido");
 
-// Variáveis de Estado (Escopadas ao módulo)
+// Variáveis de Estado
 let numeroOrcamento = 1;
 let numeroPedido = 1;
 const anoAtual = new Date().getFullYear();
@@ -15,29 +14,33 @@ let orcamentoEditando = null;
 let pedidoEditando = null;
 let orcamentos = [];
 let pedidos = [];
-let moduleInitialized = false; // Flag para evitar recarregar listeners múltiplas vezes
+let moduleInitialized = false;
 
 // ==========================================================================
-// FUNÇÃO DE INICIALIZAÇÃO (Chamada pelo main.js)
+// INICIALIZAÇÃO
 // ==========================================================================
 export async function initOrcamentos() {
     console.log("Inicializando Módulo Orçamentos...");
     
-    // 1. Carregar Dados
+    // Tornar funções acessíveis globalmente (necessário para onclick em HTML gerado via JS)
+    window.excluirProduto = excluirProduto;
+    window.excluirProdutoEdicao = excluirProdutoEdicao;
+    window.formatarEntradaMoeda = formatarEntradaMoeda;
+    window.atualizarTotaisEdicao = atualizarTotaisEdicao;
+    window.atualizarRestanteEdicao = atualizarRestanteEdicao;
+
     await carregarDados();
     
-    // 2. Configurar Listeners (Apenas se ainda não foram configurados)
     if (!moduleInitialized) {
         setupEventListeners();
         moduleInitialized = true;
     }
     
-    // 3. Exibir a página inicial do módulo
     mostrarPagina('form-orcamento');
 }
 
 // ==========================================================================
-// LÓGICA DE DADOS (Firebase)
+// CARREGAMENTO E SALVAMENTO (FIREBASE)
 // ==========================================================================
 
 async function carregarDados() {
@@ -53,20 +56,19 @@ async function carregarDados() {
         snapshot.forEach(doc => {
             const data = doc.data();
             data.id = doc.id;
+
             if (data.tipo === 'orcamento') {
                 orcamentos.push(data);
-                // Lógica simples para pegar o maior número
                 const num = parseInt(data.numero.split('/')[0]);
-                if(num >= numeroOrcamento) numeroOrcamento = num + 1;
+                if (num >= numeroOrcamento) numeroOrcamento = num + 1;
             } else if (data.tipo === 'pedido') {
                 pedidos.push(data);
                 const num = parseInt(data.numero.split('/')[0]);
-                if(num >= numeroPedido) numeroPedido = num + 1;
+                if (num >= numeroPedido) numeroPedido = num + 1;
             }
         });
         
-        console.log("Dados Orçamentos Carregados:", orcamentos.length);
-        // Atualiza as tabelas visuais
+        console.log(`Orçamentos: ${orcamentos.length}, Pedidos: ${pedidos.length}`);
         mostrarOrcamentosGerados();
         mostrarPedidosRealizados();
 
@@ -77,7 +79,7 @@ async function carregarDados() {
 
 async function salvarDados(dados, tipo) {
     if (!auth.currentUser) {
-        alert("Sessão expirada. Faça login novamente.");
+        alert("Sessão expirada.");
         return;
     }
     try {
@@ -95,11 +97,11 @@ async function salvarDados(dados, tipo) {
 }
 
 // ==========================================================================
-// LÓGICA DE UI (Interface)
+// EVENT LISTENERS E NAVEGAÇÃO
 // ==========================================================================
 
 function setupEventListeners() {
-    // Navegação Interna do Módulo (Tabs)
+    // Abas
     document.querySelectorAll('#module-orcamentos nav ul li a[data-pagina]').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
@@ -107,34 +109,39 @@ function setupEventListeners() {
         });
     });
 
-    // Botões de Ação
+    // Botões Principais
     bindClick('#btnAddProdutoOrcamento', adicionarProduto);
     bindClick('#btnGerarOrcamento', gerarOrcamento);
     bindClick('#btnAtualizarOrcamento', atualizarOrcamento);
-    
-    // Filtros
-    bindClick('#orcamentos-gerados button', filtrarOrcamentos); // Botão filtrar na tab orçamentos
-    bindClick('#lista-pedidos button', filtrarPedidos);         // Botão filtrar na tab pedidos
+    bindClick('#btnAddProdutoEdicao', adicionarProdutoEdicao);
+    bindClick('#btnSalvarPedidoEdicao', atualizarPedido);
 
-    // Cálculos Automáticos (Delegated Events para inputs dinâmicos)
+    // Filtros e Relatórios
+    bindClick('#orcamentos-gerados button', filtrarOrcamentos);
+    bindClick('#lista-pedidos button', filtrarPedidos);
+    bindClick('#relatorio button', filtrarPedidosRelatorio);
+    const btnXLSX = document.querySelector('#relatorio button[onclick="gerarRelatorioXLSX()"]');
+    if(btnXLSX) btnXLSX.onclick = gerarRelatorioXLSX;
+
+    // Listeners Dinâmicos (Inputs de Tabela)
     document.querySelector('#tabelaProdutos').addEventListener('input', (e) => {
         if(e.target.matches('.produto-quantidade, .produto-valor-unit')) atualizarTotais();
     });
     
-    document.querySelector('#valorFrete').addEventListener('input', atualizarTotais);
+    const freteInput = document.querySelector('#valorFrete');
+    if(freteInput) freteInput.addEventListener('input', () => {
+        formatarEntradaMoeda(freteInput);
+        atualizarTotais();
+    });
 }
 
-// Helper para vincular cliques com segurança (caso o elemento não exista)
 function bindClick(selector, handler) {
     const el = document.querySelector(selector);
     if(el) el.addEventListener('click', handler);
 }
 
 function mostrarPagina(idPagina) {
-    // Esconde todas as sections DENTRO do módulo orçamentos
     document.querySelectorAll('#module-orcamentos .pagina').forEach(p => p.style.display = 'none');
-    
-    // Mostra a desejada
     const target = document.getElementById(idPagina);
     if(target) {
         target.style.display = 'block';
@@ -143,11 +150,24 @@ function mostrarPagina(idPagina) {
     }
 }
 
-// ... (Mantenha as funções auxiliares originais abaixo: formatarMoeda, gerarNumeroFormatado, etc.)
-// Vou incluir as principais modificadas para o contexto modular.
+// ==========================================================================
+// FUNÇÕES AUXILIARES
+// ==========================================================================
 
 function formatarMoeda(valor) {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function formatarEntradaMoeda(input) {
+    if (!input.value) {
+        input.value = 'R$ 0,00';
+        return;
+    }
+    let valor = input.value.replace(/\D/g, '');
+    valor = (valor / 100).toFixed(2) + '';
+    valor = valor.replace(".", ",");
+    valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+    input.value = 'R$ ' + valor;
 }
 
 function converterMoedaParaNumero(valor) {
@@ -156,72 +176,152 @@ function converterMoedaParaNumero(valor) {
     return parseFloat(valor.replace(/R\$\s?|\./g, '').replace(',', '.')) || 0;
 }
 
+function gerarNumeroFormatado(numero) {
+    return numero.toString().padStart(4, '0') + '/' + anoAtual;
+}
+
+function limparCamposMoeda() {
+    const campos = ['valorFrete', 'valorOrcamento', 'total', 'entrada', 'restante', 'margemLucro', 'custoMaoDeObra'];
+    campos.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.value = 'R$ 0,00';
+    });
+}
+
 // ==========================================================================
-// FUNÇÕES DE NEGÓCIO (Core) - Simplificadas para caber na resposta
-// Copie a lógica interna das suas funções originais para cá.
+// LÓGICA DE NEGÓCIO (ORÇAMENTOS E PEDIDOS)
 // ==========================================================================
 
 function adicionarProduto() {
     const tbody = document.querySelector("#tabelaProdutos tbody");
-    const row = tbody.insertRow();
-    row.innerHTML = `
+    const newRow = tbody.insertRow();
+    newRow.innerHTML = `
         <td><input type="number" class="produto-quantidade" value="1" min="1"></td>
         <td><input type="text" class="produto-descricao"></td>
-        <td><input type="text" class="produto-valor-unit" value="0,00"></td>
+        <td><input type="text" class="produto-valor-unit" value="R$ 0,00" oninput="formatarEntradaMoeda(this)"></td>
         <td>R$ 0,00</td>
-        <td><button type="button" class="btn-remove-prod">Excluir</button></td>
+        <td><button type="button" onclick="excluirProduto(this)">Excluir</button></td>
     `;
-    row.querySelector('.btn-remove-prod').onclick = () => { row.remove(); atualizarTotais(); };
+}
+
+function excluirProduto(btn) {
+    btn.closest('tr').remove();
+    atualizarTotais();
 }
 
 function atualizarTotais() {
     let totalProd = 0;
     document.querySelectorAll("#tabelaProdutos tbody tr").forEach(row => {
         const qtd = parseFloat(row.querySelector(".produto-quantidade").value) || 0;
-        const unit = parseFloat(row.querySelector(".produto-valor-unit").value.replace(',','.')) || 0;
+        const unit = converterMoedaParaNumero(row.querySelector(".produto-valor-unit").value);
         const total = qtd * unit;
         row.cells[3].textContent = formatarMoeda(total);
         totalProd += total;
     });
     
-    const frete = parseFloat(document.getElementById("valorFrete").value.replace(',','.')) || 0;
+    const frete = converterMoedaParaNumero(document.getElementById("valorFrete").value);
     document.getElementById("valorOrcamento").value = formatarMoeda(totalProd);
     document.getElementById("total").value = formatarMoeda(totalProd + frete);
 }
 
+// GERAÇÃO DE ORÇAMENTO
 async function gerarOrcamento() {
-    // Coleta dados do formulário
-    const novoOrcamento = {
-        numero: `${numeroOrcamento}/${anoAtual}`,
+    const dados = {
+        numero: gerarNumeroFormatado(numeroOrcamento),
         dataOrcamento: document.getElementById("dataOrcamento").value,
+        dataValidade: document.getElementById("dataValidade").value,
         cliente: document.getElementById("cliente").value,
+        endereco: document.getElementById("endereco").value,
+        tema: document.getElementById("tema").value,
+        cidade: document.getElementById("cidade").value,
+        telefone: document.getElementById("telefone").value,
+        email: document.getElementById("clienteEmail").value,
+        cores: document.getElementById("cores").value,
+        pagamento: Array.from(document.querySelectorAll('input[name="pagamento"]:checked')).map(el => el.value),
+        valorFrete: converterMoedaParaNumero(document.getElementById("valorFrete").value),
+        valorOrcamento: converterMoedaParaNumero(document.getElementById("valorOrcamento").value),
         total: converterMoedaParaNumero(document.getElementById("total").value),
-        produtos: [], // ... lógica de coletar produtos da tabela
-        tipo: 'orcamento',
-        pedidoGerado: false
+        observacoes: document.getElementById("observacoes").value,
+        produtos: [],
+        pedidoGerado: false,
+        tipo: 'orcamento'
     };
 
-    // Coleta produtos (simplificado)
     document.querySelectorAll("#tabelaProdutos tbody tr").forEach(row => {
-        novoOrcamento.produtos.push({
+        dados.produtos.push({
+            quantidade: parseFloat(row.querySelector(".produto-quantidade").value),
             descricao: row.querySelector(".produto-descricao").value,
-            quantidade: row.querySelector(".produto-quantidade").value
-            // ... outros campos
+            valorUnit: converterMoedaParaNumero(row.querySelector(".produto-valor-unit").value),
+            valorTotal: converterMoedaParaNumero(row.cells[3].textContent)
         });
     });
 
-    await salvarDados(novoOrcamento, 'orcamento');
+    await salvarDados(dados, 'orcamento');
     numeroOrcamento++;
-    orcamentos.push(novoOrcamento);
-    alert("Orçamento Gerado!");
+    orcamentos.push(dados);
+    
+    document.getElementById("orcamento").reset();
+    limparCamposMoeda();
+    document.querySelector("#tabelaProdutos tbody").innerHTML = "";
+    
+    alert("Orçamento gerado!");
+    mostrarPagina('orcamentos-gerados');
+    // exibirOrcamentoEmHTML(dados); // Se desejar reativar a impressão
+}
+
+// ATUALIZAÇÃO DE ORÇAMENTO
+async function atualizarOrcamento() {
+    if (!orcamentoEditando) return;
+    
+    const index = orcamentos.findIndex(o => o.id === orcamentoEditando);
+    if(index === -1) return;
+
+    const dados = {
+        ...orcamentos[index],
+        dataOrcamento: document.getElementById("dataOrcamento").value,
+        dataValidade: document.getElementById("dataValidade").value,
+        cliente: document.getElementById("cliente").value,
+        endereco: document.getElementById("endereco").value,
+        tema: document.getElementById("tema").value,
+        cidade: document.getElementById("cidade").value,
+        telefone: document.getElementById("telefone").value,
+        email: document.getElementById("clienteEmail").value,
+        cores: document.getElementById("cores").value,
+        pagamento: Array.from(document.querySelectorAll('input[name="pagamento"]:checked')).map(el => el.value),
+        valorFrete: converterMoedaParaNumero(document.getElementById("valorFrete").value),
+        valorOrcamento: converterMoedaParaNumero(document.getElementById("valorOrcamento").value),
+        total: converterMoedaParaNumero(document.getElementById("total").value),
+        observacoes: document.getElementById("observacoes").value,
+        produtos: []
+    };
+
+    document.querySelectorAll("#tabelaProdutos tbody tr").forEach(row => {
+        dados.produtos.push({
+            quantidade: parseFloat(row.querySelector(".produto-quantidade").value),
+            descricao: row.querySelector(".produto-descricao").value,
+            valorUnit: converterMoedaParaNumero(row.querySelector(".produto-valor-unit").value),
+            valorTotal: converterMoedaParaNumero(row.cells[3].textContent)
+        });
+    });
+
+    await salvarDados(dados, 'orcamento');
+    orcamentos[index] = dados;
+    
+    alert("Orçamento atualizado!");
+    orcamentoEditando = null;
+    document.getElementById("orcamento").reset();
+    document.querySelector("#tabelaProdutos tbody").innerHTML = "";
+    document.getElementById("btnGerarOrcamento").style.display = "inline-block";
+    document.getElementById("btnAtualizarOrcamento").style.display = "none";
     mostrarPagina('orcamentos-gerados');
 }
 
+// LISTAGENS
 function mostrarOrcamentosGerados() {
     const tbody = document.querySelector("#tabela-orcamentos tbody");
     if(!tbody) return;
     tbody.innerHTML = '';
-    
+
     orcamentos.forEach(orc => {
         const row = tbody.insertRow();
         row.innerHTML = `
@@ -229,21 +329,255 @@ function mostrarOrcamentosGerados() {
             <td>${orc.dataOrcamento}</td>
             <td>${orc.cliente}</td>
             <td>${formatarMoeda(orc.total)}</td>
-            <td>${orc.pedidoGerado ? 'Sim' : 'Não'}</td>
-            <td>
-                <button class="btn-visualizar">Ver</button>
-                ${!orc.pedidoGerado ? '<button class="btn-gerar-pedido">Gerar Pedido</button>' : ''}
-            </td>
+            <td>${orc.pedidoGerado ? orc.numeroPedido : 'Não'}</td>
+            <td></td>
         `;
-        // Attach events...
+        
+        const cellAcoes = row.cells[5];
+        
+        if (!orc.pedidoGerado) {
+            const btnEditar = document.createElement('button');
+            btnEditar.textContent = "Editar";
+            btnEditar.onclick = () => editarOrcamento(orc.id);
+            
+            const btnGerar = document.createElement('button');
+            btnGerar.textContent = "Gerar Pedido";
+            btnGerar.onclick = () => gerarPedido(orc.id);
+            
+            cellAcoes.appendChild(btnEditar);
+            cellAcoes.appendChild(btnGerar);
+        } else {
+            cellAcoes.textContent = "Concluído";
+        }
     });
 }
 
-function mostrarPedidosRealizados() {
-    // Mesma lógica de mostrarOrcamentosGerados, mas iterando sobre 'pedidos'
-    // e populando #tabela-pedidos
+function editarOrcamento(id) {
+    const orc = orcamentos.find(o => o.id === id);
+    if (!orc) return;
+
+    orcamentoEditando = id;
+    
+    document.getElementById("dataOrcamento").value = orc.dataOrcamento;
+    document.getElementById("dataValidade").value = orc.dataValidade;
+    document.getElementById("cliente").value = orc.cliente;
+    document.getElementById("endereco").value = orc.endereco;
+    document.getElementById("tema").value = orc.tema;
+    document.getElementById("cidade").value = orc.cidade;
+    document.getElementById("telefone").value = orc.telefone;
+    document.getElementById("clienteEmail").value = orc.email || "";
+    document.getElementById("cores").value = orc.cores;
+    document.getElementById("valorFrete").value = formatarMoeda(orc.valorFrete);
+    document.getElementById("valorOrcamento").value = formatarMoeda(orc.valorOrcamento);
+    document.getElementById("total").value = formatarMoeda(orc.total);
+    document.getElementById("observacoes").value = orc.observacoes;
+
+    const tbody = document.querySelector("#tabelaProdutos tbody");
+    tbody.innerHTML = '';
+    orc.produtos.forEach(p => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td><input type="number" class="produto-quantidade" value="${p.quantidade}" min="1"></td>
+            <td><input type="text" class="produto-descricao" value="${p.descricao}"></td>
+            <td><input type="text" class="produto-valor-unit" value="${formatarMoeda(p.valorUnit)}" oninput="formatarEntradaMoeda(this)"></td>
+            <td>${formatarMoeda(p.valorTotal)}</td>
+            <td><button type="button" onclick="excluirProduto(this)">Excluir</button></td>
+        `;
+    });
+
+    mostrarPagina('form-orcamento');
+    document.getElementById("btnGerarOrcamento").style.display = "none";
+    document.getElementById("btnAtualizarOrcamento").style.display = "inline-block";
 }
 
-// ... Adicione aqui as funções filtrarOrcamentos, filtrarPedidos, gerarPedido, etc.
-// Copie do seu arquivo original, apenas garantindo que as referências de DOM (document.getElementById)
-// funcionem dentro do novo HTML unificado.
+// PEDIDOS
+async function gerarPedido(orcamentoId) {
+    const orc = orcamentos.find(o => o.id === orcamentoId);
+    if (!orc) return;
+
+    const pedido = {
+        numero: gerarNumeroFormatado(numeroPedido),
+        dataPedido: new Date().toISOString().split('T')[0],
+        dataEntrega: orc.dataValidade,
+        cliente: orc.cliente,
+        endereco: orc.endereco,
+        tema: orc.tema,
+        cidade: orc.cidade,
+        telefone: orc.telefone,
+        email: orc.email,
+        cores: orc.cores,
+        pagamento: orc.pagamento,
+        valorFrete: orc.valorFrete,
+        valorOrcamento: orc.valorOrcamento,
+        total: orc.total,
+        observacoes: orc.observacoes,
+        entrada: 0,
+        restante: orc.total,
+        produtos: orc.produtos,
+        tipo: 'pedido'
+    };
+
+    await salvarDados(pedido, 'pedido');
+    numeroPedido++;
+    pedidos.push(pedido);
+
+    orc.pedidoGerado = true;
+    orc.numeroPedido = pedido.numero;
+    await salvarDados(orc, 'orcamento');
+
+    alert(`Pedido ${pedido.numero} gerado!`);
+    mostrarPagina('lista-pedidos');
+    mostrarPedidosRealizados();
+    mostrarOrcamentosGerados();
+}
+
+function mostrarPedidosRealizados() {
+    const tbody = document.querySelector("#tabela-pedidos tbody");
+    if(!tbody) return;
+    tbody.innerHTML = '';
+
+    pedidos.forEach(p => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td>${p.numero}</td>
+            <td>${p.dataPedido}</td>
+            <td>${p.cliente}</td>
+            <td>${formatarMoeda(p.total)}</td>
+            <td><button class="btn-editar-pedido">Editar</button></td>
+        `;
+        row.querySelector('.btn-editar-pedido').onclick = () => editarPedido(p.id);
+    });
+}
+
+function editarPedido(id) {
+    const pedido = pedidos.find(p => p.id === id);
+    if (!pedido) return;
+    pedidoEditando = id;
+
+    // Preencher campos de edição...
+    document.getElementById("dataPedidoEdicao").value = pedido.dataPedido;
+    document.getElementById("dataEntregaEdicao").value = pedido.dataEntrega;
+    document.getElementById("clienteEdicao").value = pedido.cliente;
+    document.getElementById("enderecoEdicao").value = pedido.endereco;
+    document.getElementById("temaEdicao").value = pedido.tema;
+    document.getElementById("cidadeEdicao").value = pedido.cidade;
+    document.getElementById("contatoEdicao").value = pedido.telefone;
+    document.getElementById("coresEdicao").value = pedido.cores;
+    document.getElementById("valorFreteEdicao").value = formatarMoeda(pedido.valorFrete);
+    document.getElementById("valorPedidoEdicao").value = formatarMoeda(pedido.valorOrcamento || 0);
+    document.getElementById("totalEdicao").value = formatarMoeda(pedido.total);
+    document.getElementById("entradaEdicao").value = formatarMoeda(pedido.entrada || 0);
+    document.getElementById("restanteEdicao").value = formatarMoeda(pedido.restante || 0);
+    document.getElementById("observacoesEdicao").value = pedido.observacoes;
+
+    const tbody = document.querySelector("#tabelaProdutosEdicao tbody");
+    tbody.innerHTML = '';
+    pedido.produtos.forEach(p => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td><input type="number" class="produto-quantidade" value="${p.quantidade}" min="1" onchange="atualizarTotaisEdicao()"></td>
+            <td><input type="text" class="produto-descricao" value="${p.descricao}"></td>
+            <td><input type="text" class="produto-valor-unit" value="${formatarMoeda(p.valorUnit)}" oninput="formatarEntradaMoeda(this)" onblur="atualizarTotaisEdicao()"></td>
+            <td>${formatarMoeda(p.valorTotal)}</td>
+            <td><button type="button" onclick="excluirProdutoEdicao(this)">Excluir</button></td>
+        `;
+    });
+
+    mostrarPagina('form-edicao-pedido');
+}
+
+async function atualizarPedido() {
+    if (!pedidoEditando) return;
+    const index = pedidos.findIndex(p => p.id === pedidoEditando);
+    
+    const dados = {
+        ...pedidos[index],
+        cliente: document.getElementById("clienteEdicao").value,
+        dataEntrega: document.getElementById("dataEntregaEdicao").value,
+        valorFrete: converterMoedaParaNumero(document.getElementById("valorFreteEdicao").value),
+        total: converterMoedaParaNumero(document.getElementById("totalEdicao").value),
+        entrada: converterMoedaParaNumero(document.getElementById("entradaEdicao").value),
+        restante: converterMoedaParaNumero(document.getElementById("restanteEdicao").value),
+        produtos: []
+        // ... outros campos conforme necessário
+    };
+
+    document.querySelectorAll("#tabelaProdutosEdicao tbody tr").forEach(row => {
+        dados.produtos.push({
+            quantidade: parseFloat(row.querySelector(".produto-quantidade").value),
+            descricao: row.querySelector(".produto-descricao").value,
+            valorUnit: converterMoedaParaNumero(row.querySelector(".produto-valor-unit").value),
+            valorTotal: converterMoedaParaNumero(row.cells[3].textContent)
+        });
+    });
+
+    await salvarDados(dados, 'pedido');
+    pedidos[index] = dados;
+    alert("Pedido Atualizado!");
+    pedidoEditando = null;
+    mostrarPagina('lista-pedidos');
+}
+
+// Funções de Edição (Escopo Global para Tabela Dinâmica)
+function adicionarProdutoEdicao() {
+    const tbody = document.querySelector("#tabelaProdutosEdicao tbody");
+    const row = tbody.insertRow();
+    row.innerHTML = `
+        <td><input type="number" class="produto-quantidade" value="1" min="1" onchange="atualizarTotaisEdicao()"></td>
+        <td><input type="text" class="produto-descricao"></td>
+        <td><input type="text" class="produto-valor-unit" value="R$ 0,00" oninput="formatarEntradaMoeda(this)" onblur="atualizarTotaisEdicao()"></td>
+        <td>R$ 0,00</td>
+        <td><button type="button" onclick="excluirProdutoEdicao(this)">Excluir</button></td>
+    `;
+}
+
+function excluirProdutoEdicao(btn) {
+    btn.closest('tr').remove();
+    atualizarTotaisEdicao();
+}
+
+function atualizarTotaisEdicao() {
+    let total = 0;
+    document.querySelectorAll("#tabelaProdutosEdicao tbody tr").forEach(row => {
+        const qtd = parseFloat(row.querySelector(".produto-quantidade").value) || 0;
+        const unit = converterMoedaParaNumero(row.querySelector(".produto-valor-unit").value);
+        const sub = qtd * unit;
+        row.cells[3].textContent = formatarMoeda(sub);
+        total += sub;
+    });
+    
+    const frete = converterMoedaParaNumero(document.getElementById("valorFreteEdicao").value);
+    const totalFinal = total + frete;
+    document.getElementById("valorPedidoEdicao").value = formatarMoeda(total);
+    document.getElementById("totalEdicao").value = formatarMoeda(totalFinal);
+    atualizarRestanteEdicao();
+}
+
+function atualizarRestanteEdicao() {
+    const total = converterMoedaParaNumero(document.getElementById("totalEdicao").value);
+    const entrada = converterMoedaParaNumero(document.getElementById("entradaEdicao").value);
+    document.getElementById("restanteEdicao").value = formatarMoeda(total - entrada);
+}
+
+// Filtros e Relatórios (Simplificado)
+function filtrarOrcamentos() {
+    // Implementação básica de recarga, adicione lógica de filtro se necessário
+    mostrarOrcamentosGerados();
+}
+function filtrarPedidos() {
+    mostrarPedidosRealizados();
+}
+function filtrarPedidosRelatorio() {
+    // Implemente a lógica de preencher a tabela de relatório aqui
+    alert("Funcionalidade de Relatório pronta para implementação.");
+}
+function gerarRelatorioXLSX() {
+    alert("Exportação XLSX pronta para implementação.");
+}
+
+// Tornar funções acessíveis globalmente no final também, por segurança
+window.excluirProduto = excluirProduto;
+window.excluirProdutoEdicao = excluirProdutoEdicao;
+window.formatarEntradaMoeda = formatarEntradaMoeda;
+window.atualizarTotaisEdicao = atualizarTotaisEdicao;
+window.atualizarRestanteEdicao = atualizarRestanteEdicao;
