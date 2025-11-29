@@ -1,0 +1,706 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+/* Paleta de cores e variáveis */
+:root {
+    --cor-principal: #7aa2a9;
+    --cor-secundaria: #dfb6b0;
+    --cor-autenticacao-1: #687f82;      /* Botões */
+    --cor-autenticacao-2: #ecd5d1;      /* Fundo da seção de autenticação E user-info */
+    --cor-fundo: #f0f2f5;             /* Fundo geral da página */
+}
+
+body {
+    font-family: 'Roboto', Arial, sans-serif;
+    background-color: var(--cor-fundo);
+    color: #333;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* ====  ESTILOS PARA A TELA DE AUTENTICAÇÃO  ==== */
+
+.auth-container {
+    background-color: var(--cor-autenticacao-2); /*  Fundo #e5c4bf */
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.auth-form {
+    width: 300px;
+    margin: 0 auto;
+}
+
+.auth-form h2 {
+    color: var(--cor-autenticacao-1); /* Cor mais suave para o título */
+    margin-bottom: 20px;
+}
+
+.auth-form .form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.auth-form label {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+    font-weight: bold;
+}
+
+.auth-form input[type="email"],
+.auth-form input[type="password"] {
+    width: calc(100% - 20px);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    font-size: 16px;
+    margin-bottom: 10px;
+    background-color: #fff;  /* Fundo branco - pode mudar para #e5c4bf */
+    color: #333;
+}
+
+/* Opcional:  Fundo #e5c4bf para os inputs da tela de autenticação */
+/*
+.auth-form input[type="email"],
+.auth-form input[type="password"] {
+    background-color: #e5c4bf;
+    color: #333;
+}
+*/
+
+.auth-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+/* Botões na tela de autenticação */
+.auth-buttons button, .auth-form button[type="button"]:not(.forgot-password) {
+    background-color: var(--cor-autenticacao-1); /* Cor de fundo dos botões */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.auth-buttons button:hover, .auth-form button[type="button"]:not(.forgot-password):hover {
+    background-color: #4a5c5e; /* Cor mais escura no hover */
+}
+
+.auth-form .forgot-password {
+    background: none;
+    border: none;
+    color: var(--cor-autenticacao-1); /* Cor do link "Esqueci minha senha" */
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 0.9em;
+    margin-top: 10px;
+}
+
+.auth-form .forgot-password:hover {
+    color: #4a5c5e; /* Cor mais escura no hover */
+}
+
+.auth-message {
+    margin-top: 15px;
+    color: #555;
+    font-size: 0.9em;
+}
+
+/* ====  ESTILOS PARA A TOP-BAR (autenticado)  ==== */
+
+/* Estilos *específicos* para a top-bar quando autenticado */
+body.authenticated .top-bar .user-info {
+    color: #333; /* Mantém a cor do texto (ou ajuste se quiser) */
+    background-color: var(--cor-autenticacao-2); /* Fundo #ecd5d1 para o texto */
+    padding: 5px 10px; /* Espaçamento interno para o fundo */
+    border-radius: 20px; /* Bordas arredondadas */
+    display: inline-block; /* Importante para o padding e border-radius funcionarem */
+}
+
+body.authenticated #logoutBtn.logout-button {
+    background-color: var(--cor-autenticacao-1); /* Cor #687f82 para o botão */
+    color: white; /* Mantém o texto em branco */
+     /*Outras propriedades já existentes do botão*/
+    margin: 0;
+    padding: 8px 15px; /* Ajusta o padding para combinar com o container */
+    border-radius: 20px;
+    font-size: 14px; /* Ajusta o tamanho da fonte se necessário */
+    border: none;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+body.authenticated #logoutBtn.logout-button:hover {
+    background-color: #4a5c5e; /* Cor mais escura no hover (ajuste) */
+}
+/*Manter fundo da .top-bar-content original*/
+ .top-bar-content {
+    background-color: #e3f2fd; /* Fundo claro e delicado - mesmo do auth-container */
+    padding: 8px 15px; /* Adiciona um pouco de padding interno */
+    border-radius: 20px; /* Arredonda as bordas para combinar com outros elementos */
+    display: flex;         /* Para alinhar user-info e logoutBtn horizontalmente */
+    align-items: center;   /* Alinha verticalmente os itens dentro */
+    justify-content: space-between; /* Espaçamento entre user-info e logoutBtn se necessário */
+    gap: 15px;             /* Espaçamento entre os itens dentro (user-info e logoutBtn) */
+}
+
+/* ====  ESTILOS PARA O SLOGAN  ==== */
+
+.slogan {
+    margin-top: 20px; /* Espaço acima do slogan */
+    color: #555;    /* Cor do texto do slogan */
+}
+
+/* Logo na tela de autenticação */
+.auth-form .logo-container{
+    margin-top: 0px;
+    margin-bottom: 10px;
+}
+
+/* ====  RESTANTE DOS ESTILOS (já existentes)  ==== */
+
+#app-container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+hr.titulo {
+    border: 2px solid #7aa2a9;
+    margin-bottom: 10px;
+}
+
+hr.menu {
+    border: 1px solid #7aa2a9;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+header {
+    text-align: center;
+    padding: 20px 0;
+    background-color: #ffffff;
+    color: #7aa2a9;
+    margin-bottom: 20px;
+}
+
+.logo-container {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+#logo {
+    max-width: 150px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+h1, h2 {
+    color: #7aa2a9;
+    text-align: center;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+nav ul li {
+    display: inline-block;
+    margin: 0 10px;
+    position: relative;
+}
+
+nav ul li a {
+    color: #7aa2a9;
+    text-decoration: none;
+    display: block;
+    padding: 10px;
+    transition: background-color 0.3s ease;
+}
+
+nav ul li:hover > a {
+    background-color: #e8d7d4;
+}
+
+.subpagina {
+    margin-top: 20px;
+}
+
+.subpagina h2, .subpagina h3 {
+    color: #7aa2a9;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+}
+
+#titulo-ferias-13o {
+   margin-top: 30px;
+}
+
+.subpagina form {
+    width: 95%;
+    margin: auto;
+    margin-bottom: 30px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+select,
+textarea {
+    width: calc(100% - 22px);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    font-size: 16px;
+    background-color: #dfb6b0;
+    color: #fff;
+}
+
+button,  #logoutBtn.logout-button{
+    background-color: #7aa2a9;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+button:hover, #logoutBtn.logout-button:hover {
+    background-color: #5a8289;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    text-align: left;
+    padding: 8px;
+    border: 1px solid #ccc;
+}
+
+th {
+    background-color: #cae6e7;
+    color: #333;
+}
+
+td {
+    background-color: #fff;
+}
+
+.tabela-gerada {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.tabela-gerada th, .tabela-gerada td {
+    text-align: left;
+    padding: 8px;
+    border: 1px solid #ccc;
+}
+
+.tabela-gerada th {
+    background-color: #cae6e7;
+    color: #333;
+}
+
+.tabela-gerada td {
+    background-color: #f8f8f8;
+}
+
+@media (max-width: 768px) {
+    .container {
+        width: 98%;
+    }
+
+    .form-group {
+        width: 100%;
+        margin-right: 0;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+    }
+}
+
+#resultados-pesquisa {
+    position: absolute;
+    width: 92.5%;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    z-index: 10;
+}
+
+#resultados-pesquisa div {
+    padding: 8px;
+    cursor: pointer;
+    border-bottom: 1px solid #ccc;
+}
+
+#resultados-pesquisa div:hover {
+    background-color: #f0f0f0;
+}
+
+#tabela-materiais-produto {
+    margin-bottom: 20px;
+}
+
+#tabela-materiais-produto th,
+#tabela-materiais-produto td {
+    padding: 8px;
+    border: 1px solid #ccc;
+    text-align: left;
+}
+
+#tabela-materiais-produto th:nth-child(4),
+#tabela-materiais-produto td:nth-child(4) {
+    width: auto;
+}
+
+#tabela-materiais-produto th:nth-child(5),
+#tabela-materiais-produto td:nth-child(5) {
+    width: 100px;
+}
+
+.dimensoes-input {
+    width: 60px !important;
+    margin-right: 5px !important;
+}
+.dimensoes-span{
+    font-weight: bold;
+    margin-left: 5px;
+}
+.quantidade-input {
+  width: 60px !important;
+  background-color: #cae6e7;
+  color: #333;
+  font-weight: bold;
+}
+
+
+.unidade-medida {
+    margin-left: 5px;
+    font-size: 0.9em;
+    color: #555;
+}
+
+#valor-hora, #custo-ferias-13o {
+    background-color: #cae6e7;
+    color: #333;
+    font-weight: bold;
+}
+
+.linha-separadora {
+    border: none;
+    border-top: 1px solid #7aa2a9;
+    margin: 20px 0;
+    width: 50%;
+    margin-left: auto;
+    margin-right: auto;
+
+}
+
+#lista-custos-indiretos {
+    list-style: none;
+    padding: 0;
+}
+
+#lista-custos-indiretos li {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    background-color: #f8f8f8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#lista-custos-indiretos li:hover {
+    background-color: #e8d7d4;
+}
+
+#lista-custos-indiretos li .custo-item-nome {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+#lista-custos-indiretos li input[type="number"] {
+    width: 100px;
+    margin-right: 10px;
+    background-color: #dfb6b0;
+    color: #fff;
+}
+
+#lista-custos-indiretos li button {
+    margin-left: 5px;
+}
+
+.calculation-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 80%;
+    margin: 0 auto;
+}
+
+.section {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.bracket {
+    font-size: 4em;
+    margin-right: 15px;
+    color: #7aa2a9;
+}
+
+.section label, .section span:not(.bracket) {
+  margin-right: 10px;
+    font-weight: bold;
+}
+
+#produto-selecionado, #horas-produto,  #margem-lucro-final{
+    padding: 8px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    margin-right: 10px;
+     background-color: #dfb6b0;
+    color: #fff;
+}
+
+
+.subtotal-line {
+  width: 100%;
+  border-top: 2px solid #7aa2a9;
+  margin: 15px 0;
+}
+
+.total-line {
+  width: 100%;
+  border-top: 2px solid #7aa2a9;
+  margin: 15px 0;
+}
+
+.subtotal, .total{
+  font-weight: bold;
+  font-size: 1.1em;
+  width: 100%;
+  justify-content: flex-end;
+  display: flex;
+}
+
+#produto-resultados {
+    position: absolute;
+    z-index: 10;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    max-height: 200px;
+    overflow-y: auto;
+    width: calc(80% - 20px);
+}
+
+#produto-resultados div {
+    padding: 8px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+#produto-resultados div:hover {
+    background-color: #f0f0f0;
+}
+
+#produto-resultados.hidden{
+  display: none;
+}
+
+#produto-pesquisa{
+    width: calc(100% - 22px);
+}
+
+#detalhes-produto,
+#detalhes-custos-indiretos {
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+#lista-materiais-produto,
+#lista-custos-indiretos-detalhes {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+
+#lista-materiais-produto li,
+#lista-custos-indiretos-detalhes li {
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+}
+
+#lista-materiais-produto li:last-child,
+#lista-custos-indiretos-detalhes li:last-child {
+    border-bottom: none;
+}
+
+#detalhes-mao-de-obra {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  margin-left: 50px;
+}
+
+.custo-detalhe {
+  display: flex;
+  justify-content: space-between;
+  width: 280px;
+  margin-bottom: 5px;
+}
+
+.custo-detalhe span:first-child {
+  margin-right: 10px;
+}
+
+.area-inputs {
+    display: flex;
+    align-items: center;
+}
+
+.area-inputs input {
+    margin-right: 5px;
+    width: 70px;
+}
+.area-inputs span {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.aviso-separador {
+  border: none;
+  border-top: 1px dashed #7aa2a9;
+  margin: 10px 0;
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.aviso-unidades {
+  text-align: center;
+  font-size: 0.9em;
+  color: #555;
+  margin-bottom: 20px;
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+}
+
+/*Removido .top-bar-content e colocado acima*/
+
+.top-bar .user-info {
+    font-size: 0.9em;
+    color: #666;
+    padding: 5px 10px;
+    margin: 0;     /* Remove margens padrão se houver */
+}
+
+/*Removido #logoutBtn.logout-button e colocado acima*/
+
+.tabela-precificacao-detalhada {
+    width: 95%;
+    border-collapse: collapse;
+    margin: 20px auto;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    overflow: hidden;
+    font-family: 'Roboto', Arial, sans-serif;
+    border-spacing: 0;
+}
+
+.tabela-precificacao-detalhada th,
+.tabela-precificacao-detalhada td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+    font-size: 0.95em;
+}
+
+.tabela-precificacao-detalhada th {
+    background-color: #7aa2a9;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+.tabela-precificacao-detalhada td:first-child {
+    font-weight: bold;
+    color: #555;
+    width: 40%;
+}
+
+.tabela-precificacao-detalhada td:nth-child(2) {
+    width: 60%;
+}
+
+.tabela-precificacao-detalhada tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.tabela-precificacao-detalhada tbody tr:hover {
+    background-color: #f2f2f2;
+}
