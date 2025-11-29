@@ -1,51 +1,150 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <!-- Metas e Links CSS Unificados -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Pérola Rara</title>
+    <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
+    
+    <!-- CSS Unificados -->
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/orcamentos.css">
     <link rel="stylesheet" href="assets/css/precificacao.css">
-    <!-- Scripts (Type Module) -->
+
+    <!-- Bibliotecas Externas -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+    <!-- Scripts Modulares -->
+    <!-- Observe que importamos o precificacao.js e orcamentos.js aqui. 
+         Você precisará remover os imports de Auth/App dentro deles e usar o firebase-config.js, 
+         conforme explicarei no próximo passo. -->
     <script type="module" src="assets/js/main.js"></script>
+    <script type="module" src="assets/js/orcamentos.js"></script>
+    <script type="module" src="assets/js/precificacao.js"></script>
 </head>
 <body>
 
-    <!-- 1. TELA DE LOGIN (Unificada) -->
+    <!-- =========================================
+         TELA 1: LOGIN CENTRALIZADO
+    ========================================= -->
     <section id="auth-screen">
-        <!-- Código do form de login vindo do precificacao.html (que é mais completo) -->
-    </section>
-
-    <!-- 2. HUB / DASHBOARD (Nova Tela Intermediária) -->
-    <section id="hub-screen" style="display: none;">
-        <header class="hub-header">
-            <img src="assets/images/logo_perola_rara.png" alt="Logo" class="hub-logo">
-            <h1>Bem-vindo ao Portal Pérola Rara</h1>
-            <button id="hubLogoutBtn">Sair</button>
-        </header>
-        <div class="hub-cards-container">
-            <div class="hub-card" id="btn-go-orcamentos">
-                <h3>Orçamentos & Pedidos</h3>
-                <p>Gerencie clientes e pedidos</p>
-            </div>
-            <div class="hub-card" id="btn-go-precificacao">
-                <h3>Precificação</h3>
-                <p>Calcule custos e lucros</p>
+        <!-- Reutilizando o layout de login do precificacao.html -->
+        <div class="auth-container">
+            <div class="auth-form">
+                <div class="logo-container">
+                    <img src="assets/images/logo_perola_rara.png" alt="Logo Pérola Rara" id="logo-login" style="max-width: 150px; display:block; margin: 0 auto;">
+                </div>
+                <h2>Acesso ao Portal</h2>
+                
+                <!-- O login.js foi removido. A lógica deve ser migrada para main.js ou mantida nos arquivos de modulo se eles tiverem listeners -->
+                <!-- Para simplificar, vamos manter a estrutura visual. A lógica de login está no precificacao.js e orcamentos.js 
+                     MAS precisamos consolidar. Por enquanto, mantenha o HTML abaixo. -->
+                
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" placeholder="Digite seu email">
+                </div>
+                <div class="form-group">
+                    <label for="password">Senha:</label>
+                    <input type="password" id="password" name="password" placeholder="Digite sua senha">
+                </div>
+                <div class="auth-buttons">
+                    <button type="button" id="loginBtn">Entrar</button>
+                    <!-- Registro pode ser ocultado ou mantido conforme sua regra de negócio -->
+                </div>
+                <p id="auth-message" class="auth-message"></p>
+                <p class="slogan" style="text-align: center; margin-top: 20px;"><strong><em>"Pérola Rara, onde a arte se encontra com o amor em cada detalhe".</em></strong></p>
             </div>
         </div>
     </section>
 
-    <!-- 3. MÓDULO ORÇAMENTOS (Conteúdo do antigo index.html) -->
-    <section id="module-orcamentos" style="display: none;">
-        <!-- Botão Voltar ao Hub no Header -->
-        <button class="btn-back-hub">🏠 Menu Principal</button>
-        <!-- Conteúdo original do body do arquivo index.html -->
+    <!-- =========================================
+         TELA 2: HUB (MENU PRINCIPAL)
+    ========================================= -->
+    <section id="hub-screen" style="display: none;">
+        <header class="hub-header">
+            <img src="assets/images/logo_perola_rara.png" alt="Logo Pérola Rara">
+            <h1>Olá! Bem-vindo(a)</h1>
+            <p>Logado como: <span id="user-email-display">...</span></p>
+            <p>Selecione o módulo que deseja acessar:</p>
+        </header>
+
+        <div class="hub-cards-container">
+            <!-- Cartão 1 -->
+            <div class="hub-card" id="btn-go-orcamentos">
+                <h2 style="font-size: 3rem;">📝</h2>
+                <h3>Orçamentos e Pedidos</h3>
+                <p>Gerenciamento de clientes, criação de orçamentos e controle de produção.</p>
+            </div>
+
+            <!-- Cartão 2 -->
+            <div class="hub-card" id="btn-go-precificacao">
+                <h2 style="font-size: 3rem;">🧮</h2>
+                <h3>Precificação</h3>
+                <p>Cálculo de custos de materiais, mão de obra e margem de lucro.</p>
+            </div>
+        </div>
+
+        <button id="hubLogoutBtn">Sair do Sistema</button>
     </section>
 
-    <!-- 4. MÓDULO PRECIFICAÇÃO (Conteúdo do antigo precificacao.html) -->
+    <!-- =========================================
+         TELA 3: MÓDULO ORÇAMENTOS
+    ========================================= -->
+    <section id="module-orcamentos" style="display: none;">
+        <button class="btn-back-hub">⬅ Voltar ao Menu</button>
+        
+        <!-- INÍCIO DO CONTEÚDO ORIGINAL INDEX.HTML (ORÇAMENTOS) -->
+        <!-- Copie APENAS o que estava dentro da div class="container" do seu primeiro arquivo -->
+        <div class="container">
+            <header>
+                 <!-- (Conteúdo do Header original de orçamentos...) -->
+                 <h1>Pérola Rara - Gestão de Pedidos</h1>
+                 <nav>
+                    <!-- IMPORTANTE: Remova o botão "Sair" daqui, pois agora temos o botão global "Voltar ao Menu" -->
+                    <ul>
+                        <li><a href="#" data-pagina="form-orcamento">Início</a></li>
+                        <li><a href="#" data-pagina="orcamentos-gerados">Orçamentos Gerados</a></li>
+                        <li><a href="#" data-pagina="lista-pedidos">Pedidos Realizados</a></li>
+                        <li><a href="#" data-pagina="relatorio">Relatório</a></li>
+                    </ul>
+                 </nav>
+            </header>
+            
+            <div id="appContent">
+               <!-- COPIE AQUI TODAS AS SECTIONS (form-orcamento, orcamentos-gerados, etc) DO INDEX.HTML ORIGINAL -->
+               <!-- ... -->
+            </div>
+        </div>
+        <!-- FIM DO CONTEÚDO ORIGINAL INDEX.HTML -->
+    </section>
+
+    <!-- =========================================
+         TELA 4: MÓDULO PRECIFICAÇÃO
+    ========================================= -->
     <section id="module-precificacao" style="display: none;">
-        <!-- Botão Voltar ao Hub no Header -->
-        <button class="btn-back-hub">🏠 Menu Principal</button>
-        <!-- Conteúdo original do body do arquivo precificacao.html -->
+        <button class="btn-back-hub">⬅ Voltar ao Menu</button>
+
+        <!-- INÍCIO DO CONTEÚDO ORIGINAL PRECIFICAÇÃO.HTML -->
+        <!-- Copie o conteúdo da div id="app-container" do arquivo de precificação -->
+        <div id="app-container-precificacao" style="width: 90%; margin: 20px auto; background: #fff; padding: 20px;">
+            <header>
+                 <!-- (Conteúdo do Header original de precificação...) -->
+                 <h1>Precificação</h1>
+                 <nav>
+                     <!-- Copie a Nav original da precificação -->
+                     <ul>
+                        <li><a href="#" data-submenu="materiais-insumos" class="nav-link">Materiais</a></li>
+                        <li><a href="#" data-submenu="mao-de-obra" class="nav-link">Mão de Obra</a></li>
+                        <!-- ... outros links ... -->
+                    </ul>
+                 </nav>
+            </header>
+
+            <!-- COPIE AQUI TODAS AS SECTIONS (materiais-insumos, calculo-precificacao, etc) DO PRECIFICAÇÃO.HTML ORIGINAL -->
+            <!-- ... -->
+        </div>
+        <!-- FIM DO CONTEÚDO ORIGINAL PRECIFICAÇÃO.HTML -->
     </section>
 
 </body>
