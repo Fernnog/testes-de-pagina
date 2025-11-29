@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <!-- Metas e Links CSS Unificados -->
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/orcamentos.css">
+    <link rel="stylesheet" href="assets/css/precificacao.css">
+    <!-- Scripts (Type Module) -->
+    <script type="module" src="assets/js/main.js"></script>
+</head>
+<body>
+
+    <!-- 1. TELA DE LOGIN (Unificada) -->
+    <section id="auth-screen">
+        <!-- Código do form de login vindo do precificacao.html (que é mais completo) -->
+    </section>
+
+    <!-- 2. HUB / DASHBOARD (Nova Tela Intermediária) -->
+    <section id="hub-screen" style="display: none;">
+        <header class="hub-header">
+            <img src="assets/images/logo_perola_rara.png" alt="Logo" class="hub-logo">
+            <h1>Bem-vindo ao Portal Pérola Rara</h1>
+            <button id="hubLogoutBtn">Sair</button>
+        </header>
+        <div class="hub-cards-container">
+            <div class="hub-card" id="btn-go-orcamentos">
+                <h3>Orçamentos & Pedidos</h3>
+                <p>Gerencie clientes e pedidos</p>
+            </div>
+            <div class="hub-card" id="btn-go-precificacao">
+                <h3>Precificação</h3>
+                <p>Calcule custos e lucros</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. MÓDULO ORÇAMENTOS (Conteúdo do antigo index.html) -->
+    <section id="module-orcamentos" style="display: none;">
+        <!-- Botão Voltar ao Hub no Header -->
+        <button class="btn-back-hub">🏠 Menu Principal</button>
+        <!-- Conteúdo original do body do arquivo index.html -->
+    </section>
+
+    <!-- 4. MÓDULO PRECIFICAÇÃO (Conteúdo do antigo precificacao.html) -->
+    <section id="module-precificacao" style="display: none;">
+        <!-- Botão Voltar ao Hub no Header -->
+        <button class="btn-back-hub">🏠 Menu Principal</button>
+        <!-- Conteúdo original do body do arquivo precificacao.html -->
+    </section>
+
+</body>
+</html>
