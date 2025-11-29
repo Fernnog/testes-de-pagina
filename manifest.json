@@ -1,0 +1,21 @@
+{
+  "name": "Portal Pérola Rara",
+  "short_name": "Pérola Rara",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ecd5d1",
+  "theme_color": "#7aa2a9",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "assets/images/logo_perola_rara.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/images/logo_perola_rara.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
