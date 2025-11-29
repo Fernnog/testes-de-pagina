@@ -1,0 +1,103 @@
+/* assets/css/main.css */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+:root {
+    --cor-principal: #7aa2a9;
+    --cor-secundaria: #dfb6b0;
+    --cor-fundo: #f0f2f5;
+    --cor-texto: #333;
+}
+
+body {
+    font-family: 'Roboto', Arial, sans-serif;
+    background-color: var(--cor-fundo);
+    margin: 0;
+    padding: 0;
+}
+
+/* === ESTILOS DO HUB (SALA DE ESPERA) === */
+#hub-screen {
+    max-width: 900px;
+    margin: 50px auto;
+    text-align: center;
+    padding: 20px;
+}
+
+.hub-header img {
+    max-width: 180px;
+    margin-bottom: 20px;
+}
+
+.hub-header h1 {
+    color: var(--cor-principal);
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.hub-header p {
+    color: #666;
+    margin-bottom: 40px;
+}
+
+.hub-cards-container {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.hub-card {
+    background: white;
+    width: 250px;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.hub-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    border-color: var(--cor-secundaria);
+}
+
+.hub-card h3 {
+    color: var(--cor-principal);
+    margin-bottom: 10px;
+}
+
+/* Botão Sair no Hub */
+#hubLogoutBtn {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+/* Botão Voltar ao Menu (Dentro dos módulos) */
+.btn-back-hub {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1000;
+    background-color: var(--cor-principal);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-back-hub:hover {
+    background-color: #5a8289;
+}
