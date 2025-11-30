@@ -26,7 +26,7 @@ const authMessage = document.getElementById('auth-message');
 
 // 3. FUNÇÃO DE NAVEGAÇÃO (ROTEAMENTO)
 function navigateTo(screenName) {
-    // Esconde todas as telas (exceto Splash, que é controlada separadamente)
+    // Esconde todas as telas
     Object.values(screens).forEach(el => {
         if(el) el.style.display = 'none';
     });
@@ -39,44 +39,26 @@ function navigateTo(screenName) {
     }
 }
 
-// 4. INICIALIZAÇÃO E SPLASH SCREEN (NOVA LÓGICA)
+// 4. INICIALIZAÇÃO (LÓGICA CORRIGIDA)
 document.addEventListener('DOMContentLoaded', () => {
     
     // Inicializar widget de versão
     initChangelog();
 
-    // Controle da Splash Screen
+    // Controle Inicial da Splash Screen
+    // Diferente da versão anterior, garantimos que ela comece OCULTA
+    // para não bloquear a tela de login. Ela será ativada apenas após a autenticação.
     const splash = document.getElementById('splash-screen');
-    const authScreen = document.getElementById('auth-screen');
-    
     if(splash) {
-        // Garante que o splash é visível no início e o Auth oculto
-        splash.style.display = 'flex';
-        if(authScreen) authScreen.style.display = 'none';
-
-        // Timer para a duração da Splash
-        setTimeout(() => {
-            // Efeito de Fade Out
-            splash.style.opacity = '0';
-            
-            // Aguarda a transição CSS (0.5s) terminar para remover do DOM
-            setTimeout(() => {
-                splash.style.display = 'none';
-                
-                // Verificação final: se nenhuma tela estiver visível (ex: usuário não logado)
-                // forçamos a tela de Auth aparecer. 
-                // Se o usuário estiver logado, o onAuthStateChanged já terá ativado o Hub (que está atrás do splash).
-                if (authScreen.style.display === 'none' && document.getElementById('hub-screen').style.display === 'none') {
-                    authScreen.style.display = 'flex'; // Exibe Auth se não entrou no Hub
-                }
-            }, 500);
-            
-        }, 2500); // Exibe a Splash por 2.5 segundos
+        splash.style.display = 'none';
     }
 });
 
 // 5. MONITOR DE ESTADO DE AUTENTICAÇÃO (O "Porteiro")
 onAuthStateChanged(auth, (user) => {
+    const splash = document.getElementById('splash-screen');
+    const authScreen = document.getElementById('auth-screen');
+
     if (user) {
         // === USUÁRIO LOGADO ===
         console.log("Usuário autenticado:", user.email);
@@ -85,25 +67,48 @@ onAuthStateChanged(auth, (user) => {
         const userDisplay = document.getElementById('user-email-display');
         if(userDisplay) userDisplay.textContent = user.email;
 
-        // Vai para o Hub (Isso acontece "atrás" da Splash Screen se ela ainda estiver ativa)
-        navigateTo('hub');
-
         // Inicializa os módulos em segundo plano (carrega dados)
         initOrcamentos();
         initPrecificacao();
+
+        // LÓGICA DE TRANSIÇÃO (Splash como Boas-vindas)
+        if (splash) {
+            // Se a tela de Auth estiver visível, esconda imediatamente
+            if(authScreen) authScreen.style.display = 'none';
+            
+            // Exibe o Splash para criar a transição suave para o Hub
+            splash.style.display = 'flex';
+            splash.style.opacity = '1';
+
+            // Timer para a duração da Splash (Experiência de "Carregando/Bem-vindo")
+            setTimeout(() => {
+                // Efeito de Fade Out
+                splash.style.opacity = '0';
+                
+                // Aguarda a transição CSS (0.5s) terminar para remover do DOM e mostrar o Hub
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                    navigateTo('hub'); 
+                }, 500);
+                
+            }, 2000); // Exibe a Splash por 2 segundos antes de liberar o acesso
+        } else {
+            // Fallback caso não exista splash no HTML
+            navigateTo('hub');
+        }
 
     } else {
         // === USUÁRIO DESCONECTADO ===
         console.log("Nenhum usuário autenticado.");
         
-        // Se a splash já sumiu, mostramos o Auth.
-        // Se a splash ainda está lá, apenas configuramos o Auth para aparecer quando ela sumir (via lógica do DOMContentLoaded).
-        const splash = document.getElementById('splash-screen');
-        if (!splash || splash.style.display === 'none') {
-            navigateTo('auth');
-            // Nota: navigateTo usa 'block', mas auth usa flex no CSS. Ajuste rápido:
-            if(screens.auth) screens.auth.style.display = 'flex';
-        }
+        // Garante que a splash não esteja visível atrapalhando o login
+        if (splash) splash.style.display = 'none';
+
+        // Redireciona para a tela de Autenticação
+        navigateTo('auth');
+        
+        // Nota: navigateTo usa 'block', mas auth usa flex no CSS para centralização. Ajuste:
+        if(screens.auth) screens.auth.style.display = 'flex';
     }
 });
 
@@ -124,7 +129,7 @@ if(btnLogin) {
 
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            // O onAuthStateChanged vai lidar com o redirecionamento automaticamente
+            // O onAuthStateChanged vai lidar com a transição (Splash -> Hub) automaticamente
             authMessage.textContent = "";
         } catch (error) {
             console.error("Erro no login:", error);
@@ -144,7 +149,7 @@ if(btnLogout) {
     btnLogout.addEventListener('click', async () => {
         try {
             await signOut(auth);
-            // O onAuthStateChanged vai redirecionar para 'auth'
+            // O onAuthStateChanged vai redirecionar para 'auth' imediatamente
         } catch (error) {
             console.error("Erro ao sair:", error);
             alert("Não foi possível sair no momento.");
