@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Portal Pérola Rara</title>
     
     <!-- Configurações PWA -->
@@ -19,6 +19,7 @@
     <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
     
     <!-- CSS Unificados e Modulares -->
+    <!-- main.css carrega as correções críticas de responsividade -->
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/orcamentos.css">
     <link rel="stylesheet" href="assets/css/precificacao.css">
@@ -34,14 +35,13 @@
 <body>
 
     <!-- =========================================
-         TELA 1: LOGIN (Refinado)
+         TELA 1: LOGIN
     ========================================= -->
     <section id="auth-screen">
         <div class="auth-container">
             <div class="auth-form">
                 <div class="logo-container">
                     <img src="assets/images/logo_perola_rara.png" alt="Logo Pérola Rara" id="logo-login">
-                    <!-- Nome da empresa em fonte ROBOTO (Técnica) -->
                     <h1 class="login-brand-name">Pérola Rara</h1>
                 </div>
                 <h2>Acesso ao Portal</h2>
@@ -63,7 +63,7 @@
     </section>
 
     <!-- =========================================
-         TELA EXTRA: SPLASH SCREEN (Transição)
+         TELA EXTRA: SPLASH SCREEN
     ========================================= -->
     <section id="splash-screen" style="display: none;">
         <div class="splash-content">
@@ -73,7 +73,7 @@
     </section>
 
     <!-- =========================================
-         TELA 2: HUB (MENU PRINCIPAL - REESTRUTURADO)
+         TELA 2: HUB (MENU PRINCIPAL)
     ========================================= -->
     <section id="hub-screen" style="display: none;">
         <header class="hub-header">
@@ -83,11 +83,11 @@
            <div class="welcome-text">
        <h1>Painel Administrativo da Empresa Pérola Rara</h1>
     
-    <div class="user-info-card">
-        <span class="user-icon">👤</span>
-        <span id="user-email-display">...</span>
+        <div class="user-info-card">
+            <span class="user-icon">👤</span>
+            <span id="user-email-display">...</span>
+        </div>
     </div>
-</div>
         </header>
 
         <div class="hub-cards-container">
@@ -114,29 +114,25 @@
             </div>
         </div>
 
-        <!-- Nova Área de Branding (Slogan movido para baixo) -->
         <div class="hub-footer-branding">
             <p class="slogan-hub">"Onde a arte se encontra com o amor em cada detalhe."</p>
         </div>
 
         <div class="hub-footer-actions">
-            <!-- Botão Logout com nova classe 'solid' -->
             <button id="hubLogoutBtn" class="btn-logout-solid">Desconectar</button>
         </div>
 
-        <!-- Container para o Versionamento (Changelog) -->
         <div id="version-container"></div>
     </section>
 
     <!-- =========================================
          TELA 3: MÓDULO ORÇAMENTOS
-         (Conteúdo mantido sem alterações estruturais internas)
     ========================================= -->
     <section id="module-orcamentos" style="display: none;">
         <button class="btn-back-hub">⬅ Voltar ao Menu</button>
         
+        <!-- Classe mobile-container garante o padding correto no CSS novo -->
         <div class="container mobile-container">
-            <!-- Header Refinado -->
             <header class="module-header-styled">
                  <img src="assets/images/logo_perola_rara.png" class="module-logo-small" alt="Logo">
                  <h1 class="module-title-main">Pérola Rara</h1>
@@ -263,7 +259,6 @@
 
     <!-- =========================================
          TELA 4: MÓDULO PRECIFICAÇÃO
-         (Conteúdo mantido sem alterações estruturais internas)
     ========================================= -->
     <section id="module-precificacao" style="display: none;">
         <button class="btn-back-hub">⬅ Voltar ao Menu</button>
@@ -285,7 +280,7 @@
                  </nav>
             </header>
 
-            <!-- SUBPÁGINAS DO MÓDULO PRECIFICAÇÃO (Mantidas) -->
+            <!-- SUBPÁGINAS DO MÓDULO PRECIFICAÇÃO -->
             <div id="materiais-insumos" class="subpagina">
                 <h2 class="section-title-lined">Cadastro de Materiais</h2>
                 <form id="form-materiais-insumos">
