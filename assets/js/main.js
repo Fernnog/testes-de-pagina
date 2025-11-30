@@ -5,6 +5,8 @@ import { auth } from './firebase-config.js'; // Nossa configuração central
 import { onAuthStateChanged, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 import { initOrcamentos } from './orcamentos.js';
 import { initPrecificacao } from './precificacao.js';
+// NOVO: Importação do módulo de Changelog
+import { initChangelog } from './changelog.js';
 
 // 2. REFERÊNCIAS AOS ELEMENTOS DO DOM (Telas)
 const screens = {
@@ -24,7 +26,7 @@ const authMessage = document.getElementById('auth-message');
 
 // 3. FUNÇÃO DE NAVEGAÇÃO (ROTEAMENTO)
 function navigateTo(screenName) {
-    // Esconde todas as telas
+    // Esconde todas as telas (exceto Splash, que é controlada separadamente)
     Object.values(screens).forEach(el => {
         if(el) el.style.display = 'none';
     });
@@ -37,32 +39,75 @@ function navigateTo(screenName) {
     }
 }
 
-// 4. MONITOR DE ESTADO DE AUTENTICAÇÃO (O "Porteiro")
+// 4. INICIALIZAÇÃO E SPLASH SCREEN (NOVA LÓGICA)
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // Inicializar widget de versão
+    initChangelog();
+
+    // Controle da Splash Screen
+    const splash = document.getElementById('splash-screen');
+    const authScreen = document.getElementById('auth-screen');
+    
+    if(splash) {
+        // Garante que o splash é visível no início e o Auth oculto
+        splash.style.display = 'flex';
+        if(authScreen) authScreen.style.display = 'none';
+
+        // Timer para a duração da Splash
+        setTimeout(() => {
+            // Efeito de Fade Out
+            splash.style.opacity = '0';
+            
+            // Aguarda a transição CSS (0.5s) terminar para remover do DOM
+            setTimeout(() => {
+                splash.style.display = 'none';
+                
+                // Verificação final: se nenhuma tela estiver visível (ex: usuário não logado)
+                // forçamos a tela de Auth aparecer. 
+                // Se o usuário estiver logado, o onAuthStateChanged já terá ativado o Hub (que está atrás do splash).
+                if (authScreen.style.display === 'none' && document.getElementById('hub-screen').style.display === 'none') {
+                    authScreen.style.display = 'flex'; // Exibe Auth se não entrou no Hub
+                }
+            }, 500);
+            
+        }, 2500); // Exibe a Splash por 2.5 segundos
+    }
+});
+
+// 5. MONITOR DE ESTADO DE AUTENTICAÇÃO (O "Porteiro")
 onAuthStateChanged(auth, (user) => {
     if (user) {
         // === USUÁRIO LOGADO ===
         console.log("Usuário autenticado:", user.email);
         
-        // Atualiza interface do Hub
+        // Atualiza interface do Hub (Badge de Usuário)
         const userDisplay = document.getElementById('user-email-display');
         if(userDisplay) userDisplay.textContent = user.email;
 
-        // Vai para o Hub
+        // Vai para o Hub (Isso acontece "atrás" da Splash Screen se ela ainda estiver ativa)
         navigateTo('hub');
 
         // Inicializa os módulos em segundo plano (carrega dados)
-        // A lógica interna deles impede recarregamento desnecessário
         initOrcamentos();
         initPrecificacao();
 
     } else {
         // === USUÁRIO DESCONECTADO ===
         console.log("Nenhum usuário autenticado.");
-        navigateTo('auth');
+        
+        // Se a splash já sumiu, mostramos o Auth.
+        // Se a splash ainda está lá, apenas configuramos o Auth para aparecer quando ela sumir (via lógica do DOMContentLoaded).
+        const splash = document.getElementById('splash-screen');
+        if (!splash || splash.style.display === 'none') {
+            navigateTo('auth');
+            // Nota: navigateTo usa 'block', mas auth usa flex no CSS. Ajuste rápido:
+            if(screens.auth) screens.auth.style.display = 'flex';
+        }
     }
 });
 
-// 5. LÓGICA DE LOGIN (Ação do botão Entrar)
+// 6. LÓGICA DE LOGIN (Ação do botão Entrar)
 if(btnLogin) {
     btnLogin.addEventListener('click', async () => {
         const email = document.getElementById('email').value;
@@ -94,7 +139,7 @@ if(btnLogin) {
     });
 }
 
-// 6. LÓGICA DE LOGOUT (Sair do Sistema)
+// 7. LÓGICA DE LOGOUT (Sair do Sistema)
 if(btnLogout) {
     btnLogout.addEventListener('click', async () => {
         try {
@@ -107,7 +152,7 @@ if(btnLogout) {
     });
 }
 
-// 7. NAVEGAÇÃO DO HUB (Botões dos Módulos)
+// 8. NAVEGAÇÃO DO HUB (Botões dos Módulos)
 if(btnGoOrcamentos) {
     btnGoOrcamentos.addEventListener('click', () => {
         navigateTo('orcamentos');
@@ -120,7 +165,7 @@ if(btnGoPrecificacao) {
     });
 }
 
-// 8. BOTÃO "VOLTAR AO MENU" (Presente nos módulos)
+// 9. BOTÃO "VOLTAR AO MENU" (Presente nos módulos)
 btnsBackToHub.forEach(btn => {
     btn.addEventListener('click', () => {
         navigateTo('hub');
