@@ -39,16 +39,16 @@ function navigateTo(screenName) {
     }
 }
 
-// 4. INICIALIZAÇÃO E SPLASH SCREEN (ATUALIZADO COM RIPPLE)
+// 4. INICIALIZAÇÃO GERAL E SPLASH SCREEN
 document.addEventListener('DOMContentLoaded', () => {
     
-    // Inicializar widget de versão
-    initChangelog();
-
-    // Inicializar Efeito Ripple (Novo)
+    // A. Inicializar Efeito Ripple (Onda ao Toque) - NOVO
     initRippleEffect();
 
-    // Controle da Splash Screen
+    // B. Inicializar widget de versão
+    if(typeof initChangelog === 'function') initChangelog();
+
+    // C. Controle da Splash Screen
     const splash = document.getElementById('splash-screen');
     const authScreen = document.getElementById('auth-screen');
     
@@ -68,7 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Verificação final: se nenhuma tela estiver visível (ex: usuário não logado)
                 // forçamos a tela de Auth aparecer. 
-                // Se o usuário estiver logado, o onAuthStateChanged já terá ativado o Hub (que está atrás do splash).
                 if (authScreen.style.display === 'none' && document.getElementById('hub-screen').style.display === 'none') {
                     authScreen.style.display = 'flex'; // Exibe Auth se não entrou no Hub
                 }
@@ -175,35 +174,42 @@ btnsBackToHub.forEach(btn => {
     });
 });
 
-// ==========================================================================
-// 10. LÓGICA DO EFEITO RIPPLE (NOVO)
-// ==========================================================================
+// =================================================================
+// 10. FUNÇÃO: EFEITO RIPPLE (Visual de Toque) - NOVO
+// =================================================================
 function initRippleEffect() {
-    // Escuta cliques em todo o documento (Event Delegation)
+    // Escuta cliques no documento inteiro (Event Delegation)
     document.addEventListener('click', function(e) {
-        // Verifica se o clique foi em um botão, card ou link navegável
-        const target = e.target.closest('button, .hub-card, .nav-link, a[data-pagina], a[data-submenu]');
+        // Verifica se o clique foi em um botão, card ou link
+        const target = e.target.closest('button, .hub-card, .nav-link, .btn-logout-solid, a');
         
         if (target) {
             // Cria o elemento visual da onda
             const ripple = document.createElement('span');
             ripple.classList.add('ripple-effect');
             
-            // Obtém as dimensões e posição do elemento clicado
+            // Pega as coordenadas e dimensões do elemento clicado
             const rect = target.getBoundingClientRect();
             
-            // Calcula a posição do toque relativa ao elemento
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+            // Calcula a posição do toque relativa ao botão
+            // (Se for clique de teclado "Enter", centraliza)
+            let x, y;
+            if(e.detail === 0) { // Disparado via teclado
+                 x = rect.width / 2;
+                 y = rect.height / 2;
+            } else {
+                 x = e.clientX - rect.left;
+                 y = e.clientY - rect.top;
+            }
             
-            // Posiciona o centro da onda no local do clique
+            // Posiciona a onda
             ripple.style.left = x + 'px';
             ripple.style.top = y + 'px';
             
-            // Adiciona o elemento ao DOM
+            // Adiciona ao elemento
             target.appendChild(ripple);
             
-            // Remove o elemento do DOM após o fim da animação (600ms conforme CSS)
+            // Remove do DOM após a animação (600ms)
             setTimeout(() => {
                 ripple.remove();
             }, 600);
