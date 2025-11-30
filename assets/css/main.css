@@ -107,10 +107,21 @@ body {
     transition: opacity 0.5s ease; /* Transição suave para o fade-out */
 }
 
+/* MELHORIA: Container de conteúdo para centralização perfeita */
+.splash-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    text-align: center;
+}
+
 .splash-logo {
     width: 150px;
     margin-bottom: 20px;
     animation: fadeInUp 1s ease;
+    display: block; /* Garante comportamento de bloco */
 }
 
 .splash-slogan {
@@ -121,6 +132,10 @@ body {
     padding: 0 20px;
     animation: fadeInUp 1.5s ease;
     margin-top: 10px;
+    
+    /* MELHORIA: Ajustes para Mobile */
+    max-width: 90%;
+    line-height: 1.4;
 }
 
 /* =========================================
@@ -379,6 +394,7 @@ body {
 }
 
 /* INPUTS ESTILO "ROSA" (Global para os módulos) */
+/* MELHORIA: Adicionado box-sizing: border-box para garantir que o width: 100% não quebre no Android */
 #module-orcamentos input, #module-orcamentos select, #module-orcamentos textarea,
 #module-precificacao input, #module-precificacao select, #module-precificacao textarea {
     width: 100%;
@@ -388,7 +404,7 @@ body {
     border: none;
     border-radius: var(--border-radius-input); /* 15px */
     font-size: 1rem;
-    box-sizing: border-box;
+    box-sizing: border-box; /* Garante layout correto no mobile */
     margin-bottom: 10px;
 }
 

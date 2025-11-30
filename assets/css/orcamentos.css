@@ -126,19 +126,32 @@ label {
     font-weight: bold;
 }
 
-/* Estilos para todos os campos de texto, incluindo o novo campo de e-mail */
+/* 
+   MELHORIA PRIORIDADE 1 E 3: RESPONSIVIDADE E INPUTS
+   Alterado width para 100% e adicionado box-sizing para evitar
+   que o padding estoure a largura da tela no Android.
+*/
 input[type="text"],
 input[type="number"],
 input[type="date"],
 input[type="email"], /* Adicionado o seletor para o campo de e-mail */
-textarea {
-    width: calc(100% - 22px);
-    padding: 10px;
+textarea,
+select {
+    box-sizing: border-box; /* Garante que borda e padding contem na largura */
+    width: 100%;            /* Ocupa todo o espaço disponível no container pai */
+    padding: 12px;          /* Padding levemente aumentado para facilitar toque */
     border: 1px solid #ccc;
-    border-radius: 20px; /* Bordas arredondadas */
-    font-size: 16px;
+    border-radius: 20px;    /* Bordas arredondadas */
+    font-size: 16px;        /* Tamanho ideal para evitar zoom automático no iOS */
     background-color: #dfb6b0; /* Cor de fundo dos campos */
-    color: #fff; /* Cor do texto nos campos */
+    color: #fff;            /* Cor do texto nos campos */
+    outline: none;          /* Remove outline padrão ao focar */
+}
+
+/* Estilo ao focar no input para melhor UX */
+input:focus, textarea:focus, select:focus {
+    border-color: #7aa2a9;
+    box-shadow: 0 0 5px rgba(122, 162, 169, 0.5);
 }
 
 .form-row:after {
@@ -209,6 +222,8 @@ th {
 
 .table-responsive {
     overflow-x: auto;
+    width: 100%;
+    -webkit-overflow-scrolling: touch; /* Rolagem suave no iOS */
 }
 /* ==== FIM SEÇÃO - TABELAS ==== */
 
@@ -216,12 +231,15 @@ th {
 button {
     background-color: #7aa2a9;
     color: white;
-    padding: 10px 20px;
+    padding: 12px 25px; /* Botões um pouco maiores para mobile */
     border: none;
     border-radius: 20px; /* Bordas arredondadas */
     font-size: 16px;
     cursor: pointer;
     margin-top: 10px;
+    transition: background 0.3s;
+    width: auto;
+    min-width: 120px;
 }
 
 button:hover {
@@ -296,20 +314,57 @@ nav ul li a[onclick="limparPagina()"]:hover {
 }
 /* ==== FIM SEÇÃO - BOTÃO LIMPAR PÁGINA ==== */
 
-/* ==== INÍCIO SEÇÃO - MEDIA QUERIES ==== */
+/* ==== INÍCIO SEÇÃO - MEDIA QUERIES (ATUALIZADA) ==== */
+/* Prioridade 1 e 2: Ajustes Críticos para Mobile */
 @media (max-width: 768px) {
     .container {
-        width: 98%;
+        width: 100%;        /* Remove margens laterais fixas */
+        padding: 15px;      /* Espaçamento interno seguro */
+        box-sizing: border-box;
     }
 
+    /* Empilha os campos lado a lado em telas pequenas */
     .form-row .form-group {
         width: 100%;
+        float: none;
         margin-right: 0;
+        margin-bottom: 15px;
     }
 
+    /* Ajuste para botões de navegação no mobile */
+    nav ul {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    nav ul li {
+        display: block;
+        margin: 5px 0;
+        width: 100%;
+    }
+
+    nav ul li a {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+        padding: 12px;
+        background-color: #f9f9f9; /* Fundo leve para destacar área de clique */
+        border: 1px solid #eee;
+    }
+
+    /* Garante que tabelas não quebrem o layout */
     table {
         display: block;
         overflow-x: auto;
+        white-space: nowrap; /* Evita quebra de linha indesejada nas células */
+    }
+
+    /* Ajuste de botões em telas pequenas */
+    button {
+        width: 100%;
+        margin-bottom: 10px;
     }
 }
 /* ==== FIM SEÇÃO - MEDIA QUERIES ==== */
@@ -340,7 +395,7 @@ nav ul li a[onclick="limparPagina()"]:hover {
     border-radius: 15px; /* Bordas arredondadas para os inputs */
     padding: 8px 12px; /* Padding interno um pouco menor */
     margin-bottom: 8px; /* Menos espaço abaixo dos inputs */
-    width: calc(100% - 26px); /* Ajuste de largura considerando o padding e borda */
+    width: 100%; /* Ajustado para 100% com box-sizing */
     font-size: 14px; /* Fonte um pouco menor */
 }
 
@@ -360,6 +415,8 @@ nav ul li a[onclick="limparPagina()"]:hover {
     cursor: pointer;
     border: none;
     transition: background-color 0.3s ease;
+    width: auto; /* Reverte largura 100% do global se necessário */
+    min-width: auto;
 }
 
 #authSection button:hover {
@@ -387,6 +444,7 @@ nav ul li a[onclick="limparPagina()"]:hover {
     text-decoration: none;  /* Sem sublinhado */
     margin: 0;              /* Remove margens desnecessárias */
     align-self: center;     /* Alinhar verticalmente ao centro dentro do flex container */
+    width: auto;
 }
 
 #authSection #btnForgotPassword:hover {
