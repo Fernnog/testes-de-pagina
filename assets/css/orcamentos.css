@@ -11,6 +11,11 @@ body {
     padding: 0;
 }
 
+/* Regra Global de Segurança para Box Model neste arquivo */
+* {
+    box-sizing: border-box;
+}
+
 .container {
     width: 90%;
     margin: auto;
@@ -109,8 +114,6 @@ nav ul li a:hover { /* Estilo de hover aprimorado */
 }
 /* ==== FIM SEÇÃO - CABEÇALHO (PÁGINA PRINCIPAL) ==== */
 
-/* ==== REMOVIDO - SEÇÃO - PAINEL ÚLTIMO BACKUP ==== */
-
 /* ==== INÍCIO SEÇÃO - FORMULÁRIO ==== */
 #form-orcamento, #form-edicao-pedido {
     margin-bottom: 30px;
@@ -126,21 +129,28 @@ label {
     font-weight: bold;
 }
 
-/* Estilos para todos os campos de texto, incluindo o novo campo de e-mail */
+/* 
+   ATUALIZAÇÃO CRÍTICA PARA MOBILE:
+   Removido calc() e adicionado box-sizing para evitar quebra de layout 
+*/
 input[type="text"],
 input[type="number"],
 input[type="date"],
-input[type="email"], /* Adicionado o seletor para o campo de e-mail */
-textarea {
-    width: calc(100% - 22px);
-    padding: 10px;
+input[type="email"], 
+textarea,
+select {
+    width: 100%; /* Ocupa 100% do container pai */
+    padding: 12px; /* Padding aumentado para melhor toque */
     border: 1px solid #ccc;
     border-radius: 20px; /* Bordas arredondadas */
-    font-size: 16px;
+    font-size: 16px; /* Tamanho legível para mobile */
     background-color: #dfb6b0; /* Cor de fundo dos campos */
     color: #fff; /* Cor do texto nos campos */
+    box-sizing: border-box; /* Garante que padding não estoure a largura */
+    margin-bottom: 10px;
 }
 
+/* Lógica Desktop (Mantida, mas será sobrescrita no media query abaixo) */
 .form-row:after {
     content: "";
     display: table;
@@ -195,12 +205,12 @@ th {
 }
 
 .relatorio-table th {
-    background-color: #cce5e9; /* Cor mais clara da paleta para o cabeçalho (25% mais claro que #7aa2a9) */
+    background-color: #cce5e9; /* Cor mais clara da paleta para o cabeçalho */
     color: #333;
 }
 
 .relatorio-table tr:nth-child(even) {
-    background-color: #f0f8fa; /* Cor mais clara da paleta para linhas pares (25% mais claro que #dfb6b0) */
+    background-color: #f0f8fa; /* Cor mais clara da paleta para linhas pares */
 }
 
 .relatorio-table tr:nth-child(odd) {
@@ -208,7 +218,9 @@ th {
 }
 
 .table-responsive {
+    width: 100%;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* Suavidade no scroll iOS */
 }
 /* ==== FIM SEÇÃO - TABELAS ==== */
 
@@ -216,12 +228,13 @@ th {
 button {
     background-color: #7aa2a9;
     color: white;
-    padding: 10px 20px;
+    padding: 12px 24px; /* Aumentado para melhor toque no mobile */
     border: none;
     border-radius: 20px; /* Bordas arredondadas */
     font-size: 16px;
     cursor: pointer;
     margin-top: 10px;
+    min-height: 44px; /* Altura mínima para acessibilidade touch */
 }
 
 button:hover {
@@ -240,25 +253,19 @@ button:hover {
 /* ==== INÍCIO SEÇÃO - SEÇÃO RELATÓRIO ==== */
 .filtro-data {
     margin-bottom: 20px;
+    text-align: center;
 }
 
 .filtro-data label, .filtro-data input {
     margin-right: 10px;
 }
-/* ==== FIM SEÇÃO - SEÇÃO RELATÓRIO ==== */
-
-/* ==== INÍCIO SEÇÃO - FILTROS ==== */
-.filtro-data {
-    margin-bottom: 20px;
-    text-align: center;
-}
 
 .filtro-data label,
 .filtro-data input,
 .filtro-data button {
-    margin: 0 5px;
+    margin: 5px; /* Ajustado para espaçamento vertical no mobile se quebrar linha */
 }
-/* ==== FIM SEÇÃO - FILTROS ==== */
+/* ==== FIM SEÇÃO - SEÇÃO RELATÓRIO ==== */
 
 /* ==== INÍCIO SEÇÃO - PÁGINA DE VISUALIZAÇÃO DO ORÇAMENTO (orcamento.html) ==== */
 .header-orcamento {
@@ -296,24 +303,6 @@ nav ul li a[onclick="limparPagina()"]:hover {
 }
 /* ==== FIM SEÇÃO - BOTÃO LIMPAR PÁGINA ==== */
 
-/* ==== INÍCIO SEÇÃO - MEDIA QUERIES ==== */
-@media (max-width: 768px) {
-    .container {
-        width: 98%;
-    }
-
-    .form-row .form-group {
-        width: 100%;
-        margin-right: 0;
-    }
-
-    table {
-        display: block;
-        overflow-x: auto;
-    }
-}
-/* ==== FIM SEÇÃO - MEDIA QUERIES ==== */
-
 /* ==== INÍCIO SEÇÃO - ESTILOS ADICIONADOS PARA CUSTO E MARGEM ==== */
 .form-row.valores-pedido label {
     color: #7aa2a9;
@@ -321,85 +310,141 @@ nav ul li a[onclick="limparPagina()"]:hover {
 }
 /* ==== FIM SEÇÃO - ESTILOS ADICIONADOS PARA CUSTO E MARGEM ==== */
 
-/* ==== INÍCIO SEÇÃO - ESTILOS DA SEÇÃO DE AUTENTICAÇÃO (ADICIONADO) ==== */
+/* ==== INÍCIO SEÇÃO - ESTILOS DA SEÇÃO DE AUTENTICAÇÃO ==== */
 #authSection {
-    background-color: #e6f7ff; /* Azul bem claro para o fundo do retângulo */
+    background-color: #e6f7ff; 
     padding: 20px;
-    border-radius: 15px; /* Bordas arredondadas para o retângulo */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Sombra leve para destacar */
-    margin-bottom: 20px; /* Espaçamento abaixo da seção de autenticação */
-    display: inline-block; /* Para que o fundo se ajuste ao conteúdo */
-    text-align: center; /* Centralizar o texto interno */
+    border-radius: 15px; 
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); 
+    margin-bottom: 20px; 
+    display: inline-block; 
+    text-align: center;
+    width: 100%; /* Garante largura total se necessário */
+    box-sizing: border-box;
 }
 
 #authSection input[type="email"],
 #authSection input[type="password"] {
-    background-color: #f8f8f8; /* Tom mais claro para os inputs dentro da seção */
-    color: #333; /* Cor do texto para melhor leitura */
-    border: 1px solid #ddd; /* Borda mais suave */
-    border-radius: 15px; /* Bordas arredondadas para os inputs */
-    padding: 8px 12px; /* Padding interno um pouco menor */
-    margin-bottom: 8px; /* Menos espaço abaixo dos inputs */
-    width: calc(100% - 26px); /* Ajuste de largura considerando o padding e borda */
-    font-size: 14px; /* Fonte um pouco menor */
+    background-color: #f8f8f8; 
+    color: #333; 
+    border: 1px solid #ddd; 
+    border-radius: 15px; 
+    padding: 12px;
+    margin-bottom: 10px;
+    width: 100%;
+    font-size: 14px; 
 }
 
-#authSection div { /* Estilo para a div que contém os botões de ação */
-    display: flex;          /* Usar flexbox para alinhar os botões horizontalmente */
-    justify-content: center; /* Centralizar os botões horizontalmente */
-    align-items: center;     /* Alinhar verticalmente ao centro (se necessário) */
+#authSection div { 
+    display: flex;          
+    justify-content: center; 
+    align-items: center;    
+    flex-wrap: wrap; /* Permite quebra de linha em telas muito pequenas */
 }
 
 #authSection button {
-    background-color: #a8d5e3; /* Tom de azul mais suave para os botões */
+    background-color: #a8d5e3; 
     color: #fff;
-    padding: 8px 15px; /* Padding menor para botões menores */
-    border-radius: 15px; /* Bordas arredondadas */
-    font-size: 14px; /* Fonte menor para os botões */
-    margin: 4px; /* Espaçamento menor entre os botões */
+    padding: 8px 15px; 
+    border-radius: 15px; 
+    font-size: 14px; 
+    margin: 4px; 
     cursor: pointer;
     border: none;
     transition: background-color 0.3s ease;
 }
 
 #authSection button:hover {
-    background-color: #7cb3c2; /* Tom de azul um pouco mais escuro no hover */
+    background-color: #7cb3c2; 
 }
 
 #authSection #authStatus,
 #authSection #passwordResetMessage {
-    font-size: 0.9em; /* Fonte menor para o status e mensagens */
+    font-size: 0.9em; 
     margin-top: 10px;
-    color: #555; /* Cor do texto um pouco mais suave */
+    color: #555; 
 }
 
-#authSection #btnForgotPasswordContainer { /* Estilo para o container do link "Esqueci minha senha?" */
-    margin-left: 10px;      /* Espaçamento à esquerda para separar dos outros botões */
+#authSection #btnForgotPasswordContainer { 
+    margin-left: 10px;      
 }
 
 #authSection #btnForgotPassword {
-    background: none;       /* Fundo transparente */
-    color: #7aa2a9;         /* Cor do texto da paleta */
-    border: none;           /* Sem borda */
-    padding: 8px 0;         /* Ajuste no padding vertical */
-    font-size: 14px;        /* Tamanho da fonte */
-    cursor: pointer;        /* Cursor de pointer */
-    text-decoration: none;  /* Sem sublinhado */
-    margin: 0;              /* Remove margens desnecessárias */
-    align-self: center;     /* Alinhar verticalmente ao centro dentro do flex container */
+    background: none;       
+    color: #7aa2a9;         
+    border: none;           
+    padding: 8px 0;         
+    font-size: 14px;        
+    cursor: pointer;        
+    text-decoration: none;  
+    margin: 0;              
+    align-self: center;     
 }
 
 #authSection #btnForgotPassword:hover {
-    text-decoration: underline; /* Sublinhado no hover */
-    color: #5a8289;         /* Cor do texto no hover */
-    background-color: transparent; /* Fundo transparente no hover */
+    text-decoration: underline; 
+    color: #5a8289;         
+    background-color: transparent; 
 }
 /* ==== FIM SEÇÃO - ESTILOS DA SEÇÃO DE AUTENTICAÇÃO ==== */
 
 /* ==== INÍCIO SEÇÃO - ESTILOS ADICIONADOS PARA CAMPOS CALCULADOS ==== */
 .campo-calculado {
-    background-color: #cce5e9; /* Tom de azul claro da paleta */
-    color: #333; /* Cor do texto para melhor leitura */
-    font-weight: bold; /* Opcional: para destacar ainda mais */
+    background-color: #cce5e9; 
+    color: #333; 
+    font-weight: bold; 
 }
 /* ==== FIM SEÇÃO - ESTILOS ADICIONADOS PARA CAMPOS CALCULADOS ==== */
+
+/* 
+   ==========================================================================
+   MEDIA QUERIES (CORREÇÃO MOBILE ANDROID)
+   ==========================================================================
+*/
+@media (max-width: 768px) {
+    .container {
+        width: 100%; /* Aproveita toda a largura */
+        padding: 10px; /* Reduz padding lateral */
+        box-shadow: none; /* Remove sombra para visual mais limpo no mobile */
+    }
+
+    /* Transforma a linha horizontal em coluna vertical */
+    .form-row {
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Remove float e força largura total */
+    .form-row .form-group {
+        float: none;
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 15px;
+    }
+
+    /* Garante que tabelas não quebrem o layout */
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap; /* Evita quebras de linha indesejadas dentro da célula */
+    }
+
+    /* Botões ocupam largura total para facilitar o toque */
+    button {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    /* Ajuste para inputs checkbox ficarem alinhados */
+    .form-group label {
+        display: flex;
+        align-items: center;
+    }
+    
+    input[type="checkbox"] {
+        width: 20px; /* Tamanho fixo para checkbox */
+        height: 20px;
+        margin-right: 10px;
+    }
+}
+/* ==== FIM SEÇÃO - MEDIA QUERIES ==== */
