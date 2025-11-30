@@ -1,11 +1,13 @@
 /* assets/css/main.css */
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
 
 :root {
-    --cor-principal: #7aa2a9;
-    --cor-secundaria: #dfb6b0;
-    --cor-fundo: #f0f2f5;
-    --cor-texto: #333;
+    --cor-principal: #7aa2a9;      /* Teal (Verde Azulado) */
+    --cor-secundaria: #dfb6b0;     /* Rosa Antigo */
+    --cor-fundo: #f8f9fa;          /* Fundo Off-white */
+    --cor-texto: #444;
+    --border-radius-input: 15px;
 }
 
 body {
@@ -13,31 +15,121 @@ body {
     background-color: var(--cor-fundo);
     margin: 0;
     padding: 0;
+    color: var(--cor-texto);
 }
 
-/* === ESTILOS DO HUB (SALA DE ESPERA) === */
-#hub-screen {
-    max-width: 900px;
-    margin: 50px auto;
-    text-align: center;
+/* =========================================
+   1. AUTH SCREEN (LOGIN REFINADO)
+   ========================================= */
+#auth-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
     padding: 20px;
 }
 
-.hub-header img {
-    max-width: 180px;
-    margin-bottom: 20px;
+.auth-container {
+    background-color: #e5c4bf; /* Fundo Rosa suave do box de login */
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 100%;
+    max-width: 320px;
 }
 
-.hub-header h1 {
+.logo-container img {
+    max-width: 150px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+/* NOME PÉROLA RARA (Correção de Fonte: ROBOTO, não cursiva) */
+.login-brand-name {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 700;
     color: var(--cor-principal);
-    font-size: 2rem;
-    margin-bottom: 10px;
+    font-size: 1.8rem;
+    margin: 10px 0 20px 0;
+    letter-spacing: 0.5px;
 }
 
-.hub-header p {
-    color: #666;
-    margin-bottom: 40px;
+.auth-form h2 {
+    color: #687f82;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
 }
+
+/* Estilo dos Inputs na tela de login */
+.auth-form input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: var(--border-radius-input);
+    font-size: 16px;
+    box-sizing: border-box;
+    /* No login pode manter branco ou usar rosa, deixei branco p/ contraste */
+    background-color: #fff; 
+}
+
+.auth-buttons button {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--cor-principal);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius-input);
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+/* =========================================
+   2. SPLASH SCREEN
+   ========================================= */
+#splash-screen {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background-color: #ecd5d1; /* Rosa da paleta */
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.splash-logo {
+    width: 140px;
+    margin-bottom: 20px;
+    animation: fadeInUp 1s ease;
+}
+
+.splash-slogan {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.8rem;
+    color: #fff;
+    text-align: center;
+    padding: 0 20px;
+    animation: fadeInUp 1.5s ease;
+}
+
+/* =========================================
+   3. HUB (MENU PRINCIPAL)
+   ========================================= */
+#hub-screen {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+.hub-header { text-align: center; margin-bottom: 40px; }
+.hub-header img { width: 120px; margin-bottom: 15px; }
+.hub-header h1 { color: var(--cor-principal); font-weight: 300; margin: 0; }
+.slogan-hub { font-family: 'Dancing Script', cursive; color: #666; font-size: 1.4rem; margin: 10px 0; }
 
 .hub-cards-container {
     display: flex;
@@ -47,57 +139,206 @@ body {
 }
 
 .hub-card {
-    background: white;
-    width: 250px;
+    background: #fff;
+    width: 300px;
     padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(122, 162, 169, 0.1);
+    text-align: center;
     cursor: pointer;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 2px solid transparent;
+    transition: transform 0.3s;
+    border: 1px solid #eee;
 }
 
-.hub-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    border-color: var(--cor-secundaria);
+.hub-card:hover { transform: translateY(-5px); }
+.card-icon { margin-bottom: 20px; color: var(--cor-principal); }
+.card-icon svg { stroke: var(--cor-principal); }
+.hub-card h3 { color: #444; margin-bottom: 10px; }
+.card-action { color: var(--cor-principal); font-weight: bold; text-transform: uppercase; font-size: 0.85rem; }
+
+.btn-logout-ghost {
+    background: transparent;
+    border: 1px solid #999;
+    padding: 8px 30px;
+    border-radius: 50px;
+    margin-top: 40px;
+    cursor: pointer;
 }
 
-.hub-card h3 {
+/* =========================================
+   4. MÓDULOS INTERNOS (Orçamento & Precificação)
+   ========================================= */
+
+/* Container geral para mobile e desktop */
+.mobile-container {
+    width: 90%;
+    max-width: 1000px;
+    margin: 60px auto 20px auto; /* Margem top p/ botão voltar */
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* Botão Voltar */
+.btn-back-hub {
+    position: fixed;
+    top: 15px; left: 15px;
+    z-index: 100;
+    background: #fff;
+    border: 1px solid var(--cor-principal);
     color: var(--cor-principal);
+    padding: 6px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* HEADER DOS MÓDULOS (Refinamento Visual) */
+.module-header-styled {
+    text-align: center;
+    margin-bottom: 30px;
+    background-color: #fff;
+}
+
+.module-logo-small {
+    width: 80px;
+    height: auto;
+    display: block;
+    margin: 0 auto 10px auto;
+}
+
+.module-title-main {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 700;
+    color: var(--cor-principal);
+    font-size: 1.8rem;
+    margin: 0 0 15px 0;
+}
+
+/* MENU COM LINHAS ("Sanduíche") */
+.nav-lined {
+    border-top: 3px solid var(--cor-principal);    /* Linha Grossa Topo */
+    border-bottom: 1px solid var(--cor-principal); /* Linha Fina Base */
+    padding: 15px 0;
+    margin: 10px 0 30px 0;
+}
+
+.nav-lined ul {
+    list-style: none; padding: 0; margin: 0;
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+}
+
+.nav-lined ul li a {
+    text-decoration: none;
+    color: var(--cor-principal);
+    font-weight: 500;
+    font-size: 0.95rem;
+    padding: 8px 12px;
+    border-radius: 5px;
+    transition: background 0.2s;
+}
+
+.nav-lined ul li a:hover {
+    background-color: #e3f2fd;
+}
+
+/* TÍTULOS DE SEÇÃO COM LINHA FINA */
+.section-title-lined {
+    color: var(--cor-principal);
+    text-align: center;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ccc; /* Linha fina cinza */
+}
+
+/* INPUTS ESTILO "ROSA" (Global para os módulos) */
+/* Aplica para Orçamentos e Precificação */
+#module-orcamentos input, #module-orcamentos select, #module-orcamentos textarea,
+#module-precificacao input, #module-precificacao select, #module-precificacao textarea {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--cor-secundaria); /* Rosa #dfb6b0 */
+    color: #fff; /* Texto Branco */
+    border: none;
+    border-radius: var(--border-radius-input); /* 15px */
+    font-size: 1rem;
+    box-sizing: border-box;
     margin-bottom: 10px;
 }
 
-/* Botão Sair no Hub */
-#hubLogoutBtn {
-    background-color: #e74c3c;
-    color: white;
-    border: none;
-    padding: 8px 20px;
-    border-radius: 20px;
-    cursor: pointer;
-    margin-top: 20px;
+/* Placeholder claro para ler no fundo rosa */
+::placeholder {
+    color: rgba(255,255,255, 0.7);
 }
 
-/* Botão Voltar ao Menu (Dentro dos módulos) */
-.btn-back-hub {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    z-index: 1000;
+/* Campos Readonly (Cálculos) podem ser um pouco mais claros ou escuros */
+input[readonly] {
+    opacity: 0.9;
+    cursor: default;
+}
+
+/* TABELAS RESPONSIVAS */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 15px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px; /* Força scroll no mobile */
+}
+
+th {
+    background-color: #dfb6b0; /* Rosa */
+    color: white;
+    padding: 10px;
+    text-align: left;
+}
+
+td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+/* Botões de Ação Gerais */
+button {
     background-color: var(--cor-principal);
     color: white;
+    padding: 10px 20px;
     border: none;
-    padding: 8px 15px;
-    border-radius: 50px;
+    border-radius: 20px;
     cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    font-size: 0.9em;
-    display: flex;
-    align-items: center;
-    gap: 5px;
+    font-size: 1rem;
 }
 
-.btn-back-hub:hover {
-    background-color: #5a8289;
+button:hover { background-color: #5a8289; }
+
+/* Animações */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Media Queries Mobile */
+@media (max-width: 768px) {
+    .nav-lined ul li a {
+        font-size: 0.85rem; /* Texto menor no menu mobile */
+        padding: 5px 8px;
+    }
+    
+    .module-header-styled { margin-bottom: 20px; }
+    
+    .form-row {
+        display: flex;
+        flex-direction: column;
+    }
+    .form-row .form-group { width: 100%; }
 }
