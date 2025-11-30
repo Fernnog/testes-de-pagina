@@ -9,7 +9,6 @@ import { initPrecificacao } from './precificacao.js';
 // 2. REFERÊNCIAS AOS ELEMENTOS DO DOM (Telas)
 const screens = {
     auth: document.getElementById('auth-screen'),
-    splash: document.getElementById('splash-screen'), // Nova referência
     hub: document.getElementById('hub-screen'),
     orcamentos: document.getElementById('module-orcamentos'),
     precificacao: document.getElementById('module-precificacao')
@@ -23,10 +22,7 @@ const btnGoPrecificacao = document.getElementById('btn-go-precificacao');
 const btnsBackToHub = document.querySelectorAll('.btn-back-hub');
 const authMessage = document.getElementById('auth-message');
 
-// Variável para controlar se é a primeira carga
-let isFirstLoad = true;
-
-// 3. FUNÇÃO DE NAVEGAÇÃO (ROTEAMENTO BÁSICO)
+// 3. FUNÇÃO DE NAVEGAÇÃO (ROTEAMENTO)
 function navigateTo(screenName) {
     // Esconde todas as telas
     Object.values(screens).forEach(el => {
@@ -35,33 +31,13 @@ function navigateTo(screenName) {
 
     // Mostra a tela desejada
     if(screens[screenName]) {
-        // Se for splash, usa flex para centralizar
-        if(screenName === 'splash') {
-            screens[screenName].style.display = 'flex';
-        } else {
-            screens[screenName].style.display = 'block';
-        }
+        screens[screenName].style.display = 'block';
     } else {
         console.error(`Tela "${screenName}" não encontrada.`);
     }
 }
 
-// 4. FUNÇÃO DE TRANSIÇÃO COM SPLASH SCREEN
-function transitionToHub() {
-    // Esconde Auth e mostra Splash
-    navigateTo('splash');
-
-    // Inicializa os módulos em segundo plano enquanto a splash roda
-    initOrcamentos();
-    initPrecificacao();
-
-    // Aguarda 2.5 segundos (tempo da "experiência")
-    setTimeout(() => {
-        navigateTo('hub');
-    }, 2500);
-}
-
-// 5. MONITOR DE ESTADO DE AUTENTICAÇÃO (O "Porteiro")
+// 4. MONITOR DE ESTADO DE AUTENTICAÇÃO (O "Porteiro")
 onAuthStateChanged(auth, (user) => {
     if (user) {
         // === USUÁRIO LOGADO ===
@@ -71,29 +47,22 @@ onAuthStateChanged(auth, (user) => {
         const userDisplay = document.getElementById('user-email-display');
         if(userDisplay) userDisplay.textContent = user.email;
 
-        // Lógica de Entrada:
-        // Se for o primeiro carregamento da página ou se o usuário estava na tela de login
-        if (isFirstLoad || screens.auth.style.display !== 'none') {
-            transitionToHub();
-        } else {
-            // Se o usuário já estava navegando (ex: deu refresh num módulo),
-            // podemos mandar direto pro Hub ou manter onde estava (aqui mandamos pro Hub por simplicidade)
-            navigateTo('hub');
-            initOrcamentos();
-            initPrecificacao();
-        }
-        
-        isFirstLoad = false;
+        // Vai para o Hub
+        navigateTo('hub');
+
+        // Inicializa os módulos em segundo plano (carrega dados)
+        // A lógica interna deles impede recarregamento desnecessário
+        initOrcamentos();
+        initPrecificacao();
 
     } else {
         // === USUÁRIO DESCONECTADO ===
         console.log("Nenhum usuário autenticado.");
         navigateTo('auth');
-        isFirstLoad = false;
     }
 });
 
-// 6. LÓGICA DE LOGIN (Ação do botão Entrar)
+// 5. LÓGICA DE LOGIN (Ação do botão Entrar)
 if(btnLogin) {
     btnLogin.addEventListener('click', async () => {
         const email = document.getElementById('email').value;
@@ -105,12 +74,12 @@ if(btnLogin) {
             return;
         }
 
-        authMessage.textContent = "Verificando credenciais...";
+        authMessage.textContent = "Entrando...";
         authMessage.style.color = "#555";
 
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            // O onAuthStateChanged vai ser disparado automaticamente e chamará transitionToHub()
+            // O onAuthStateChanged vai lidar com o redirecionamento automaticamente
             authMessage.textContent = "";
         } catch (error) {
             console.error("Erro no login:", error);
@@ -125,7 +94,7 @@ if(btnLogin) {
     });
 }
 
-// 7. LÓGICA DE LOGOUT (Sair do Sistema)
+// 6. LÓGICA DE LOGOUT (Sair do Sistema)
 if(btnLogout) {
     btnLogout.addEventListener('click', async () => {
         try {
@@ -138,7 +107,7 @@ if(btnLogout) {
     });
 }
 
-// 8. NAVEGAÇÃO DO HUB (Botões dos Módulos)
+// 7. NAVEGAÇÃO DO HUB (Botões dos Módulos)
 if(btnGoOrcamentos) {
     btnGoOrcamentos.addEventListener('click', () => {
         navigateTo('orcamentos');
@@ -151,7 +120,7 @@ if(btnGoPrecificacao) {
     });
 }
 
-// 9. BOTÃO "VOLTAR AO MENU" (Presente nos módulos)
+// 8. BOTÃO "VOLTAR AO MENU" (Presente nos módulos)
 btnsBackToHub.forEach(btn => {
     btn.addEventListener('click', () => {
         navigateTo('hub');
