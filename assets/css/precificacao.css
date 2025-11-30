@@ -704,18 +704,3 @@ td {
 .tabela-precificacao-detalhada tbody tr:hover {
     background-color: #f2f2f2;
 }
-
-/* --- MOBILE PRECIFICAÇÃO --- */
-@media (max-width: 768px) {
-    /* Inputs ocupam a linha toda */
-    input[type="text"], input[type="number"], select { width: 100% !important; box-sizing: border-box; }
-    
-    /* Destaque para Totais */
-    #total-final { display: block; text-align: center; margin-top: 15px; font-size: 2em !important; color: var(--cor-principal); }
-    
-    /* Ajuste fino na tabela de materiais */
-    #tabela-materiais-insumos th, #tabela-materiais-insumos td { font-size: 0.85rem; padding: 5px; }
-    
-    /* Botões de Ação na Tabela */
-    .btn-editar-mat, .btn-remover-mat { padding: 5px 10px; font-size: 0.8rem; margin: 2px 0; }
-}

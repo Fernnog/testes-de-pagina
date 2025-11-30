@@ -86,15 +86,13 @@ body {
     cursor: pointer;
     margin-top: 10px;
     transition: background-color 0.3s;
-    position: relative; /* Necessário para Ripple */
-    overflow: hidden;   /* Necessário para Ripple */
 }
 .auth-buttons button:hover {
     background-color: #5a8289;
 }
 
 /* =========================================
-   2. SPLASH SCREEN (CORRIGIDO PARA CENTRALIZAÇÃO)
+   2. SPLASH SCREEN (REFINADA - Prioridade 1)
    ========================================= */
 #splash-screen {
     position: fixed;
@@ -102,44 +100,31 @@ body {
     width: 100vw; height: 100vh;
     background-color: #ecd5d1; /* Rosa da paleta Pérola Rara */
     z-index: 9999;
-    
-    /* Centralização Forçada Flexbox */
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    align-items: center !important;
-    
-    transition: opacity 0.5s ease;
-}
-
-.splash-content {
-    /* Container interno centralizado */
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
-    text-align: center;
-    width: 100%;
+    transition: opacity 0.5s ease; /* Transição suave para o fade-out */
 }
 
 .splash-logo {
     width: 150px;
-    margin: 0 auto 20px auto; /* Margem auto força o centro horizontal */
-    display: block;
+    margin-bottom: 20px;
     animation: fadeInUp 1s ease;
 }
 
 .splash-slogan {
     font-family: 'Dancing Script', cursive;
     font-size: 1.8rem;
-    color: #7aa2a9; 
+    color: #7aa2a9; /* Azul Petróleo para contraste no rosa */
     text-align: center;
     padding: 0 20px;
-    margin-top: 10px;
     animation: fadeInUp 1.5s ease;
+    margin-top: 10px;
 }
 
 /* =========================================
-   3. HUB (MENU PRINCIPAL)
+   3. HUB (MENU PRINCIPAL - REFINADO)
    ========================================= */
 #hub-screen {
     max-width: 1000px;
@@ -151,6 +136,7 @@ body {
 .hub-header img { width: 120px; margin-bottom: 15px; }
 .hub-header h1 { color: var(--cor-principal); font-weight: 300; margin: 0 0 10px 0; }
 
+/* Novo: Cartão de Informação do Usuário */
 .user-info-card {
     display: inline-flex;
     align-items: center;
@@ -174,7 +160,7 @@ body {
     margin-bottom: 40px;
 }
 
-/* Cards com Interação (Ripple ready) */
+/* Cards com Interação (Hover) */
 .hub-card {
     background: #fff;
     width: 300px;
@@ -184,17 +170,16 @@ body {
     text-align: center;
     cursor: pointer;
     border: 1px solid #eee;
-    transition: all 0.3s ease;
     
-    /* Essencial para o Ripple não vazar */
+    /* Melhoria UX: Transição Suave */
+    transition: all 0.3s ease;
     position: relative;
-    overflow: hidden;
-    transform: translate3d(0,0,0);
+    top: 0;
 }
 
 .hub-card:hover { 
-    transform: translateY(-8px);
-    box-shadow: 0 15px 30px rgba(223, 182, 176, 0.4);
+    transform: translateY(-8px); /* Card "flutua" ao passar o mouse */
+    box-shadow: 0 15px 30px rgba(223, 182, 176, 0.4); /* Sombra Rosa */
     border-color: #dfb6b0;
 }
 
@@ -203,12 +188,15 @@ body {
     color: var(--cor-principal);
     transition: transform 0.3s ease;
 }
-.hub-card:hover .card-icon { transform: scale(1.1); }
+.hub-card:hover .card-icon {
+    transform: scale(1.1); /* Ícone cresce levemente */
+}
 
 .card-icon svg { stroke: var(--cor-principal); }
 .hub-card h3 { color: #444; margin-bottom: 10px; }
 .card-action { color: var(--cor-principal); font-weight: bold; text-transform: uppercase; font-size: 0.85rem; }
 
+/* Novo: Slogan no Rodapé do Hub */
 .hub-footer-branding {
     text-align: center;
     margin: 20px 0 30px 0;
@@ -220,10 +208,11 @@ body {
     margin: 0;
 }
 
+/* Novo: Botão Logout Sólido */
 .hub-footer-actions { text-align: center; }
 
 .btn-logout-solid {
-    background-color: #7aa2a9; 
+    background-color: #7aa2a9; /* Azul Petróleo */
     color: #fff;
     border: none;
     padding: 10px 35px;
@@ -232,33 +221,39 @@ body {
     cursor: pointer;
     box-shadow: 0 4px 15px rgba(122, 162, 169, 0.3);
     transition: background 0.3s, transform 0.1s;
-    
-    /* Ripple ready */
-    position: relative;
-    overflow: hidden;
 }
-.btn-logout-solid:hover { background-color: #5a8289; }
-.btn-logout-solid:active { transform: scale(0.98); }
+.btn-logout-solid:hover {
+    background-color: #5a8289;
+}
+.btn-logout-solid:active {
+    transform: scale(0.98);
+}
 
 /* =========================================
-   4. CHANGELOG / VERSION WIDGET
+   4. CHANGELOG / VERSION WIDGET (Prioridade 1)
    ========================================= */
+/* Indicador no canto da tela */
 #version-indicator {
     position: fixed;
-    bottom: 10px; right: 10px;
-    font-size: 0.75rem; color: #aaa;
+    bottom: 10px;
+    right: 10px;
+    font-size: 0.75rem;
+    color: #aaa;
     cursor: pointer;
     background: rgba(255,255,255,0.8);
-    padding: 5px 10px; border-radius: 10px;
+    padding: 5px 10px;
+    border-radius: 10px;
     z-index: 1000;
     transition: all 0.3s;
     font-family: sans-serif;
 }
 #version-indicator:hover {
-    color: #7aa2a9; background: #fff;
+    color: #7aa2a9;
+    background: #fff;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
+/* Modal Overlay */
 .changelog-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.5); z-index: 2000;
@@ -266,10 +261,15 @@ body {
     animation: fadeIn 0.3s;
 }
 
+/* Conteúdo do Modal */
 .changelog-modal {
-    background: #fff; width: 90%; max-width: 500px;
-    padding: 25px; border-radius: 15px;
-    max-height: 80vh; overflow-y: auto;
+    background: #fff; 
+    width: 90%; 
+    max-width: 500px;
+    padding: 25px; 
+    border-radius: 15px;
+    max-height: 80vh; 
+    overflow-y: auto;
     position: relative;
     box-shadow: 0 10px 40px rgba(0,0,0,0.2);
 }
@@ -284,12 +284,16 @@ body {
     font-size: 1.8rem; cursor: pointer; color: #999;
     line-height: 1;
 }
+.close-changelog:hover { color: #555; }
 
+/* Animação básica */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 /* =========================================
-   5. MÓDULOS INTERNOS (Estilos Gerais)
+   5. MÓDULOS INTERNOS (Estilos Mantidos)
    ========================================= */
+
+/* Container geral para mobile e desktop */
 .mobile-container {
     width: 90%;
     max-width: 1000px;
@@ -300,6 +304,7 @@ body {
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
+/* Botão Voltar */
 .btn-back-hub {
     position: fixed;
     top: 15px; left: 15px;
@@ -311,9 +316,9 @@ body {
     border-radius: 20px;
     cursor: pointer;
     font-weight: bold;
-    position: fixed; /* Força */
 }
 
+/* HEADER DOS MÓDULOS */
 .module-header-styled {
     text-align: center;
     margin-bottom: 30px;
@@ -321,8 +326,10 @@ body {
 }
 
 .module-logo-small {
-    width: 80px; height: auto;
-    display: block; margin: 0 auto 10px auto;
+    width: 80px;
+    height: auto;
+    display: block;
+    margin: 0 auto 10px auto;
 }
 
 .module-title-main {
@@ -333,6 +340,7 @@ body {
     margin: 0 0 15px 0;
 }
 
+/* MENU COM LINHAS ("Sanduíche") */
 .nav-lined {
     border-top: 3px solid var(--cor-principal);
     border-bottom: 1px solid var(--cor-principal);
@@ -353,13 +361,13 @@ body {
     padding: 8px 12px;
     border-radius: 5px;
     transition: background 0.2s;
-    /* Ripple ready */
-    position: relative;
-    overflow: hidden;
 }
 
-.nav-lined ul li a:hover { background-color: #e3f2fd; }
+.nav-lined ul li a:hover {
+    background-color: #e3f2fd;
+}
 
+/* TÍTULOS DE SEÇÃO COM LINHA FINA */
 .section-title-lined {
     color: var(--cor-principal);
     text-align: center;
@@ -370,23 +378,30 @@ body {
     border-bottom: 1px solid #ccc;
 }
 
-/* INPUTS ESTILO "ROSA" */
+/* INPUTS ESTILO "ROSA" (Global para os módulos) */
 #module-orcamentos input, #module-orcamentos select, #module-orcamentos textarea,
 #module-precificacao input, #module-precificacao select, #module-precificacao textarea {
     width: 100%;
     padding: 10px;
-    background-color: var(--cor-secundaria); 
-    color: #fff; 
+    background-color: var(--cor-secundaria); /* Rosa #dfb6b0 */
+    color: #fff; /* Texto Branco */
     border: none;
-    border-radius: var(--border-radius-input);
+    border-radius: var(--border-radius-input); /* 15px */
     font-size: 1rem;
     box-sizing: border-box;
     margin-bottom: 10px;
 }
 
-::placeholder { color: rgba(255,255,255, 0.7); }
-input[readonly] { opacity: 0.9; cursor: default; }
+::placeholder {
+    color: rgba(255,255,255, 0.7);
+}
 
+input[readonly] {
+    opacity: 0.9;
+    cursor: default;
+}
+
+/* TABELAS RESPONSIVAS */
 .table-responsive {
     width: 100%;
     overflow-x: auto;
@@ -414,6 +429,7 @@ td {
     border-bottom: 1px solid #eee;
 }
 
+/* Botões de Ação Gerais */
 button {
     background-color: var(--cor-principal);
     color: white;
@@ -422,111 +438,27 @@ button {
     border-radius: 20px;
     cursor: pointer;
     font-size: 1rem;
-    position: relative; /* Ripple ready */
-    overflow: hidden;
 }
 button:hover { background-color: #5a8289; }
 
+/* Animações */
 @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* =========================================
-   6. EFEITO RIPPLE (NOVO)
-   ========================================= */
-.ripple-effect {
-    position: absolute;
-    border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.5); /* Onda branca translúcida */
-    width: 100px;
-    height: 100px;
-    margin-top: -50px;
-    margin-left: -50px;
-    animation: ripple-anim 0.6s linear;
-    pointer-events: none; /* Clique passa pela onda */
-    transform: scale(0);
-}
-
-@keyframes ripple-anim {
-    to { opacity: 0; transform: scale(4); }
-}
-
-/* =========================================
-   7. RESPONSIVIDADE FORÇADA (MOBILE FIX)
-   ========================================= */
+/* Media Queries Mobile */
 @media (max-width: 768px) {
-    /* 1. Correção do Container Geral */
-    .mobile-container, #app-container, .container {
-        width: 92% !important;
-        margin: 60px auto 20px auto !important;
-        padding: 15px !important;
-        box-sizing: border-box !important;
-    }
-
-    /* 2. Forçar Inputs a ocuparem a tela toda (sem estourar) */
-    .form-row, .form-group {
-        display: block !important;
-        width: 100% !important;
-        float: none !important;
-        margin-right: 0 !important;
-    }
-
-    /* Inputs, Selects, Textareas */
-    input, select, textarea {
-        width: 100% !important;
-        box-sizing: border-box !important; /* Inclui padding no tamanho */
-        margin-bottom: 15px !important;
-        font-size: 16px !important; /* Evita zoom no iPhone */
-        height: auto;
-        min-height: 44px; /* Altura mínima toque */
-    }
-
-    /* 3. Tabela com Scroll Horizontal Seguro */
-    .table-responsive {
-        display: block !important;
-        width: 100% !important;
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch;
-        white-space: nowrap; /* Garante que a tabela estique para ter scroll */
+    .nav-lined ul li a {
+        font-size: 0.85rem;
+        padding: 5px 8px;
     }
     
-    table {
-        min-width: 600px; /* Garante largura mínima para forçar scroll */
-    }
-
-    /* 4. Botões Full Width */
-    button {
-        width: 100% !important;
-        margin: 10px 0 !important;
-        padding: 12px !important;
-    }
-
-    /* 5. Menu de Abas Interno */
-    .nav-lined ul {
-        flex-direction: column !important;
-        gap: 8px !important;
-    }
-    .nav-lined ul li, .nav-lined ul li a {
-        width: 100%;
-        display: block;
-        text-align: center;
-        box-sizing: border-box;
-    }
-
-    /* 6. Botão Voltar Fixo */
-    .btn-back-hub {
-        top: 10px;
-        left: 10px;
-        padding: 8px 12px;
-        font-size: 0.9rem;
-        background: rgba(255, 255, 255, 0.95);
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
+    .module-header-styled { margin-bottom: 20px; }
     
-    /* 7. Splash Screen Centralização */
-    #splash-screen {
-        justify-content: center !important;
-        align-items: center !important;
+    .form-row {
+        display: flex;
+        flex-direction: column;
     }
+    .form-row .form-group { width: 100%; }
 }
