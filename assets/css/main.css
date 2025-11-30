@@ -2,6 +2,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
 
+/* =========================================
+   0. RESET GLOBAL (CRÍTICO PARA RESPONSIVIDADE)
+   ========================================= */
+*, *:before, *:after {
+    box-sizing: border-box; /* Garante que padding não aumente a largura do elemento */
+}
+
 :root {
     --cor-principal: #7aa2a9;      /* Teal (Verde Azulado) */
     --cor-secundaria: #dfb6b0;     /* Rosa Antigo */
@@ -16,6 +23,7 @@ body {
     margin: 0;
     padding: 0;
     color: var(--cor-texto);
+    overflow-x: hidden; /* Evita scroll horizontal indesejado no body */
 }
 
 /* =========================================
@@ -27,11 +35,11 @@ body {
     align-items: center;
     min-height: 100vh;
     padding: 20px;
-    display: none; /* Oculto inicialmente, controlado pelo JS */
+    display: none;
 }
 
 .auth-container {
-    background-color: #e5c4bf; /* Fundo Rosa suave do box de login */
+    background-color: #e5c4bf;
     padding: 30px;
     border-radius: 15px;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
@@ -47,7 +55,6 @@ body {
     margin: 0 auto;
 }
 
-/* NOME PÉROLA RARA (Roboto) */
 .login-brand-name {
     font-family: 'Roboto', sans-serif;
     font-weight: 700;
@@ -63,7 +70,6 @@ body {
     font-size: 1.2rem;
 }
 
-/* Estilo dos Inputs na tela de login */
 .auth-form input {
     width: 100%;
     padding: 12px;
@@ -71,7 +77,6 @@ body {
     border: 1px solid #ccc;
     border-radius: var(--border-radius-input);
     font-size: 16px;
-    box-sizing: border-box;
     background-color: #fff; 
 }
 
@@ -92,19 +97,19 @@ body {
 }
 
 /* =========================================
-   2. SPLASH SCREEN (REFINADA - Prioridade 1)
+   2. SPLASH SCREEN
    ========================================= */
 #splash-screen {
     position: fixed;
     top: 0; left: 0;
     width: 100vw; height: 100vh;
-    background-color: #ecd5d1; /* Rosa da paleta Pérola Rara */
+    background-color: #ecd5d1;
     z-index: 9999;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    transition: opacity 0.5s ease; /* Transição suave para o fade-out */
+    transition: opacity 0.5s ease;
 }
 
 .splash-logo {
@@ -116,7 +121,7 @@ body {
 .splash-slogan {
     font-family: 'Dancing Script', cursive;
     font-size: 1.8rem;
-    color: #7aa2a9; /* Azul Petróleo para contraste no rosa */
+    color: #7aa2a9;
     text-align: center;
     padding: 0 20px;
     animation: fadeInUp 1.5s ease;
@@ -124,7 +129,7 @@ body {
 }
 
 /* =========================================
-   3. HUB (MENU PRINCIPAL - REFINADO)
+   3. HUB (MENU PRINCIPAL)
    ========================================= */
 #hub-screen {
     max-width: 1000px;
@@ -134,9 +139,8 @@ body {
 
 .hub-header { text-align: center; margin-bottom: 40px; }
 .hub-header img { width: 120px; margin-bottom: 15px; }
-.hub-header h1 { color: var(--cor-principal); font-weight: 300; margin: 0 0 10px 0; }
+.hub-header h1 { color: var(--cor-principal); font-weight: 300; margin: 0 0 10px 0; font-size: 1.5rem; }
 
-/* Novo: Cartão de Informação do Usuário */
 .user-info-card {
     display: inline-flex;
     align-items: center;
@@ -151,7 +155,6 @@ body {
 }
 .user-icon { font-size: 1.1rem; }
 
-/* Container dos Cards */
 .hub-cards-container {
     display: flex;
     justify-content: center;
@@ -160,26 +163,24 @@ body {
     margin-bottom: 40px;
 }
 
-/* Cards com Interação (Hover) */
 .hub-card {
     background: #fff;
-    width: 300px;
+    width: 100%;
+    max-width: 300px; /* Ajuste para não estourar em telas pequenas */
     padding: 30px;
     border-radius: 20px;
     box-shadow: 0 10px 25px rgba(122, 162, 169, 0.1);
     text-align: center;
     cursor: pointer;
     border: 1px solid #eee;
-    
-    /* Melhoria UX: Transição Suave */
     transition: all 0.3s ease;
     position: relative;
     top: 0;
 }
 
 .hub-card:hover { 
-    transform: translateY(-8px); /* Card "flutua" ao passar o mouse */
-    box-shadow: 0 15px 30px rgba(223, 182, 176, 0.4); /* Sombra Rosa */
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(223, 182, 176, 0.4);
     border-color: #dfb6b0;
 }
 
@@ -188,31 +189,25 @@ body {
     color: var(--cor-principal);
     transition: transform 0.3s ease;
 }
-.hub-card:hover .card-icon {
-    transform: scale(1.1); /* Ícone cresce levemente */
-}
+.hub-card:hover .card-icon { transform: scale(1.1); }
 
 .card-icon svg { stroke: var(--cor-principal); }
 .hub-card h3 { color: #444; margin-bottom: 10px; }
 .card-action { color: var(--cor-principal); font-weight: bold; text-transform: uppercase; font-size: 0.85rem; }
 
-/* Novo: Slogan no Rodapé do Hub */
-.hub-footer-branding {
-    text-align: center;
-    margin: 20px 0 30px 0;
-}
+.hub-footer-branding { text-align: center; margin: 20px 0 30px 0; }
 .slogan-hub { 
     font-family: 'Dancing Script', cursive; 
     color: #7aa2a9; 
     font-size: 1.5rem; 
     margin: 0;
+    padding: 0 10px;
 }
 
-/* Novo: Botão Logout Sólido */
 .hub-footer-actions { text-align: center; }
 
 .btn-logout-solid {
-    background-color: #7aa2a9; /* Azul Petróleo */
+    background-color: #7aa2a9;
     color: #fff;
     border: none;
     padding: 10px 35px;
@@ -222,38 +217,25 @@ body {
     box-shadow: 0 4px 15px rgba(122, 162, 169, 0.3);
     transition: background 0.3s, transform 0.1s;
 }
-.btn-logout-solid:hover {
-    background-color: #5a8289;
-}
-.btn-logout-solid:active {
-    transform: scale(0.98);
-}
+.btn-logout-solid:hover { background-color: #5a8289; }
+.btn-logout-solid:active { transform: scale(0.98); }
 
 /* =========================================
-   4. CHANGELOG / VERSION WIDGET (Prioridade 1)
+   4. CHANGELOG / VERSION WIDGET
    ========================================= */
-/* Indicador no canto da tela */
 #version-indicator {
     position: fixed;
-    bottom: 10px;
-    right: 10px;
-    font-size: 0.75rem;
-    color: #aaa;
+    bottom: 10px; right: 10px;
+    font-size: 0.75rem; color: #aaa;
     cursor: pointer;
     background: rgba(255,255,255,0.8);
-    padding: 5px 10px;
-    border-radius: 10px;
+    padding: 5px 10px; border-radius: 10px;
     z-index: 1000;
     transition: all 0.3s;
     font-family: sans-serif;
 }
-#version-indicator:hover {
-    color: #7aa2a9;
-    background: #fff;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
+#version-indicator:hover { color: #7aa2a9; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
-/* Modal Overlay */
 .changelog-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.5); z-index: 2000;
@@ -261,15 +243,10 @@ body {
     animation: fadeIn 0.3s;
 }
 
-/* Conteúdo do Modal */
 .changelog-modal {
-    background: #fff; 
-    width: 90%; 
-    max-width: 500px;
-    padding: 25px; 
-    border-radius: 15px;
-    max-height: 80vh; 
-    overflow-y: auto;
+    background: #fff; width: 90%; max-width: 500px;
+    padding: 25px; border-radius: 15px;
+    max-height: 80vh; overflow-y: auto;
     position: relative;
     box-shadow: 0 10px 40px rgba(0,0,0,0.2);
 }
@@ -284,27 +261,23 @@ body {
     font-size: 1.8rem; cursor: pointer; color: #999;
     line-height: 1;
 }
-.close-changelog:hover { color: #555; }
 
-/* Animação básica */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 /* =========================================
-   5. MÓDULOS INTERNOS (Estilos Mantidos)
+   5. ESTILOS BASE DOS MÓDULOS
    ========================================= */
 
-/* Container geral para mobile e desktop */
 .mobile-container {
-    width: 90%;
+    width: 95%; /* Mobile first: quase toda a tela */
     max-width: 1000px;
     margin: 60px auto 20px auto; 
-    padding: 20px;
+    padding: 15px; /* Padding reduzido para mobile */
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
-/* Botão Voltar */
 .btn-back-hub {
     position: fixed;
     top: 15px; left: 15px;
@@ -316,9 +289,10 @@ body {
     border-radius: 20px;
     cursor: pointer;
     font-weight: bold;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-/* HEADER DOS MÓDULOS */
 .module-header-styled {
     text-align: center;
     margin-bottom: 30px;
@@ -326,21 +300,19 @@ body {
 }
 
 .module-logo-small {
-    width: 80px;
-    height: auto;
-    display: block;
-    margin: 0 auto 10px auto;
+    width: 80px; height: auto;
+    display: block; margin: 0 auto 10px auto;
 }
 
 .module-title-main {
     font-family: 'Roboto', sans-serif;
     font-weight: 700;
     color: var(--cor-principal);
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     margin: 0 0 15px 0;
 }
 
-/* MENU COM LINHAS ("Sanduíche") */
+/* Navegação Interna */
 .nav-lined {
     border-top: 3px solid var(--cor-principal);
     border-bottom: 1px solid var(--cor-principal);
@@ -350,94 +322,43 @@ body {
 
 .nav-lined ul {
     list-style: none; padding: 0; margin: 0;
-    display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
 }
 
 .nav-lined ul li a {
     text-decoration: none;
     color: var(--cor-principal);
     font-weight: 500;
-    font-size: 0.95rem;
-    padding: 8px 12px;
+    font-size: 0.85rem;
+    padding: 6px 10px;
     border-radius: 5px;
     transition: background 0.2s;
+    background-color: #f0f8fa; /* Leve fundo para parecer botão clicável no mobile */
 }
 
-.nav-lined ul li a:hover {
-    background-color: #e3f2fd;
-}
+.nav-lined ul li a:hover { background-color: #e3f2fd; }
 
-/* TÍTULOS DE SEÇÃO COM LINHA FINA */
 .section-title-lined {
     color: var(--cor-principal);
     text-align: center;
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     font-weight: 700;
     margin-bottom: 20px;
     padding-bottom: 10px;
     border-bottom: 1px solid #ccc;
 }
 
-/* INPUTS ESTILO "ROSA" (Global para os módulos) */
-#module-orcamentos input, #module-orcamentos select, #module-orcamentos textarea,
-#module-precificacao input, #module-precificacao select, #module-precificacao textarea {
-    width: 100%;
-    padding: 10px;
-    background-color: var(--cor-secundaria); /* Rosa #dfb6b0 */
-    color: #fff; /* Texto Branco */
-    border: none;
-    border-radius: var(--border-radius-input); /* 15px */
-    font-size: 1rem;
-    box-sizing: border-box;
-    margin-bottom: 10px;
-}
-
-::placeholder {
-    color: rgba(255,255,255, 0.7);
-}
-
-input[readonly] {
-    opacity: 0.9;
-    cursor: default;
-}
-
-/* TABELAS RESPONSIVAS */
-.table-responsive {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    margin-bottom: 15px;
-    border: 1px solid #eee;
-    border-radius: 8px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 600px;
-}
-
-th {
-    background-color: #dfb6b0;
-    color: white;
-    padding: 10px;
-    text-align: left;
-}
-
-td {
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-}
-
 /* Botões de Ação Gerais */
 button {
     background-color: var(--cor-principal);
     color: white;
-    padding: 10px 20px;
+    padding: 12px 20px; /* Área de toque maior */
     border: none;
     border-radius: 20px;
     cursor: pointer;
     font-size: 1rem;
+    width: 100%; /* Mobile first: botões full width */
+    margin-top: 10px;
 }
 button:hover { background-color: #5a8289; }
 
@@ -447,18 +368,117 @@ button:hover { background-color: #5a8289; }
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Media Queries Mobile */
-@media (max-width: 768px) {
+/* =========================================
+   6. RESPONSIVIDADE & CORREÇÕES (v1.0.1)
+   Esta seção sobrescreve estilos legados 
+   problemáticos de outros arquivos CSS.
+   ========================================= */
+
+/* 6.1 Correção de Inputs e Selects */
+/* O uso de !important aqui é necessário para vencer a especificidade dos arquivos legados carregados depois */
+#module-orcamentos input, #module-orcamentos select, #module-orcamentos textarea,
+#module-precificacao input, #module-precificacao select, #module-precificacao textarea,
+input[type="text"], input[type="number"], input[type="date"], input[type="email"] {
+    width: 100% !important; /* Força largura total no mobile */
+    max-width: 100%;
+    padding: 12px 10px; /* Touch-friendly */
+    background-color: var(--cor-secundaria);
+    color: #fff;
+    border: none;
+    border-radius: var(--border-radius-input);
+    font-size: 1rem;
+    margin-bottom: 10px;
+    box-shadow: none;
+}
+
+::placeholder { color: rgba(255,255,255, 0.7); }
+
+/* 6.2 Correção de Layout de Formulário (Flexbox) */
+.form-row {
+    display: flex;
+    flex-wrap: wrap; /* Permite quebra de linha */
+    margin: 0 -5px; /* Compensa o padding dos filhos */
+    width: auto !important;
+}
+
+.form-row .form-group {
+    width: 100% !important; /* Mobile: Ocupa tudo */
+    float: none !important; /* Remove float legado */
+    padding: 0 5px;
+    margin-right: 0 !important;
+}
+
+/* 6.3 Correção de Checkbox e Radio */
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 0.95rem;
+}
+
+input[type="checkbox"], input[type="radio"] {
+    width: auto !important; /* Não estica checkboxes */
+    margin: 0;
+    transform: scale(1.2); /* Aumenta um pouco para toque */
+}
+
+/* 6.4 Correção de Tabelas (Scroll Horizontal) */
+.table-responsive {
+    width: 100%;
+    display: block;
+    overflow-x: auto; /* Permite scroll lateral */
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 15px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+}
+
+table {
+    width: 100%;
+    min-width: 600px; /* Força largura mínima para ativar scroll */
+    border-collapse: collapse;
+}
+
+th {
+    background-color: #dfb6b0;
+    color: white;
+    padding: 12px;
+    text-align: left;
+    white-space: nowrap; /* Evita quebra de linha no cabeçalho */
+}
+
+td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    background-color: #fff !important; /* Garante fundo branco nas células */
+    color: #333;
+}
+
+/* 6.5 Media Query: Desktop (Telas maiores) */
+@media (min-width: 768px) {
+    .mobile-container {
+        padding: 30px;
+        width: 90%;
+    }
+
+    /* Retorna ao layout lado a lado no desktop */
+    .form-row .form-group {
+        flex: 1; /* Divide espaço igualmente */
+        width: auto !important;
+    }
+    
+    button {
+        width: auto; /* Botões tamanho normal no desktop */
+        min-width: 200px;
+        display: inline-block;
+    }
+
     .nav-lined ul li a {
-        font-size: 0.85rem;
-        padding: 5px 8px;
+        font-size: 0.95rem;
+        padding: 8px 12px;
     }
     
-    .module-header-styled { margin-bottom: 20px; }
-    
-    .form-row {
-        display: flex;
-        flex-direction: column;
-    }
-    .form-row .form-group { width: 100%; }
+    .module-title-main { font-size: 1.8rem; }
 }
