@@ -403,3 +403,26 @@ nav ul li a[onclick="limparPagina()"]:hover {
     font-weight: bold; /* Opcional: para destacar ainda mais */
 }
 /* ==== FIM SEÇÃO - ESTILOS ADICIONADOS PARA CAMPOS CALCULADOS ==== */
+
+/* --- MOBILE ORÇAMENTOS --- */
+@media (max-width: 768px) {
+    /* Transforma linhas horizontais em pilha vertical */
+    .form-row { display: flex; flex-direction: column; }
+    .form-row .form-group { width: 100% !important; margin-right: 0 !important; margin-bottom: 15px; }
+    
+    /* Tabela Deslizante */
+    .table-responsive {
+        display: block; width: 100%; overflow-x: auto;
+        -webkit-overflow-scrolling: touch; border: 1px solid #eee;
+    }
+    
+    /* Botões Full-Width (Mais fáceis de tocar) */
+    #orcamento button, #orcamentos-gerados button, .btn-editar-pedido {
+        width: 100%; margin-bottom: 10px; padding: 12px;
+    }
+    
+    /* Navegação Interna Compacta */
+    nav ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; }
+    nav ul li { margin: 2px; }
+    nav ul li a { padding: 8px 10px; font-size: 0.85rem; background: #f4f4f4; border-radius: 6px; }
+}
