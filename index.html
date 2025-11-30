@@ -2,10 +2,23 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> <!-- Otimizado para App Mobile -->
     <title>Portal Pérola Rara</title>
+    
+    <!-- PWA Configuration -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#7aa2a9">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Pérola Rara">
+
     <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
     
+    <!-- Fonts: Roboto (Texto) e Dancing Script (Frase de Efeito) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
     <!-- CSS Unificados -->
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/orcamentos.css">
@@ -22,15 +35,15 @@
 <body>
 
     <!-- =========================================
-         TELA 1: LOGIN CENTRALIZADO
+         TELA 1: LOGIN (LIMPO)
     ========================================= -->
     <section id="auth-screen">
         <div class="auth-container">
             <div class="auth-form">
                 <div class="logo-container">
-                    <img src="assets/images/logo_perola_rara.png" alt="Logo Pérola Rara" id="logo-login" style="max-width: 150px; display:block; margin: 0 auto;">
+                    <img src="assets/images/logo_perola_rara.png" alt="Logo Pérola Rara" id="logo-login">
                 </div>
-                <h2>Acesso ao Portal</h2>
+                <h2>Painel Administrativo</h2>
                 
                 <div class="form-group">
                     <label for="email">Email:</label>
@@ -44,13 +57,23 @@
                     <button type="button" id="loginBtn">Entrar</button>
                 </div>
                 <p id="auth-message" class="auth-message"></p>
-                <p class="slogan" style="text-align: center; margin-top: 20px;"><strong><em>"Pérola Rara, onde a arte se encontra com o amor em cada detalhe".</em></strong></p>
+                <!-- Frase de efeito removida daqui -->
             </div>
         </div>
     </section>
 
     <!-- =========================================
-         TELA 2: HUB (MENU PRINCIPAL) - NOVO DESIGN
+         TELA EXTRA: SPLASH SCREEN (TRANSIÇÃO)
+    ========================================= -->
+    <section id="splash-screen" style="display: none;">
+        <div class="splash-content">
+            <img src="assets/images/logo_perola_rara.png" alt="Logo Pérola Rara" class="splash-logo">
+            <p class="splash-slogan">"Onde a arte se encontra com o amor em cada detalhe."</p>
+        </div>
+    </section>
+
+    <!-- =========================================
+         TELA 2: HUB (MENU PRINCIPAL)
     ========================================= -->
     <section id="hub-screen" style="display: none;">
         <header class="hub-header">
@@ -58,9 +81,9 @@
                 <img src="assets/images/logo_perola_rara.png" alt="Logo Pérola Rara">
             </div>
             <div class="welcome-text">
-                <h1>Bem-vindo(a) ao Atelier</h1>
+                <h1>Painel Pérola Rara</h1>
+                <p class="slogan-hub">"Onde a arte se encontra com o amor em cada detalhe."</p>
                 <p class="user-badge">Logado como: <span id="user-email-display">...</span></p>
-                <p class="instruction">Selecione o módulo para iniciar seus trabalhos:</p>
             </div>
         </header>
 
@@ -69,7 +92,6 @@
             <div class="hub-card" id="btn-go-orcamentos">
                 <div class="card-decoration"></div>
                 <div class="card-icon">
-                    <!-- SVG: Prancheta / Lista -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
                         <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
@@ -79,9 +101,9 @@
                     </svg>
                 </div>
                 <h3>Gestão de Pedidos</h3>
-                <p>Gerencie clientes, crie orçamentos personalizados e controle a fila de produção.</p>
+                <p>Gerencie clientes, orçamentos e fila de produção.</p>
                 <div class="card-footer">
-                    <span class="card-action">Acessar Módulo &rarr;</span>
+                    <span class="card-action">Acessar &rarr;</span>
                 </div>
             </div>
 
@@ -89,7 +111,6 @@
             <div class="hub-card" id="btn-go-precificacao">
                 <div class="card-decoration"></div>
                 <div class="card-icon">
-                    <!-- SVG: Calculadora / Abacus -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
                         <line x1="8" y1="6" x2="16" y2="6"></line>
@@ -102,32 +123,33 @@
                     </svg>
                 </div>
                 <h3>Precificação</h3>
-                <p>Calcule custos de materiais, mão de obra e defina o valor justo das suas peças.</p>
+                <p>Calcule custos de materiais e margem de lucro.</p>
                 <div class="card-footer">
-                    <span class="card-action">Acessar Módulo &rarr;</span>
+                    <span class="card-action">Acessar &rarr;</span>
                 </div>
             </div>
         </div>
 
         <div class="hub-footer-actions">
-            <button id="hubLogoutBtn" class="btn-logout-ghost">Desconectar</button>
+            <button id="hubLogoutBtn" class="btn-logout-ghost">Sair do Sistema</button>
         </div>
     </section>
 
     <!-- =========================================
-         TELA 3: MÓDULO ORÇAMENTOS
+         TELA 3: MÓDULO ORÇAMENTOS (Mobile Friendly)
     ========================================= -->
     <section id="module-orcamentos" style="display: none;">
-        <button class="btn-back-hub">⬅ Voltar ao Menu</button>
+        <button class="btn-back-hub">⬅ Voltar</button>
         
-        <div class="container">
-            <header>
-                 <h1>Pérola Rara - Gestão de Pedidos</h1>
-                 <nav>
+        <div class="container mobile-container">
+            <header class="module-header">
+                 <img src="assets/images/logo_perola_rara.png" class="module-logo-small" alt="Logo Pequeno">
+                 <h1>Gestão de Pedidos</h1>
+                 <nav class="mobile-nav">
                     <ul>
-                        <li><a href="#" data-pagina="form-orcamento">Novo Orçamento</a></li>
-                        <li><a href="#" data-pagina="orcamentos-gerados">Orçamentos Gerados</a></li>
-                        <li><a href="#" data-pagina="lista-pedidos">Pedidos Realizados</a></li>
+                        <li><a href="#" data-pagina="form-orcamento">Novo</a></li>
+                        <li><a href="#" data-pagina="orcamentos-gerados">Orçamentos</a></li>
+                        <li><a href="#" data-pagina="lista-pedidos">Pedidos</a></li>
                         <li><a href="#" data-pagina="relatorio">Relatório</a></li>
                     </ul>
                  </nav>
@@ -155,18 +177,20 @@
                         </div>
 
                         <h3>Produtos</h3>
-                        <table id="tabelaProdutos">
-                            <thead>
-                                <tr>
-                                    <th>Qtd</th>
-                                    <th>Descrição</th>
-                                    <th>Valor Unit.</th>
-                                    <th>Total</th>
-                                    <th>Ação</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
+                        <div class="table-responsive">
+                            <table id="tabelaProdutos">
+                                <thead>
+                                    <tr>
+                                        <th>Qtd</th>
+                                        <th>Descrição</th>
+                                        <th>Valor Unit.</th>
+                                        <th>Total</th>
+                                        <th>Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
                         <button type="button" id="btnAddProdutoOrcamento">Adicionar Produto</button>
 
                         <div class="form-row valores-pedido" style="margin-top: 20px;">
@@ -191,24 +215,28 @@
                 <section id="orcamentos-gerados" class="pagina" style="display: none;">
                     <h2>Orçamentos Gerados</h2>
                     <button onclick="filtrarOrcamentos()">Atualizar Lista</button>
-                    <table id="tabela-orcamentos">
-                        <thead>
-                            <tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Total</th><th>Pedido?</th><th>Ações</th></tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table id="tabela-orcamentos">
+                            <thead>
+                                <tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Total</th><th>Pedido?</th><th>Ações</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
                 </section>
 
                 <!-- PÁGINA 3: PEDIDOS -->
                 <section id="lista-pedidos" class="pagina" style="display: none;">
                     <h2>Pedidos Realizados</h2>
                     <button onclick="filtrarPedidos()">Atualizar Lista</button>
-                    <table id="tabela-pedidos">
-                        <thead>
-                            <tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Total</th><th>Ações</th></tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table id="tabela-pedidos">
+                            <thead>
+                                <tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Total</th><th>Ações</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
                 </section>
                 
                 <!-- PÁGINA: EDIÇÃO DE PEDIDO -->
@@ -223,10 +251,12 @@
                     <div class="form-group"><label>Contato:</label><input type="text" id="contatoEdicao"></div>
                     <div class="form-group"><label>Cores:</label><input type="text" id="coresEdicao"></div>
                     
-                    <table id="tabelaProdutosEdicao">
-                        <thead><tr><th>Qtd</th><th>Desc</th><th>Unit</th><th>Total</th><th>Ação</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table id="tabelaProdutosEdicao">
+                            <thead><tr><th>Qtd</th><th>Desc</th><th>Unit</th><th>Total</th><th>Ação</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
                     <button type="button" id="btnAddProdutoEdicao">Add Produto</button>
 
                     <div class="form-group"><label>Frete:</label><input type="text" id="valorFreteEdicao"></div>
@@ -250,21 +280,22 @@
     </section>
 
     <!-- =========================================
-         TELA 4: MÓDULO PRECIFICAÇÃO
+         TELA 4: MÓDULO PRECIFICAÇÃO (Mobile Friendly)
     ========================================= -->
     <section id="module-precificacao" style="display: none;">
-        <button class="btn-back-hub">⬅ Voltar ao Menu</button>
+        <button class="btn-back-hub">⬅ Voltar</button>
 
-        <div id="app-container-precificacao" style="width: 90%; margin: 20px auto; background: #fff; padding: 20px;">
-            <header>
+        <div id="app-container-precificacao" class="mobile-container" style="width: 90%; margin: 20px auto; background: #fff; padding: 20px;">
+            <header class="module-header">
+                 <img src="assets/images/logo_perola_rara.png" class="module-logo-small" alt="Logo Pequeno">
                  <h1>Precificação</h1>
-                 <nav>
+                 <nav class="mobile-nav">
                      <ul>
                         <li><a href="#" data-submenu="materiais-insumos" class="nav-link">Materiais</a></li>
                         <li><a href="#" data-submenu="mao-de-obra" class="nav-link">Mão de Obra</a></li>
-                        <li><a href="#" data-submenu="cadastrar-produtos" class="nav-link">Produtos</a></li>
-                        <li><a href="#" data-submenu="calculo-precificacao" class="nav-link">Calcular Preço</a></li>
-                        <li><a href="#" data-submenu="historico-precificacao" class="nav-link">Histórico</a></li>
+                        <li><a href="#" data-submenu="cadastrar-produtos" class="nav-link">Prod.</a></li>
+                        <li><a href="#" data-submenu="calculo-precificacao" class="nav-link">Calc.</a></li>
+                        <li><a href="#" data-submenu="historico-precificacao" class="nav-link">Hist.</a></li>
                     </ul>
                  </nav>
             </header>
@@ -287,10 +318,12 @@
                     <button type="button" id="cadastrar-material-insumo-btn">Salvar Material</button>
                 </form>
                 <input type="text" id="busca-material" placeholder="Filtrar..." onkeyup="buscarMateriaisCadastrados()">
-                <table id="tabela-materiais-insumos">
-                    <thead><tr><th>Nome</th><th>Tipo</th><th>Medida</th><th>Custo Tot.</th><th>Unitário</th><th>Ações</th></tr></thead>
-                    <tbody></tbody>
-                </table>
+                <div class="table-responsive">
+                    <table id="tabela-materiais-insumos">
+                        <thead><tr><th>Nome</th><th>Tipo</th><th>Medida</th><th>Custo Tot.</th><th>Unitário</th><th>Ações</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- SUBPÁGINA: MÃO DE OBRA -->
@@ -317,10 +350,12 @@
 
                 <hr>
                 <h3>Custos Indiretos (Base)</h3>
-                <table id="tabela-custos-indiretos">
-                    <thead><tr><th>Descrição</th><th>Mensal</th><th>Por Hora</th><th>Ação</th></tr></thead>
-                    <tbody></tbody>
-                </table>
+                <div class="table-responsive">
+                    <table id="tabela-custos-indiretos">
+                        <thead><tr><th>Descrição</th><th>Mensal</th><th>Por Hora</th><th>Ação</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- SUBPÁGINA: PRODUTOS -->
@@ -334,17 +369,21 @@
                         <div id="resultados-pesquisa" style="display:none; position:absolute; background:white; border:1px solid #ccc; width:100%; max-height:150px; overflow-y:auto; z-index:100;"></div>
                     </div>
 
-                    <table id="tabela-materiais-produto">
-                        <thead><tr><th>Material</th><th>Tipo</th><th>Custo Base</th><th>Dim/Qtd</th><th>Qtd</th><th>Total</th><th>Ação</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table id="tabela-materiais-produto">
+                            <thead><tr><th>Material</th><th>Tipo</th><th>Custo Base</th><th>Dim/Qtd</th><th>Qtd</th><th>Total</th><th>Ação</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
 
                     <button type="button" id="cadastrar-produto-btn">Salvar Produto</button>
                 </form>
-                <table id="tabela-produtos">
-                    <thead><tr><th>Produto</th><th>Itens</th><th>-</th><th>Custo Total</th><th>Ação</th></tr></thead>
-                    <tbody></tbody>
-                </table>
+                <div class="table-responsive">
+                    <table id="tabela-produtos">
+                        <thead><tr><th>Produto</th><th>Itens</th><th>-</th><th>Custo Total</th><th>Ação</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- SUBPÁGINA: CÁLCULO -->
@@ -382,13 +421,26 @@
             <!-- SUBPÁGINA: HISTÓRICO -->
             <div id="historico-precificacao" class="subpagina" style="display:none;">
                 <h2>Histórico de Cálculos</h2>
-                <table id="tabela-precificacoes-geradas">
-                    <thead><tr><th>ID</th><th>Cliente</th><th>Ação</th></tr></thead>
-                    <tbody></tbody>
-                </table>
+                <div class="table-responsive">
+                    <table id="tabela-precificacoes-geradas">
+                        <thead><tr><th>ID</th><th>Cliente</th><th>Ação</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </section>
+
+    <!-- Script PWA Install & Update -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('SW registrado com sucesso.'))
+            .catch(err => console.log('Falha ao registrar SW:', err));
+        });
+      }
+    </script>
 
 </body>
 </html>
