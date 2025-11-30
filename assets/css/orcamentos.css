@@ -1,5 +1,12 @@
 /* assets/css/orcamentos.css */
 
+/* ==== INÍCIO SEÇÃO - RESET DE SEGURANÇA (NOVO) ==== */
+/* Esta regra garante que NENHUM elemento some borda + padding na largura */
+* {
+    box-sizing: border-box;
+}
+/* ==== FIM SEÇÃO - RESET DE SEGURANÇA ==== */
+
 /* ==== INÍCIO SEÇÃO - GOOGLE FONTS ==== */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 /* ==== FIM SEÇÃO - GOOGLE FONTS ==== */
@@ -7,14 +14,17 @@
 /* ==== INÍCIO SEÇÃO - ESTILOS GERAIS ==== */
 body {
     font-family: 'Roboto', Arial, sans-serif;
-    background-color: #ffffff; /* Fundo branco */
+    background-color: #ffffff;
     color: #333;
     margin: 0;
     padding: 0;
+    /* TRAVA DE SEGURANÇA: Impede rolagem lateral fantasma */
+    overflow-x: hidden; 
+    width: 100%;
 }
 
 .container {
-    width: 90%;
+    width: 90%; /* No Desktop mantém 90% */
     margin: auto;
     padding: 20px;
     background-color: #fff;
@@ -53,30 +63,30 @@ hr.final-tabela {
 
 /* ==== INÍCIO SEÇÃO - CABEÇALHO (PÁGINA PRINCIPAL) ==== */
 .top-bar {
-    display: flex; /* Ativa o flexbox */
-    justify-content: flex-end; /* Alinha o painel à direita */
-    padding: 10px 20px; /* Espaçamento interno na barra superior */
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px 20px;
 }
 
 header {
     text-align: center;
     padding: 20px 0;
-    background-color: #ffffff; /* Cor de fundo alterada para branco */
-    color: #7aa2a9; /* Cor do texto alterada para a paleta */
+    background-color: #ffffff;
+    color: #7aa2a9;
     margin-bottom: 20px;
 }
 
 .logo-container {
-    margin-top: 20px; /* Espaço entre o painel e o logo */
-    margin-bottom: 10px; /* Espaço entre o painel e o logo */
-    text-align: center; /* Centraliza o logo horizontalmente */
+    margin-top: 20px;
+    margin-bottom: 10px;
+    text-align: center;
 }
 
 #logo {
     max-width: 150px;
     height: auto;
     display: block;
-    margin: 0 auto; /* Centraliza o logo horizontalmente e espaçamento*/
+    margin: 0 auto;
 }
 
 h1, h2 {
@@ -99,15 +109,15 @@ nav ul li {
 nav ul li a {
     color: #7aa2a9;
     text-decoration: none;
-    display: inline-block; /* Melhor para aplicar padding e transição */
-    padding: 10px 15px; /* Aumentei um pouco o padding */
-    transition: background-color 0.3s ease, color 0.3s ease; /* Transição suave para cor também */
-    border-radius: 5px; /* Bordas levemente arredondadas (opcional) */
+    display: inline-block;
+    padding: 10px 15px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    border-radius: 5px;
 }
 
-nav ul li a:hover { /* Estilo de hover aprimorado */
-    background-color: #e8d7d4; /* Rosa do precificacao.css */
-    color: #333; /* Escurece a cor do texto no hover (melhor contraste) */
+nav ul li a:hover {
+    background-color: #e8d7d4;
+    color: #333;
 }
 /* ==== FIM SEÇÃO - CABEÇALHO (PÁGINA PRINCIPAL) ==== */
 
@@ -126,57 +136,51 @@ label {
     font-weight: bold;
 }
 
-/* MELHORIA RESPONSIVA (Priority 1):
-   Adicionado box-sizing e max-width para evitar estouro no Android.
-*/
+/* INPUTS: Definição Absoluta de Largura */
 input[type="text"],
 input[type="number"],
 input[type="date"],
 input[type="email"],
 textarea,
 select {
-    box-sizing: border-box; /* Garante que borda e padding contem na largura */
-    width: 100%;            /* Ocupa todo o espaço disponível no container pai */
-    max-width: 100%;        /* Trava de segurança para mobile */
+    width: 100%;            
+    max-width: 100%;        
+    /* min-width: 0; CRÍTICO: Permite encolher se necessário */
+    min-width: 0; 
     padding: 12px;          
     border: 1px solid #ccc;
     border-radius: 20px;    
-    font-size: 16px;        /* Tamanho ideal para evitar zoom automático no iOS */
+    font-size: 16px;        
     background-color: #dfb6b0; 
     color: #fff;            
     outline: none;          
 }
 
-/* Estilo ao focar no input para melhor UX */
 input:focus, textarea:focus, select:focus {
     border-color: #7aa2a9;
     box-shadow: 0 0 5px rgba(122, 162, 169, 0.5);
 }
 
-/* MELHORIA DE LAYOUT (Priority 1):
-   Substituição de Float por Flexbox para melhor adaptação mobile.
-*/
+/* FLEXBOX PARA DESKTOP */
 .form-row {
-    display: flex;       /* Modernização: Flexbox */
-    flex-wrap: wrap;     /* Permite quebra de linha */
-    gap: 15px;           /* Espaçamento inteligente */
+    display: flex;       
+    flex-wrap: wrap;     
+    gap: 15px;           
     width: 100%;
 }
 
-/* Removemos o clear fix antigo pois flexbox não precisa */
 .form-row:after {
     content: none;
     display: none;
 }
 
 .form-row .form-group {
-    float: none;         /* Remove float antigo */
+    float: none;         
     margin-right: 0;
-    flex: 1 1 45%;       /* Ocupa espaço proporcional */
-    min-width: 250px;    /* Evita que fique muito estreito */
+    flex: 1; /* Divide espaço igualmente */
+    min-width: 200px; /* Mínimo apenas para desktop */
 }
 
-/* Removemos margin-right manual, o gap do flex resolve */
 .form-row .form-group:last-child {
     margin-right: 0;
 }
@@ -204,7 +208,6 @@ th {
     color: white;
 }
 
-/* Novas classes para a tabela de relatório */
 .relatorio-table {
     width: 80%;
     margin: 20px auto;
@@ -219,22 +222,23 @@ th {
 }
 
 .relatorio-table th {
-    background-color: #cce5e9; /* Cor mais clara da paleta para o cabeçalho */
+    background-color: #cce5e9;
     color: #333;
 }
 
 .relatorio-table tr:nth-child(even) {
-    background-color: #f0f8fa; /* Cor mais clara da paleta para linhas pares */
+    background-color: #f0f8fa;
 }
 
 .relatorio-table tr:nth-child(odd) {
-    background-color: #f8f8f8; /* Fundo branco para linhas ímpares */
+    background-color: #f8f8f8;
 }
 
 .table-responsive {
     overflow-x: auto;
     width: 100%;
-    -webkit-overflow-scrolling: touch; /* Rolagem suave no iOS */
+    -webkit-overflow-scrolling: touch;
+    display: block; /* Garante bloco para rolagem */
 }
 /* ==== FIM SEÇÃO - TABELAS ==== */
 
@@ -242,9 +246,9 @@ th {
 button {
     background-color: #7aa2a9;
     color: white;
-    padding: 12px 25px; /* Botões um pouco maiores para mobile */
+    padding: 12px 25px;
     border: none;
-    border-radius: 20px; /* Bordas arredondadas */
+    border-radius: 20px;
     font-size: 16px;
     cursor: pointer;
     margin-top: 10px;
@@ -257,13 +261,10 @@ button:hover {
     background-color: #5a8289;
 }
 
-/* ==== INÍCIO SEÇÃO - BOTÃO VOLTAR AO INÍCIO ==== */
 #lista-pedidos button, #relatorio button, #backup button {
     display: block;
     margin: 0 auto 20px auto;
 }
-/* ==== FIM SEÇÃO - BOTÃO VOLTAR AO INÍCIO ==== */
-
 /* ==== FIM SEÇÃO - BOTÕES ==== */
 
 /* ==== INÍCIO SEÇÃO - SEÇÃO RELATÓRIO ==== */
@@ -274,9 +275,7 @@ button:hover {
 .filtro-data label, .filtro-data input {
     margin-right: 10px;
 }
-/* ==== FIM SEÇÃO - SEÇÃO RELATÓRIO ==== */
 
-/* ==== INÍCIO SEÇÃO - FILTROS ==== */
 .filtro-data {
     margin-bottom: 20px;
     text-align: center;
@@ -289,7 +288,7 @@ button:hover {
 }
 /* ==== FIM SEÇÃO - FILTROS ==== */
 
-/* ==== INÍCIO SEÇÃO - PÁGINA DE VISUALIZAÇÃO DO ORÇAMENTO (orcamento.html) ==== */
+/* ==== INÍCIO SEÇÃO - ORÇAMENTO ==== */
 .header-orcamento {
     text-align: center;
     margin-bottom: 20px;
@@ -309,49 +308,59 @@ button:hover {
     text-align: left;
     margin-bottom: 10px;
 }
-/* ==== FIM SEÇÃO - PÁGINA DE VISUALIZAÇÃO DO ORÇAMENTO (orcamento.html) ==== */
 
-/* ==== INÍCIO SEÇÃO - BOTÃO LIMPAR PÁGINA ==== */
 nav ul li a[onclick="limparPagina()"] {
-    background-color: #dfb6b0; /* Fundo rosa delicado */
-    padding: 5px 10px; /* Espaçamento interno */
-    border-radius: 10px; /* Bordas arredondadas */
-    color: white; /* Texto branco para contraste */
-    margin-left: 20px; /* Espaço à esquerda para separar dos outros botões */
+    background-color: #dfb6b0;
+    padding: 5px 10px;
+    border-radius: 10px;
+    color: white;
+    margin-left: 20px;
 }
 
 nav ul li a[onclick="limparPagina()"]:hover {
-    background-color: #c89790; /* Tom mais escuro de rosa no hover */
+    background-color: #c89790;
 }
-/* ==== FIM SEÇÃO - BOTÃO LIMPAR PÁGINA ==== */
 
-/* ==== INÍCIO SEÇÃO - MEDIA QUERIES (ATUALIZADA) ==== */
+/* ==== INÍCIO SEÇÃO - MEDIA QUERIES (CRÍTICO PARA MOBILE) ==== */
 @media (max-width: 768px) {
-    .container {
-        width: 100%;        /* Remove margens laterais fixas */
-        padding: 15px;      /* Espaçamento interno seguro */
-        box-sizing: border-box; /* Garante que o padding não aumente a largura */
-        overflow-x: hidden; /* Corta excessos laterais */
+    /* Container ocupa 100% da tela real, descontando padding */
+    .container, .mobile-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 15px !important;
+        border-radius: 0;
+        box-shadow: none;
     }
 
-    /* MELHORIA: Ajuste de layout dos campos no mobile */
+    /* Força os grupos de formulário a ficarem em coluna */
     .form-row {
-        flex-direction: column; /* Empilha verticalmente */
+        flex-direction: column !important;
         gap: 10px;
+        width: 100% !important;
     }
 
+    /* Remove qualquer limitação de tamanho mínimo que cause travamento */
     .form-row .form-group {
-        width: 100%;        /* Ocupa a largura total */
-        margin-right: 0;
-        margin-bottom: 15px;
-        flex: 1 1 100%;
+        width: 100% !important;
+        min-width: 0 !important; /* CRÍTICO: Permite que o campo encolha */
+        margin: 0 0 10px 0 !important;
+        flex: 1 1 auto;
     }
 
-    /* Ajuste para botões de navegação no mobile */
+    /* Inputs ocupam 100% do pai, que ocupa 100% da tela */
+    input, select, textarea {
+        width: 100% !important;
+        max-width: 100% !important;
+        font-size: 16px; /* Evita zoom no iPhone */
+    }
+
+    /* Ajuste de Navegação */
     nav ul {
         display: flex;
         flex-direction: column;
         width: 100%;
+        padding: 0;
     }
 
     nav ul li {
@@ -363,118 +372,116 @@ nav ul li a[onclick="limparPagina()"]:hover {
     nav ul li a {
         display: block;
         width: 100%;
-        box-sizing: border-box;
         text-align: center;
-        padding: 12px;
-        background-color: #f9f9f9; /* Fundo leve para destacar área de clique */
+        padding: 15px;
+        background-color: #f9f9f9;
         border: 1px solid #eee;
     }
 
-    /* Garante que tabelas não quebrem o layout */
-    table {
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap; /* Evita quebra de linha indesejada nas células */
-    }
-
-    /* Ajuste de botões em telas pequenas */
+    /* Botões full width */
     button {
         width: 100%;
         margin-bottom: 10px;
+        padding: 15px;
+    }
+    
+    /* Tabelas com rolagem forçada */
+    table {
+        min-width: 600px; /* Força a tabela a ser larga para ativar o scroll */
+    }
+    
+    .table-responsive {
+        width: 100%;
+        overflow-x: scroll; /* Força barra de rolagem se necessário */
     }
 }
 /* ==== FIM SEÇÃO - MEDIA QUERIES ==== */
 
-/* ==== INÍCIO SEÇÃO - ESTILOS ADICIONADOS PARA CUSTO E MARGEM ==== */
+/* ==== ESTILOS EXTRAS (Mantidos) ==== */
 .form-row.valores-pedido label {
     color: #7aa2a9;
     font-weight: bold;
 }
-/* ==== FIM SEÇÃO - ESTILOS ADICIONADOS PARA CUSTO E MARGEM ==== */
 
-/* ==== INÍCIO SEÇÃO - ESTILOS DA SEÇÃO DE AUTENTICAÇÃO (ADICIONADO) ==== */
 #authSection {
-    background-color: #e6f7ff; /* Azul bem claro para o fundo do retângulo */
+    background-color: #e6f7ff;
     padding: 20px;
-    border-radius: 15px; /* Bordas arredondadas para o retângulo */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Sombra leve para destacar */
-    margin-bottom: 20px; /* Espaçamento abaixo da seção de autenticação */
-    display: inline-block; /* Para que o fundo se ajuste ao conteúdo */
-    text-align: center; /* Centralizar o texto interno */
+    border-radius: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+    display: inline-block;
+    text-align: center;
 }
 
 #authSection input[type="email"],
 #authSection input[type="password"] {
-    background-color: #f8f8f8; /* Tom mais claro para os inputs dentro da seção */
-    color: #333; /* Cor do texto para melhor leitura */
-    border: 1px solid #ddd; /* Borda mais suave */
-    border-radius: 15px; /* Bordas arredondadas para os inputs */
-    padding: 8px 12px; /* Padding interno um pouco menor */
-    margin-bottom: 8px; /* Menos espaço abaixo dos inputs */
-    width: 100%; /* Ajustado para 100% com box-sizing */
-    font-size: 14px; /* Fonte um pouco menor */
+    background-color: #f8f8f8;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 15px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    width: 100%;
+    font-size: 14px;
 }
 
-#authSection div { /* Estilo para a div que contém os botões de ação */
-    display: flex;          /* Usar flexbox para alinhar os botões horizontalmente */
-    justify-content: center; /* Centralizar os botões horizontalmente */
-    align-items: center;     /* Alinhar verticalmente ao centro (se necessário) */
+#authSection div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #authSection button {
-    background-color: #a8d5e3; /* Tom de azul mais suave para os botões */
+    background-color: #a8d5e3;
     color: #fff;
-    padding: 8px 15px; /* Padding menor para botões menores */
-    border-radius: 15px; /* Bordas arredondadas */
-    font-size: 14px; /* Fonte menor para os botões */
-    margin: 4px; /* Espaçamento menor entre os botões */
+    padding: 8px 15px;
+    border-radius: 15px;
+    font-size: 14px;
+    margin: 4px;
     cursor: pointer;
     border: none;
     transition: background-color 0.3s ease;
-    width: auto; /* Reverte largura 100% do global se necessário */
+    width: auto;
     min-width: auto;
 }
 
 #authSection button:hover {
-    background-color: #7cb3c2; /* Tom de azul um pouco mais escuro no hover */
+    background-color: #7cb3c2;
 }
 
 #authSection #authStatus,
 #authSection #passwordResetMessage {
-    font-size: 0.9em; /* Fonte menor para o status e mensagens */
+    font-size: 0.9em;
     margin-top: 10px;
-    color: #555; /* Cor do texto um pouco mais suave */
+    color: #555;
 }
 
-#authSection #btnForgotPasswordContainer { /* Estilo para o container do link "Esqueci minha senha?" */
-    margin-left: 10px;      /* Espaçamento à esquerda para separar dos outros botões */
+#authSection #btnForgotPasswordContainer {
+    margin-left: 10px;
 }
 
 #authSection #btnForgotPassword {
-    background: none;       /* Fundo transparente */
-    color: #7aa2a9;         /* Cor do texto da paleta */
-    border: none;           /* Sem borda */
-    padding: 8px 0;         /* Ajuste no padding vertical */
-    font-size: 14px;        /* Tamanho da fonte */
-    cursor: pointer;        /* Cursor de pointer */
-    text-decoration: none;  /* Sem sublinhado */
-    margin: 0;              /* Remove margens desnecessárias */
-    align-self: center;     /* Alinhar verticalmente ao centro dentro do flex container */
+    background: none;
+    color: #7aa2a9;
+    border: none;
+    padding: 8px 0;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    margin: 0;
+    align-self: center;
     width: auto;
 }
 
 #authSection #btnForgotPassword:hover {
-    text-decoration: underline; /* Sublinhado no hover */
-    color: #5a8289;         /* Cor do texto no hover */
-    background-color: transparent; /* Fundo transparente no hover */
+    text-decoration: underline;
+    color: #5a8289;
+    background-color: transparent;
 }
-/* ==== FIM SEÇÃO - ESTILOS DA SEÇÃO DE AUTENTICAÇÃO ==== */
 
-/* ==== INÍCIO SEÇÃO - ESTILOS ADICIONADOS PARA CAMPOS CALCULADOS ==== */
 .campo-calculado {
-    background-color: #cce5e9; /* Tom de azul claro da paleta */
-    color: #333; /* Cor do texto para melhor leitura */
-    font-weight: bold; /* Opcional: para destacar ainda mais */
-}
-/* ==== FIM SEÇÃO - ESTILOS ADICIONADOS PARA CAMPOS CALCULADOS ==== */
+    background-color: #cce5e9;
+    color: #333;
+    font-weight: bold;
+    }
     
