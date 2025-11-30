@@ -27,6 +27,7 @@ body {
     align-items: center;
     min-height: 100vh;
     padding: 20px;
+    display: none; /* Oculto inicialmente, controlado pelo JS */
 }
 
 .auth-container {
@@ -46,7 +47,7 @@ body {
     margin: 0 auto;
 }
 
-/* NOME PÉROLA RARA (Correção de Fonte: ROBOTO, não cursiva) */
+/* NOME PÉROLA RARA (Roboto) */
 .login-brand-name {
     font-family: 'Roboto', sans-serif;
     font-weight: 700;
@@ -71,7 +72,6 @@ body {
     border-radius: var(--border-radius-input);
     font-size: 16px;
     box-sizing: border-box;
-    /* No login pode manter branco ou usar rosa, deixei branco p/ contraste */
     background-color: #fff; 
 }
 
@@ -85,25 +85,30 @@ body {
     font-size: 16px;
     cursor: pointer;
     margin-top: 10px;
+    transition: background-color 0.3s;
+}
+.auth-buttons button:hover {
+    background-color: #5a8289;
 }
 
 /* =========================================
-   2. SPLASH SCREEN
+   2. SPLASH SCREEN (REFINADA - Prioridade 1)
    ========================================= */
 #splash-screen {
     position: fixed;
     top: 0; left: 0;
     width: 100vw; height: 100vh;
-    background-color: #ecd5d1; /* Rosa da paleta */
+    background-color: #ecd5d1; /* Rosa da paleta Pérola Rara */
     z-index: 9999;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    transition: opacity 0.5s ease; /* Transição suave para o fade-out */
 }
 
 .splash-logo {
-    width: 140px;
+    width: 150px;
     margin-bottom: 20px;
     animation: fadeInUp 1s ease;
 }
@@ -111,14 +116,15 @@ body {
 .splash-slogan {
     font-family: 'Dancing Script', cursive;
     font-size: 1.8rem;
-    color: #fff;
+    color: #7aa2a9; /* Azul Petróleo para contraste no rosa */
     text-align: center;
     padding: 0 20px;
     animation: fadeInUp 1.5s ease;
+    margin-top: 10px;
 }
 
 /* =========================================
-   3. HUB (MENU PRINCIPAL)
+   3. HUB (MENU PRINCIPAL - REFINADO)
    ========================================= */
 #hub-screen {
     max-width: 1000px;
@@ -128,16 +134,33 @@ body {
 
 .hub-header { text-align: center; margin-bottom: 40px; }
 .hub-header img { width: 120px; margin-bottom: 15px; }
-.hub-header h1 { color: var(--cor-principal); font-weight: 300; margin: 0; }
-.slogan-hub { font-family: 'Dancing Script', cursive; color: #666; font-size: 1.4rem; margin: 10px 0; }
+.hub-header h1 { color: var(--cor-principal); font-weight: 300; margin: 0 0 10px 0; }
 
+/* Novo: Cartão de Informação do Usuário */
+.user-info-card {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #fff;
+    padding: 8px 20px;
+    border-radius: 50px;
+    box-shadow: 0 2px 10px rgba(122, 162, 169, 0.15);
+    font-size: 0.9rem;
+    color: #555;
+    border: 1px solid #eee;
+}
+.user-icon { font-size: 1.1rem; }
+
+/* Container dos Cards */
 .hub-cards-container {
     display: flex;
     justify-content: center;
     gap: 30px;
     flex-wrap: wrap;
+    margin-bottom: 40px;
 }
 
+/* Cards com Interação (Hover) */
 .hub-card {
     background: #fff;
     width: 300px;
@@ -146,34 +169,135 @@ body {
     box-shadow: 0 10px 25px rgba(122, 162, 169, 0.1);
     text-align: center;
     cursor: pointer;
-    transition: transform 0.3s;
     border: 1px solid #eee;
+    
+    /* Melhoria UX: Transição Suave */
+    transition: all 0.3s ease;
+    position: relative;
+    top: 0;
 }
 
-.hub-card:hover { transform: translateY(-5px); }
-.card-icon { margin-bottom: 20px; color: var(--cor-principal); }
+.hub-card:hover { 
+    transform: translateY(-8px); /* Card "flutua" ao passar o mouse */
+    box-shadow: 0 15px 30px rgba(223, 182, 176, 0.4); /* Sombra Rosa */
+    border-color: #dfb6b0;
+}
+
+.card-icon { 
+    margin-bottom: 20px; 
+    color: var(--cor-principal);
+    transition: transform 0.3s ease;
+}
+.hub-card:hover .card-icon {
+    transform: scale(1.1); /* Ícone cresce levemente */
+}
+
 .card-icon svg { stroke: var(--cor-principal); }
 .hub-card h3 { color: #444; margin-bottom: 10px; }
 .card-action { color: var(--cor-principal); font-weight: bold; text-transform: uppercase; font-size: 0.85rem; }
 
-.btn-logout-ghost {
-    background: transparent;
-    border: 1px solid #999;
-    padding: 8px 30px;
+/* Novo: Slogan no Rodapé do Hub */
+.hub-footer-branding {
+    text-align: center;
+    margin: 20px 0 30px 0;
+}
+.slogan-hub { 
+    font-family: 'Dancing Script', cursive; 
+    color: #7aa2a9; 
+    font-size: 1.5rem; 
+    margin: 0;
+}
+
+/* Novo: Botão Logout Sólido */
+.hub-footer-actions { text-align: center; }
+
+.btn-logout-solid {
+    background-color: #7aa2a9; /* Azul Petróleo */
+    color: #fff;
+    border: none;
+    padding: 10px 35px;
     border-radius: 50px;
-    margin-top: 40px;
+    font-weight: 500;
     cursor: pointer;
+    box-shadow: 0 4px 15px rgba(122, 162, 169, 0.3);
+    transition: background 0.3s, transform 0.1s;
+}
+.btn-logout-solid:hover {
+    background-color: #5a8289;
+}
+.btn-logout-solid:active {
+    transform: scale(0.98);
 }
 
 /* =========================================
-   4. MÓDULOS INTERNOS (Orçamento & Precificação)
+   4. CHANGELOG / VERSION WIDGET (Prioridade 1)
+   ========================================= */
+/* Indicador no canto da tela */
+#version-indicator {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    font-size: 0.75rem;
+    color: #aaa;
+    cursor: pointer;
+    background: rgba(255,255,255,0.8);
+    padding: 5px 10px;
+    border-radius: 10px;
+    z-index: 1000;
+    transition: all 0.3s;
+    font-family: sans-serif;
+}
+#version-indicator:hover {
+    color: #7aa2a9;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Modal Overlay */
+.changelog-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); z-index: 2000;
+    display: flex; justify-content: center; align-items: center;
+    animation: fadeIn 0.3s;
+}
+
+/* Conteúdo do Modal */
+.changelog-modal {
+    background: #fff; 
+    width: 90%; 
+    max-width: 500px;
+    padding: 25px; 
+    border-radius: 15px;
+    max-height: 80vh; 
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.changelog-item { border-bottom: 1px solid #eee; padding: 15px 0; }
+.changelog-item:last-child { border-bottom: none; }
+.changelog-version { font-weight: bold; color: #7aa2a9; font-size: 1.1rem; }
+.changelog-date { font-size: 0.85rem; color: #999; margin-bottom: 8px; }
+.changelog-list { padding-left: 20px; margin: 5px 0; font-size: 0.95rem; line-height: 1.5; color: #555; }
+.close-changelog {
+    position: absolute; top: 15px; right: 20px;
+    font-size: 1.8rem; cursor: pointer; color: #999;
+    line-height: 1;
+}
+.close-changelog:hover { color: #555; }
+
+/* Animação básica */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* =========================================
+   5. MÓDULOS INTERNOS (Estilos Mantidos)
    ========================================= */
 
 /* Container geral para mobile e desktop */
 .mobile-container {
     width: 90%;
     max-width: 1000px;
-    margin: 60px auto 20px auto; /* Margem top p/ botão voltar */
+    margin: 60px auto 20px auto; 
     padding: 20px;
     background-color: #fff;
     border-radius: 8px;
@@ -194,7 +318,7 @@ body {
     font-weight: bold;
 }
 
-/* HEADER DOS MÓDULOS (Refinamento Visual) */
+/* HEADER DOS MÓDULOS */
 .module-header-styled {
     text-align: center;
     margin-bottom: 30px;
@@ -218,8 +342,8 @@ body {
 
 /* MENU COM LINHAS ("Sanduíche") */
 .nav-lined {
-    border-top: 3px solid var(--cor-principal);    /* Linha Grossa Topo */
-    border-bottom: 1px solid var(--cor-principal); /* Linha Fina Base */
+    border-top: 3px solid var(--cor-principal);
+    border-bottom: 1px solid var(--cor-principal);
     padding: 15px 0;
     margin: 10px 0 30px 0;
 }
@@ -251,11 +375,10 @@ body {
     font-weight: 700;
     margin-bottom: 20px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #ccc; /* Linha fina cinza */
+    border-bottom: 1px solid #ccc;
 }
 
 /* INPUTS ESTILO "ROSA" (Global para os módulos) */
-/* Aplica para Orçamentos e Precificação */
 #module-orcamentos input, #module-orcamentos select, #module-orcamentos textarea,
 #module-precificacao input, #module-precificacao select, #module-precificacao textarea {
     width: 100%;
@@ -269,12 +392,10 @@ body {
     margin-bottom: 10px;
 }
 
-/* Placeholder claro para ler no fundo rosa */
 ::placeholder {
     color: rgba(255,255,255, 0.7);
 }
 
-/* Campos Readonly (Cálculos) podem ser um pouco mais claros ou escuros */
 input[readonly] {
     opacity: 0.9;
     cursor: default;
@@ -293,11 +414,11 @@ input[readonly] {
 table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 600px; /* Força scroll no mobile */
+    min-width: 600px;
 }
 
 th {
-    background-color: #dfb6b0; /* Rosa */
+    background-color: #dfb6b0;
     color: white;
     padding: 10px;
     text-align: left;
@@ -318,7 +439,6 @@ button {
     cursor: pointer;
     font-size: 1rem;
 }
-
 button:hover { background-color: #5a8289; }
 
 /* Animações */
@@ -330,7 +450,7 @@ button:hover { background-color: #5a8289; }
 /* Media Queries Mobile */
 @media (max-width: 768px) {
     .nav-lined ul li a {
-        font-size: 0.85rem; /* Texto menor no menu mobile */
+        font-size: 0.85rem;
         padding: 5px 8px;
     }
     
