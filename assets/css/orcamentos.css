@@ -1,3 +1,5 @@
+/* assets/css/orcamentos.css */
+
 /* ==== INÍCIO SEÇÃO - GOOGLE FONTS ==== */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 /* ==== FIM SEÇÃO - GOOGLE FONTS ==== */
@@ -109,8 +111,6 @@ nav ul li a:hover { /* Estilo de hover aprimorado */
 }
 /* ==== FIM SEÇÃO - CABEÇALHO (PÁGINA PRINCIPAL) ==== */
 
-/* ==== REMOVIDO - SEÇÃO - PAINEL ÚLTIMO BACKUP ==== */
-
 /* ==== INÍCIO SEÇÃO - FORMULÁRIO ==== */
 #form-orcamento, #form-edicao-pedido {
     margin-bottom: 30px;
@@ -126,26 +126,25 @@ label {
     font-weight: bold;
 }
 
-/* 
-   MELHORIA PRIORIDADE 1 E 3: RESPONSIVIDADE E INPUTS
-   Alterado width para 100% e adicionado box-sizing para evitar
-   que o padding estoure a largura da tela no Android.
+/* MELHORIA RESPONSIVA (Priority 1):
+   Adicionado box-sizing e max-width para evitar estouro no Android.
 */
 input[type="text"],
 input[type="number"],
 input[type="date"],
-input[type="email"], /* Adicionado o seletor para o campo de e-mail */
+input[type="email"],
 textarea,
 select {
     box-sizing: border-box; /* Garante que borda e padding contem na largura */
     width: 100%;            /* Ocupa todo o espaço disponível no container pai */
-    padding: 12px;          /* Padding levemente aumentado para facilitar toque */
+    max-width: 100%;        /* Trava de segurança para mobile */
+    padding: 12px;          
     border: 1px solid #ccc;
-    border-radius: 20px;    /* Bordas arredondadas */
+    border-radius: 20px;    
     font-size: 16px;        /* Tamanho ideal para evitar zoom automático no iOS */
-    background-color: #dfb6b0; /* Cor de fundo dos campos */
-    color: #fff;            /* Cor do texto nos campos */
-    outline: none;          /* Remove outline padrão ao focar */
+    background-color: #dfb6b0; 
+    color: #fff;            
+    outline: none;          
 }
 
 /* Estilo ao focar no input para melhor UX */
@@ -154,18 +153,30 @@ input:focus, textarea:focus, select:focus {
     box-shadow: 0 0 5px rgba(122, 162, 169, 0.5);
 }
 
+/* MELHORIA DE LAYOUT (Priority 1):
+   Substituição de Float por Flexbox para melhor adaptação mobile.
+*/
+.form-row {
+    display: flex;       /* Modernização: Flexbox */
+    flex-wrap: wrap;     /* Permite quebra de linha */
+    gap: 15px;           /* Espaçamento inteligente */
+    width: 100%;
+}
+
+/* Removemos o clear fix antigo pois flexbox não precisa */
 .form-row:after {
-    content: "";
-    display: table;
-    clear: both;
+    content: none;
+    display: none;
 }
 
 .form-row .form-group {
-    float: left;
-    width: 48%;
-    margin-right: 2%;
+    float: none;         /* Remove float antigo */
+    margin-right: 0;
+    flex: 1 1 45%;       /* Ocupa espaço proporcional */
+    min-width: 250px;    /* Evita que fique muito estreito */
 }
 
+/* Removemos margin-right manual, o gap do flex resolve */
 .form-row .form-group:last-child {
     margin-right: 0;
 }
@@ -208,12 +219,12 @@ th {
 }
 
 .relatorio-table th {
-    background-color: #cce5e9; /* Cor mais clara da paleta para o cabeçalho (25% mais claro que #7aa2a9) */
+    background-color: #cce5e9; /* Cor mais clara da paleta para o cabeçalho */
     color: #333;
 }
 
 .relatorio-table tr:nth-child(even) {
-    background-color: #f0f8fa; /* Cor mais clara da paleta para linhas pares (25% mais claro que #dfb6b0) */
+    background-color: #f0f8fa; /* Cor mais clara da paleta para linhas pares */
 }
 
 .relatorio-table tr:nth-child(odd) {
@@ -315,20 +326,25 @@ nav ul li a[onclick="limparPagina()"]:hover {
 /* ==== FIM SEÇÃO - BOTÃO LIMPAR PÁGINA ==== */
 
 /* ==== INÍCIO SEÇÃO - MEDIA QUERIES (ATUALIZADA) ==== */
-/* Prioridade 1 e 2: Ajustes Críticos para Mobile */
 @media (max-width: 768px) {
     .container {
         width: 100%;        /* Remove margens laterais fixas */
         padding: 15px;      /* Espaçamento interno seguro */
-        box-sizing: border-box;
+        box-sizing: border-box; /* Garante que o padding não aumente a largura */
+        overflow-x: hidden; /* Corta excessos laterais */
     }
 
-    /* Empilha os campos lado a lado em telas pequenas */
+    /* MELHORIA: Ajuste de layout dos campos no mobile */
+    .form-row {
+        flex-direction: column; /* Empilha verticalmente */
+        gap: 10px;
+    }
+
     .form-row .form-group {
-        width: 100%;
-        float: none;
+        width: 100%;        /* Ocupa a largura total */
         margin-right: 0;
         margin-bottom: 15px;
+        flex: 1 1 100%;
     }
 
     /* Ajuste para botões de navegação no mobile */
@@ -461,3 +477,4 @@ nav ul li a[onclick="limparPagina()"]:hover {
     font-weight: bold; /* Opcional: para destacar ainda mais */
 }
 /* ==== FIM SEÇÃO - ESTILOS ADICIONADOS PARA CAMPOS CALCULADOS ==== */
+    
