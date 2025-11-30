@@ -9,11 +9,6 @@
     --cor-fundo: #f0f2f5;             /* Fundo geral da página */
 }
 
-/* Regra Global de Segurança para Box Model neste arquivo */
-* {
-    box-sizing: border-box;
-}
-
 body {
     font-family: 'Roboto', Arial, sans-serif;
     background-color: var(--cor-fundo);
@@ -35,12 +30,10 @@ body {
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
     text-align: center;
     margin-bottom: 20px;
-    width: 100%;
-    max-width: 400px;
 }
 
 .auth-form {
-    width: 100%; /* Ajustado para 100% com max-width no container */
+    width: 300px;
     margin: 0 auto;
 }
 
@@ -61,29 +54,31 @@ body {
     font-weight: bold;
 }
 
-/* 
-   ATUALIZAÇÃO CRÍTICA PARA MOBILE:
-   Correção de inputs para usar box-sizing e largura total 
-*/
 .auth-form input[type="email"],
 .auth-form input[type="password"] {
-    width: 100%;
-    padding: 12px; /* Padding confortável */
+    width: calc(100% - 20px);
+    padding: 10px;
     border: 1px solid #ccc;
     border-radius: 20px;
     font-size: 16px;
     margin-bottom: 10px;
-    background-color: #fff;  
+    background-color: #fff;  /* Fundo branco - pode mudar para #e5c4bf */
     color: #333;
-    box-sizing: border-box;
 }
+
+/* Opcional:  Fundo #e5c4bf para os inputs da tela de autenticação */
+/*
+.auth-form input[type="email"],
+.auth-form input[type="password"] {
+    background-color: #e5c4bf;
+    color: #333;
+}
+*/
 
 .auth-buttons {
     display: flex;
     justify-content: space-between;
     margin-bottom: 15px;
-    flex-wrap: wrap; /* Permite quebrar linha em telas pequenas */
-    gap: 10px;
 }
 
 /* Botões na tela de autenticação */
@@ -96,8 +91,6 @@ body {
     font-size: 16px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    flex: 1; /* Distribui espaço igualmente */
-    min-width: 120px;
 }
 
 .auth-buttons button:hover, .auth-form button[type="button"]:not(.forgot-password):hover {
@@ -126,45 +119,47 @@ body {
 
 /* ====  ESTILOS PARA A TOP-BAR (autenticado)  ==== */
 
+/* Estilos *específicos* para a top-bar quando autenticado */
 body.authenticated .top-bar .user-info {
-    color: #333; 
-    background-color: var(--cor-autenticacao-2); 
-    padding: 5px 10px; 
-    border-radius: 20px; 
-    display: inline-block; 
+    color: #333; /* Mantém a cor do texto (ou ajuste se quiser) */
+    background-color: var(--cor-autenticacao-2); /* Fundo #ecd5d1 para o texto */
+    padding: 5px 10px; /* Espaçamento interno para o fundo */
+    border-radius: 20px; /* Bordas arredondadas */
+    display: inline-block; /* Importante para o padding e border-radius funcionarem */
 }
 
 body.authenticated #logoutBtn.logout-button {
-    background-color: var(--cor-autenticacao-1); 
-    color: white; 
+    background-color: var(--cor-autenticacao-1); /* Cor #687f82 para o botão */
+    color: white; /* Mantém o texto em branco */
+     /*Outras propriedades já existentes do botão*/
     margin: 0;
-    padding: 8px 15px; 
+    padding: 8px 15px; /* Ajusta o padding para combinar com o container */
     border-radius: 20px;
-    font-size: 14px; 
+    font-size: 14px; /* Ajusta o tamanho da fonte se necessário */
     border: none;
     cursor: pointer;
     margin-top: 10px;
 }
 
 body.authenticated #logoutBtn.logout-button:hover {
-    background-color: #4a5c5e; 
+    background-color: #4a5c5e; /* Cor mais escura no hover (ajuste) */
 }
-
+/*Manter fundo da .top-bar-content original*/
  .top-bar-content {
-    background-color: #e3f2fd; 
-    padding: 8px 15px; 
-    border-radius: 20px; 
-    display: flex;         
-    align-items: center;   
-    justify-content: space-between; 
-    gap: 15px;             
+    background-color: #e3f2fd; /* Fundo claro e delicado - mesmo do auth-container */
+    padding: 8px 15px; /* Adiciona um pouco de padding interno */
+    border-radius: 20px; /* Arredonda as bordas para combinar com outros elementos */
+    display: flex;         /* Para alinhar user-info e logoutBtn horizontalmente */
+    align-items: center;   /* Alinha verticalmente os itens dentro */
+    justify-content: space-between; /* Espaçamento entre user-info e logoutBtn se necessário */
+    gap: 15px;             /* Espaçamento entre os itens dentro (user-info e logoutBtn) */
 }
 
 /* ====  ESTILOS PARA O SLOGAN  ==== */
 
 .slogan {
-    margin-top: 20px; 
-    color: #555;    
+    margin-top: 20px; /* Espaço acima do slogan */
+    color: #555;    /* Cor do texto do slogan */
 }
 
 /* Logo na tela de autenticação */
@@ -173,7 +168,7 @@ body.authenticated #logoutBtn.logout-button:hover {
     margin-bottom: 10px;
 }
 
-/* ====  RESTANTE DOS ESTILOS (já existentes e corrigidos)  ==== */
+/* ====  RESTANTE DOS ESTILOS (já existentes)  ==== */
 
 #app-container {
     width: 90%;
@@ -231,12 +226,11 @@ nav ul {
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
-    gap: 10px; /* Espaçamento flexível */
 }
 
 nav ul li {
     display: inline-block;
-    margin: 0;
+    margin: 0 10px;
     position: relative;
 }
 
@@ -246,7 +240,6 @@ nav ul li a {
     display: block;
     padding: 10px;
     transition: background-color 0.3s ease;
-    border-radius: 5px;
 }
 
 nav ul li:hover > a {
@@ -269,10 +262,9 @@ nav ul li:hover > a {
 }
 
 .subpagina form {
-    width: 100%;
+    width: 95%;
     margin: auto;
     margin-bottom: 30px;
-    box-sizing: border-box;
 }
 
 .form-group {
@@ -285,37 +277,30 @@ label {
     font-weight: bold;
 }
 
-/* 
-   ATUALIZAÇÃO CRÍTICA:
-   Box-sizing e width 100% para todos os inputs do módulo
-*/
 input[type="text"],
 input[type="number"],
 input[type="email"],
 input[type="password"],
 select,
 textarea {
-    width: 100%;
-    padding: 12px;
+    width: calc(100% - 22px);
+    padding: 10px;
     border: 1px solid #ccc;
     border-radius: 20px;
     font-size: 16px;
     background-color: #dfb6b0;
     color: #fff;
-    box-sizing: border-box;
-    margin-bottom: 10px;
 }
 
 button,  #logoutBtn.logout-button{
     background-color: #7aa2a9;
     color: white;
-    padding: 12px 24px;
+    padding: 10px 20px;
     border: none;
     border-radius: 20px;
     font-size: 16px;
     cursor: pointer;
     margin-top: 10px;
-    min-height: 44px; /* Touch target */
 }
 
 button:hover, #logoutBtn.logout-button:hover {
@@ -364,17 +349,32 @@ td {
     background-color: #f8f8f8;
 }
 
+@media (max-width: 768px) {
+    .container {
+        width: 98%;
+    }
+
+    .form-group {
+        width: 100%;
+        margin-right: 0;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+    }
+}
+
 #resultados-pesquisa {
     position: absolute;
-    width: 100%; /* Largura total relativa ao pai */
+    width: 92.5%;
     background-color: #fff;
     border: 1px solid #ccc;
     z-index: 10;
-    box-sizing: border-box;
 }
 
 #resultados-pesquisa div {
-    padding: 12px;
+    padding: 8px;
     cursor: pointer;
     border-bottom: 1px solid #ccc;
 }
@@ -394,21 +394,31 @@ td {
     text-align: left;
 }
 
+#tabela-materiais-produto th:nth-child(4),
+#tabela-materiais-produto td:nth-child(4) {
+    width: auto;
+}
+
+#tabela-materiais-produto th:nth-child(5),
+#tabela-materiais-produto td:nth-child(5) {
+    width: 100px;
+}
+
 .dimensoes-input {
-    width: 80px !important; /* Ligeiramente maior */
+    width: 60px !important;
     margin-right: 5px !important;
-    display: inline-block;
 }
 .dimensoes-span{
     font-weight: bold;
     margin-left: 5px;
 }
 .quantidade-input {
-  width: 80px !important;
+  width: 60px !important;
   background-color: #cae6e7;
   color: #333;
   font-weight: bold;
 }
+
 
 .unidade-medida {
     margin-left: 5px;
@@ -429,6 +439,7 @@ td {
     width: 50%;
     margin-left: auto;
     margin-right: auto;
+
 }
 
 #lista-custos-indiretos {
@@ -445,7 +456,6 @@ td {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap; /* Para mobile */
 }
 
 #lista-custos-indiretos li:hover {
@@ -472,7 +482,7 @@ td {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    width: 100%;
+    width: 80%;
     margin: 0 auto;
 }
 
@@ -481,17 +491,12 @@ td {
   align-items: center;
   margin-bottom: 10px;
   width: 100%;
-  flex-wrap: wrap;
 }
 
 .bracket {
     font-size: 4em;
     margin-right: 15px;
     color: #7aa2a9;
-    display: none; /* Ocultar colchete gigante no mobile para economizar espaço */
-}
-@media (min-width: 769px) {
-    .bracket { display: block; }
 }
 
 .section label, .section span:not(.bracket) {
@@ -500,14 +505,14 @@ td {
 }
 
 #produto-selecionado, #horas-produto,  #margem-lucro-final{
-    padding: 12px;
+    padding: 8px;
     border-radius: 20px;
     border: 1px solid #ccc;
     margin-right: 10px;
-    background-color: #dfb6b0;
+     background-color: #dfb6b0;
     color: #fff;
-    box-sizing: border-box;
 }
+
 
 .subtotal-line {
   width: 100%;
@@ -536,12 +541,11 @@ td {
     background-color: #fff;
     max-height: 200px;
     overflow-y: auto;
-    width: 100%;
-    box-sizing: border-box;
+    width: calc(80% - 20px);
 }
 
 #produto-resultados div {
-    padding: 12px;
+    padding: 8px;
     cursor: pointer;
     border-bottom: 1px solid #eee;
 }
@@ -555,7 +559,7 @@ td {
 }
 
 #produto-pesquisa{
-    width: 100%;
+    width: calc(100% - 22px);
 }
 
 #detalhes-produto,
@@ -588,14 +592,13 @@ td {
   flex-direction: column;
   align-items: flex-start;
   margin-bottom: 15px;
-  margin-left: 0; /* Removido margem esquerda forçada */
-  width: 100%;
+  margin-left: 50px;
 }
 
 .custo-detalhe {
   display: flex;
   justify-content: space-between;
-  width: 100%; /* Largura total */
+  width: 280px;
   margin-bottom: 5px;
 }
 
@@ -606,12 +609,11 @@ td {
 .area-inputs {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
 }
 
 .area-inputs input {
     margin-right: 5px;
-    width: 80px;
+    width: 70px;
 }
 .area-inputs span {
   font-size: 1.2em;
@@ -645,15 +647,19 @@ td {
     padding: 10px 20px;
 }
 
+/*Removido .top-bar-content e colocado acima*/
+
 .top-bar .user-info {
     font-size: 0.9em;
     color: #666;
     padding: 5px 10px;
-    margin: 0;     
+    margin: 0;     /* Remove margens padrão se houver */
 }
 
+/*Removido #logoutBtn.logout-button e colocado acima*/
+
 .tabela-precificacao-detalhada {
-    width: 100%;
+    width: 95%;
     border-collapse: collapse;
     margin: 20px auto;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -698,81 +704,3 @@ td {
 .tabela-precificacao-detalhada tbody tr:hover {
     background-color: #f2f2f2;
 }
-
-/* 
-   ==========================================================================
-   MEDIA QUERIES (CORREÇÃO MOBILE ANDROID)
-   ==========================================================================
-*/
-@media (max-width: 768px) {
-    .container, #app-container {
-        width: 100%;
-        margin: 10px auto;
-        padding: 15px;
-    }
-
-    .form-group {
-        width: 100%;
-        margin-right: 0;
-    }
-    
-    /* MENU DE ABAS EM GRID NO MOBILE */
-    /* Isso corrige o problema dos botões ficarem pequenos demais */
-    .nav-lined ul {
-        display: grid;
-        grid-template-columns: 1fr 1fr; /* Duas colunas */
-        gap: 8px;
-    }
-    
-    .nav-lined ul li {
-        width: 100%;
-        margin: 0;
-        display: block;
-    }
-    
-    .nav-lined ul li a {
-        text-align: center;
-        width: 100%;
-        box-sizing: border-box;
-        padding: 12px 5px;
-        font-size: 0.9rem;
-    }
-
-    /* Tabelas com Scroll Horizontal */
-    table {
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
-    }
-    
-    /* Inputs de dimensão e quantidade ocupam largura total no mobile para facilitar digitação */
-    .dimensoes-input, 
-    .quantidade-input,
-    .area-inputs input {
-        width: 100% !important;
-        margin-bottom: 5px;
-    }
-    
-    .area-inputs {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    /* Botões full width */
-    button {
-        width: 100%;
-        margin-bottom: 10px;
-    }
-    
-    /* Ajuste na lista de custos indiretos */
-    #lista-custos-indiretos li {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    #lista-custos-indiretos li input[type="number"] {
-        width: 100%;
-        margin: 10px 0;
-    }
-}
-/* ==== FIM SEÇÃO - MEDIA QUERIES ==== */

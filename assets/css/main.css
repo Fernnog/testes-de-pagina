@@ -2,16 +2,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
 
-/* =========================================
-   0. RESET GLOBAL E VARIÁVEIS
-   ========================================= */
-/* MELHORIA PRIORIDADE 1: Box Sizing Global
-   Garante que padding e bordas não aumentem a largura total dos elementos,
-   evitando que inputs estourem a tela no mobile. */
-* {
-    box-sizing: border-box;
-}
-
 :root {
     --cor-principal: #7aa2a9;      /* Teal (Verde Azulado) */
     --cor-secundaria: #dfb6b0;     /* Rosa Antigo */
@@ -81,7 +71,7 @@ body {
     border: 1px solid #ccc;
     border-radius: var(--border-radius-input);
     font-size: 16px;
-    /* box-sizing já é herdado do global, mas mantemos consistência */
+    box-sizing: border-box;
     background-color: #fff; 
 }
 
@@ -457,36 +447,15 @@ button:hover { background-color: #5a8289; }
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* =========================================
-   6. MEDIA QUERIES MOBILE (Prioridade 1)
-   ========================================= */
+/* Media Queries Mobile */
 @media (max-width: 768px) {
-    /* MELHORIA PRIORIDADE 1: Ajuste do container para aproveitar a tela do celular */
-    .mobile-container {
-        width: 95%; /* Aumenta a largura útil para 95% da tela */
-        margin: 60px auto 20px auto; 
-        padding: 15px; /* Reduz padding interno */
-    }
-
-    /* Ajuste visual do Menu de Módulos para não quebrar */
-    .nav-lined ul {
-        gap: 5px; /* Menor espaço entre botões */
-    }
-
     .nav-lined ul li a {
         font-size: 0.85rem;
-        padding: 8px 10px;
-        display: block; /* Garante área de toque */
-        background-color: #f0f2f5; /* Fundo suave para parecer botão */
-        margin-bottom: 5px;
+        padding: 5px 8px;
     }
     
-    /* Header compacto */
     .module-header-styled { margin-bottom: 20px; }
-    .module-logo-small { width: 60px; } /* Logo menor no mobile */
-    .module-title-main { font-size: 1.5rem; }
-
-    /* Transformação de formulários em coluna única */
+    
     .form-row {
         display: flex;
         flex-direction: column;
