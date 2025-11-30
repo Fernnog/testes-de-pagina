@@ -1,7 +1,7 @@
 // assets/js/main.js
 
 // 1. IMPORTAÇÕES
-import { auth } from './firebase-config.js'; 
+import { auth } from './firebase-config.js'; // Nossa configuração central
 import { onAuthStateChanged, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 import { initOrcamentos } from './orcamentos.js';
 import { initPrecificacao } from './precificacao.js';
@@ -9,10 +9,10 @@ import { initPrecificacao } from './precificacao.js';
 // 2. REFERÊNCIAS AOS ELEMENTOS DO DOM (Telas)
 const screens = {
     auth: document.getElementById('auth-screen'),
+    splash: document.getElementById('splash-screen'), // Nova referência
     hub: document.getElementById('hub-screen'),
     orcamentos: document.getElementById('module-orcamentos'),
-    precificacao: document.getElementById('module-precificacao'),
-    splash: document.getElementById('splash-screen') // Referência nova
+    precificacao: document.getElementById('module-precificacao')
 };
 
 // Referências aos Botões e Inputs
@@ -23,7 +23,10 @@ const btnGoPrecificacao = document.getElementById('btn-go-precificacao');
 const btnsBackToHub = document.querySelectorAll('.btn-back-hub');
 const authMessage = document.getElementById('auth-message');
 
-// 3. FUNÇÃO DE NAVEGAÇÃO (ROTEAMENTO)
+// Variável para controlar se é a primeira carga
+let isFirstLoad = true;
+
+// 3. FUNÇÃO DE NAVEGAÇÃO (ROTEAMENTO BÁSICO)
 function navigateTo(screenName) {
     // Esconde todas as telas
     Object.values(screens).forEach(el => {
@@ -32,34 +35,33 @@ function navigateTo(screenName) {
 
     // Mostra a tela desejada
     if(screens[screenName]) {
-        screens[screenName].style.display = 'block';
+        // Se for splash, usa flex para centralizar
+        if(screenName === 'splash') {
+            screens[screenName].style.display = 'flex';
+        } else {
+            screens[screenName].style.display = 'block';
+        }
     } else {
         console.error(`Tela "${screenName}" não encontrada.`);
     }
 }
 
-// 3.1 FUNÇÃO AUXILIAR: SPLASH SCREEN (Prioridade 2)
-// Exibe o splash por 2.5s antes de executar a ação de callback (ir para hub)
-function showSplashScreen(onComplete) {
-    if(screens.splash) {
-        // Garante que o Auth está oculto
-        if(screens.auth) screens.auth.style.display = 'none';
-        
-        // Mostra Splash
-        screens.splash.style.display = 'flex';
-        
-        // Aguarda 2.5 segundos (tempo para ler a frase e causar impacto)
-        setTimeout(() => {
-            screens.splash.style.display = 'none';
-            if(onComplete) onComplete();
-        }, 2500);
-    } else {
-        // Fallback se não existir elemento splash
-        if(onComplete) onComplete();
-    }
+// 4. FUNÇÃO DE TRANSIÇÃO COM SPLASH SCREEN
+function transitionToHub() {
+    // Esconde Auth e mostra Splash
+    navigateTo('splash');
+
+    // Inicializa os módulos em segundo plano enquanto a splash roda
+    initOrcamentos();
+    initPrecificacao();
+
+    // Aguarda 2.5 segundos (tempo da "experiência")
+    setTimeout(() => {
+        navigateTo('hub');
+    }, 2500);
 }
 
-// 4. MONITOR DE ESTADO DE AUTENTICAÇÃO (O "Porteiro")
+// 5. MONITOR DE ESTADO DE AUTENTICAÇÃO (O "Porteiro")
 onAuthStateChanged(auth, (user) => {
     if (user) {
         // === USUÁRIO LOGADO ===
@@ -69,32 +71,29 @@ onAuthStateChanged(auth, (user) => {
         const userDisplay = document.getElementById('user-email-display');
         if(userDisplay) userDisplay.textContent = user.email;
 
-        // LÓGICA DE TRANSIÇÃO (Prioridade 2):
-        // Se a tela de login ainda estiver visível, significa que o usuário acabou de entrar.
-        // Nesse caso, mostramos o Splash. Se for um refresh (login oculto), vai direto.
-        const isLoginVisible = screens.auth && screens.auth.style.display !== 'none';
-
-        if (isLoginVisible) {
-            showSplashScreen(() => {
-                navigateTo('hub');
-                initOrcamentos();
-                initPrecificacao();
-            });
+        // Lógica de Entrada:
+        // Se for o primeiro carregamento da página ou se o usuário estava na tela de login
+        if (isFirstLoad || screens.auth.style.display !== 'none') {
+            transitionToHub();
         } else {
-            // Navegação direta (refresh ou já logado)
+            // Se o usuário já estava navegando (ex: deu refresh num módulo),
+            // podemos mandar direto pro Hub ou manter onde estava (aqui mandamos pro Hub por simplicidade)
             navigateTo('hub');
             initOrcamentos();
             initPrecificacao();
         }
+        
+        isFirstLoad = false;
 
     } else {
         // === USUÁRIO DESCONECTADO ===
         console.log("Nenhum usuário autenticado.");
         navigateTo('auth');
+        isFirstLoad = false;
     }
 });
 
-// 5. LÓGICA DE LOGIN (Ação do botão Entrar)
+// 6. LÓGICA DE LOGIN (Ação do botão Entrar)
 if(btnLogin) {
     btnLogin.addEventListener('click', async () => {
         const email = document.getElementById('email').value;
@@ -106,17 +105,13 @@ if(btnLogin) {
             return;
         }
 
-        // UX: Feedback de Carregamento (Sugestão do Arquiteto)
-        const originalBtnText = btnLogin.textContent;
-        btnLogin.textContent = "Entrando...";
-        btnLogin.disabled = true;
-        btnLogin.style.opacity = "0.7";
-        
-        authMessage.textContent = "";
+        authMessage.textContent = "Verificando credenciais...";
+        authMessage.style.color = "#555";
 
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            // O onAuthStateChanged vai lidar com o redirecionamento e Splash automaticamente
+            // O onAuthStateChanged vai ser disparado automaticamente e chamará transitionToHub()
+            authMessage.textContent = "";
         } catch (error) {
             console.error("Erro no login:", error);
             let msg = "Erro ao entrar.";
@@ -126,16 +121,11 @@ if(btnLogin) {
             
             authMessage.textContent = msg;
             authMessage.style.color = "red";
-            
-            // Restaura botão em caso de erro
-            btnLogin.textContent = originalBtnText;
-            btnLogin.disabled = false;
-            btnLogin.style.opacity = "1";
         }
     });
 }
 
-// 6. LÓGICA DE LOGOUT (Sair do Sistema)
+// 7. LÓGICA DE LOGOUT (Sair do Sistema)
 if(btnLogout) {
     btnLogout.addEventListener('click', async () => {
         try {
@@ -148,7 +138,7 @@ if(btnLogout) {
     });
 }
 
-// 7. NAVEGAÇÃO DO HUB (Botões dos Módulos)
+// 8. NAVEGAÇÃO DO HUB (Botões dos Módulos)
 if(btnGoOrcamentos) {
     btnGoOrcamentos.addEventListener('click', () => {
         navigateTo('orcamentos');
@@ -161,19 +151,9 @@ if(btnGoPrecificacao) {
     });
 }
 
-// 8. BOTÃO "VOLTAR AO MENU" (Presente nos módulos)
+// 9. BOTÃO "VOLTAR AO MENU" (Presente nos módulos)
 btnsBackToHub.forEach(btn => {
     btn.addEventListener('click', () => {
         navigateTo('hub');
     });
 });
-
-// 9. REGISTRO PWA (Prioridade 4)
-// Verifica se o navegador suporta Service Workers e registra
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-            .then((reg) => console.log('Service Worker registrado com sucesso.', reg))
-            .catch((err) => console.log('Erro ao registrar Service Worker:', err));
-    });
-}
