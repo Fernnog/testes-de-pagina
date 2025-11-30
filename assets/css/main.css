@@ -16,6 +16,101 @@ body {
     color: var(--cor-texto);
 }
 
+/* === SPLASH SCREEN (NOVA) === */
+#splash-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #fcf4f2; /* Fundo Rosa Bem Claro */
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    flex-direction: column;
+}
+
+.splash-content {
+    animation: fadeIn 1.5s ease;
+}
+
+.splash-logo {
+    width: 150px;
+    height: auto;
+    margin-bottom: 20px;
+}
+
+.splash-slogan {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.8rem;
+    color: var(--cor-principal);
+    font-weight: 700;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* === LOGIN === */
+#auth-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: var(--cor-fundo);
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+}
+
+.auth-form {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    text-align: center;
+}
+
+.logo-container img {
+    max-width: 140px;
+    margin-bottom: 20px;
+}
+
+.auth-form h2 {
+    color: var(--cor-principal);
+    margin-bottom: 30px;
+    font-weight: 300;
+}
+
+.auth-buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 25px;
+    width: 100%;
+}
+
+#loginBtn {
+    width: 100%;
+    background-color: var(--cor-principal);
+    color: white;
+    padding: 12px;
+    border-radius: 50px;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#loginBtn:hover {
+    background-color: #5f848b;
+}
+
 /* === ESTILOS DO HUB (REFINADO) === */
 #hub-screen {
     max-width: 1000px;
@@ -23,16 +118,9 @@ body {
     padding: 20px;
 }
 
-/* Animação de Entrada */
 @keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* Cabeçalho do Hub */
@@ -45,15 +133,21 @@ body {
 .hub-header .logo-wrapper img {
     max-width: 160px;
     height: auto;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .hub-header h1 {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
     color: var(--cor-principal);
-    margin: 0 0 10px 0;
-    font-weight: 300; /* Leve e elegante */
-    letter-spacing: -0.5px;
+    margin: 10px 0 5px 0;
+    font-weight: 400;
+}
+
+.slogan-hub {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.5rem;
+    color: #666;
+    margin-bottom: 20px;
 }
 
 .hub-header .user-badge {
@@ -66,12 +160,6 @@ body {
     box-shadow: 0 2px 10px rgba(0,0,0,0.03);
     margin-bottom: 10px;
     border: 1px solid rgba(0,0,0,0.03);
-}
-
-.hub-header .instruction {
-    font-size: 1.1rem;
-    color: #666;
-    margin-top: 15px;
 }
 
 /* Container dos Cartões */
@@ -89,7 +177,7 @@ body {
     width: 320px;
     padding: 40px 30px;
     border-radius: 20px;
-    box-shadow: 0 15px 35px rgba(122, 162, 169, 0.08); /* Sombra sutil com a cor principal */
+    box-shadow: 0 15px 35px rgba(122, 162, 169, 0.08);
     cursor: pointer;
     transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
     border: 1px solid rgba(255,255,255,0.8);
@@ -105,7 +193,6 @@ body {
 .hub-card:nth-child(1) { animation-delay: 0.1s; }
 .hub-card:nth-child(2) { animation-delay: 0.2s; }
 
-/* Decoração superior do cartão */
 .hub-card::before {
     content: '';
     position: absolute;
@@ -117,10 +204,9 @@ body {
     transition: height 0.3s ease;
 }
 
-/* Hover no Cartão */
 .hub-card:hover {
     transform: translateY(-10px);
-    box-shadow: 0 20px 40px rgba(223, 182, 176, 0.2); /* Sombra rosa no hover */
+    box-shadow: 0 20px 40px rgba(223, 182, 176, 0.2);
 }
 
 .hub-card:hover::before {
@@ -128,11 +214,10 @@ body {
     height: 7px;
 }
 
-/* Ícone SVG e Círculo */
 .card-icon {
     width: 80px;
     height: 80px;
-    background-color: #f4fcfd; /* Fundo muito claro (azul) */
+    background-color: #f4fcfd;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -149,7 +234,7 @@ body {
 }
 
 .hub-card:hover .card-icon {
-    background-color: #fdf5f4; /* Fundo muito claro (rosa) */
+    background-color: #fdf5f4;
     transform: scale(1.1);
 }
 
@@ -157,7 +242,6 @@ body {
     stroke: var(--cor-secundaria);
 }
 
-/* Textos do Cartão */
 .hub-card h3 {
     font-size: 1.5rem;
     color: #444;
@@ -170,13 +254,10 @@ body {
     color: #777;
     line-height: 1.6;
     margin-bottom: 30px;
-    flex-grow: 1; /* Empurra o footer para baixo */
+    flex-grow: 1;
 }
 
-/* Ação do Cartão (Link Falso) */
-.card-footer {
-    width: 100%;
-}
+.card-footer { width: 100%; }
 
 .card-action {
     display: inline-block;
@@ -195,7 +276,6 @@ body {
     border-bottom-color: var(--cor-secundaria);
 }
 
-/* Botão de Logout Estilizado (Ghost Button) */
 .hub-footer-actions {
     text-align: center;
     margin-top: 40px;
@@ -222,7 +302,7 @@ body {
     background: rgba(231, 76, 60, 0.03);
 }
 
-/* Botão Voltar ao Menu (Dentro dos módulos) */
+/* === MÓDULOS & RESPONSIVIDADE (PWA) === */
 .btn-back-hub {
     position: fixed;
     top: 20px;
@@ -246,5 +326,82 @@ body {
 .btn-back-hub:hover {
     background-color: var(--cor-principal);
     color: white;
-    box-shadow: 0 4px 15px rgba(122, 162, 169, 0.3);
+}
+
+.module-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.module-logo-small {
+    width: 70px;
+    height: auto;
+    display: block;
+    margin: 0 auto 10px auto;
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* Suavidade no iOS */
+    margin-bottom: 15px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+}
+
+table {
+    min-width: 600px; /* Garante que a tabela tenha tamanho para scrollar no mobile */
+}
+
+/* === MEDIA QUERIES MOBILE === */
+@media (max-width: 768px) {
+    .btn-back-hub {
+        padding: 6px 12px;
+        font-size: 0.8em;
+        top: 10px;
+        left: 10px;
+        background-color: #fff;
+        opacity: 0.9;
+    }
+
+    .container, .mobile-container, #app-container-precificacao {
+        width: 95% !important;
+        padding: 15px !important;
+        margin: 50px auto 20px auto !important; /* Margem topo para o botão voltar */
+    }
+
+    .form-row {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .form-row .form-group {
+        width: 100% !important;
+        margin-right: 0;
+    }
+    
+    .mobile-nav ul {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 5px;
+        padding: 0;
+    }
+
+    .mobile-nav ul li a {
+        padding: 8px 12px;
+        font-size: 0.85em;
+        background-color: #f0f2f5;
+        border-radius: 15px;
+        margin: 2px;
+        display: inline-block;
+    }
+    
+    .auth-container {
+        padding: 15px;
+    }
+    
+    .auth-form {
+        padding: 25px;
+    }
 }
