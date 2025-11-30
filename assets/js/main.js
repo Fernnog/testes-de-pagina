@@ -5,7 +5,7 @@ import { auth } from './firebase-config.js'; // Nossa configuração central
 import { onAuthStateChanged, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 import { initOrcamentos } from './orcamentos.js';
 import { initPrecificacao } from './precificacao.js';
-// NOVO: Importação do módulo de Changelog
+// Importação do módulo de Changelog
 import { initChangelog } from './changelog.js';
 
 // 2. REFERÊNCIAS AOS ELEMENTOS DO DOM (Telas)
@@ -39,11 +39,14 @@ function navigateTo(screenName) {
     }
 }
 
-// 4. INICIALIZAÇÃO E SPLASH SCREEN (NOVA LÓGICA)
+// 4. INICIALIZAÇÃO E SPLASH SCREEN (ATUALIZADO COM RIPPLE)
 document.addEventListener('DOMContentLoaded', () => {
     
     // Inicializar widget de versão
     initChangelog();
+
+    // Inicializar Efeito Ripple (Novo)
+    initRippleEffect();
 
     // Controle da Splash Screen
     const splash = document.getElementById('splash-screen');
@@ -171,3 +174,39 @@ btnsBackToHub.forEach(btn => {
         navigateTo('hub');
     });
 });
+
+// ==========================================================================
+// 10. LÓGICA DO EFEITO RIPPLE (NOVO)
+// ==========================================================================
+function initRippleEffect() {
+    // Escuta cliques em todo o documento (Event Delegation)
+    document.addEventListener('click', function(e) {
+        // Verifica se o clique foi em um botão, card ou link navegável
+        const target = e.target.closest('button, .hub-card, .nav-link, a[data-pagina], a[data-submenu]');
+        
+        if (target) {
+            // Cria o elemento visual da onda
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple-effect');
+            
+            // Obtém as dimensões e posição do elemento clicado
+            const rect = target.getBoundingClientRect();
+            
+            // Calcula a posição do toque relativa ao elemento
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Posiciona o centro da onda no local do clique
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            
+            // Adiciona o elemento ao DOM
+            target.appendChild(ripple);
+            
+            // Remove o elemento do DOM após o fim da animação (600ms conforme CSS)
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        }
+    });
+}
