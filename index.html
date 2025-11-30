@@ -73,7 +73,7 @@
     </section>
 
     <!-- =========================================
-         TELA 2: HUB (MENU PRINCIPAL)
+         TELA 2: HUB (MENU PRINCIPAL - REESTRUTURADO)
     ========================================= -->
     <section id="hub-screen" style="display: none;">
         <header class="hub-header">
@@ -82,8 +82,11 @@
             </div>
             <div class="welcome-text">
                 <h1>Painel Administrativo</h1>
-                <p class="slogan-hub">"Onde a arte se encontra com o amor em cada detalhe."</p>
-                <p class="user-badge">Logado como: <span id="user-email-display">...</span></p>
+                <!-- Novo Design: Card de Usuário (Substitui o texto simples) -->
+                <div class="user-info-card">
+                    <span class="user-icon">👤</span>
+                    <span id="user-email-display">Carregando...</span>
+                </div>
             </div>
         </header>
 
@@ -111,13 +114,23 @@
             </div>
         </div>
 
-        <div class="hub-footer-actions">
-            <button id="hubLogoutBtn" class="btn-logout-ghost">Desconectar</button>
+        <!-- Nova Área de Branding (Slogan movido para baixo) -->
+        <div class="hub-footer-branding">
+            <p class="slogan-hub">"Onde a arte se encontra com o amor em cada detalhe."</p>
         </div>
+
+        <div class="hub-footer-actions">
+            <!-- Botão Logout com nova classe 'solid' -->
+            <button id="hubLogoutBtn" class="btn-logout-solid">Desconectar</button>
+        </div>
+
+        <!-- Container para o Versionamento (Changelog) -->
+        <div id="version-container"></div>
     </section>
 
     <!-- =========================================
          TELA 3: MÓDULO ORÇAMENTOS
+         (Conteúdo mantido sem alterações estruturais internas)
     ========================================= -->
     <section id="module-orcamentos" style="display: none;">
         <button class="btn-back-hub">⬅ Voltar ao Menu</button>
@@ -128,7 +141,6 @@
                  <img src="assets/images/logo_perola_rara.png" class="module-logo-small" alt="Logo">
                  <h1 class="module-title-main">Pérola Rara</h1>
                  
-                 <!-- Menu com Linhas de Separação -->
                  <nav class="nav-lined">
                     <ul>
                         <li><a href="#" data-pagina="form-orcamento">Novo Orçamento</a></li>
@@ -226,7 +238,6 @@
                     <div class="form-group"><label>Cliente:</label><input type="text" id="clienteEdicao"></div>
                     <div class="form-group"><label>Entrega:</label><input type="date" id="dataEntregaEdicao"></div>
                     <div class="form-group"><label>Endereço:</label><input type="text" id="enderecoEdicao"></div>
-                    <!-- Mais campos aqui conforme necessário -->
                     
                     <div class="table-responsive">
                         <table id="tabelaProdutosEdicao">
@@ -252,17 +263,16 @@
 
     <!-- =========================================
          TELA 4: MÓDULO PRECIFICAÇÃO
+         (Conteúdo mantido sem alterações estruturais internas)
     ========================================= -->
     <section id="module-precificacao" style="display: none;">
         <button class="btn-back-hub">⬅ Voltar ao Menu</button>
 
         <div id="app-container-precificacao" class="mobile-container">
-            <!-- Header Refinado -->
             <header class="module-header-styled">
                  <img src="assets/images/logo_perola_rara.png" class="module-logo-small" alt="Logo">
                  <h1 class="module-title-main">Pérola Rara</h1>
                  
-                 <!-- Menu com Linhas de Separação -->
                  <nav class="nav-lined">
                      <ul>
                         <li><a href="#" data-submenu="materiais-insumos" class="nav-link">Materiais</a></li>
@@ -275,7 +285,7 @@
                  </nav>
             </header>
 
-            <!-- SUBPÁGINA: MATERIAIS -->
+            <!-- SUBPÁGINAS DO MÓDULO PRECIFICAÇÃO (Mantidas) -->
             <div id="materiais-insumos" class="subpagina">
                 <h2 class="section-title-lined">Cadastro de Materiais</h2>
                 <form id="form-materiais-insumos">
@@ -302,7 +312,6 @@
                 </div>
             </div>
 
-            <!-- SUBPÁGINA: MÃO DE OBRA -->
             <div id="mao-de-obra" class="subpagina" style="display:none;">
                 <h2 class="section-title-lined">Configuração de Mão de Obra</h2>
                 <div class="form-group">
@@ -313,11 +322,9 @@
                     <label>Horas Mensais:</label>
                     <input type="number" id="horas-trabalhadas" value="220">
                 </div>
-                <!-- ... -->
                 <button id="btn-salvar-mao-de-obra">Salvar Configuração</button>
             </div>
 
-            <!-- SUBPÁGINA: CUSTOS INDIRETOS (Placeholder) -->
             <div id="custos-indiretos" class="subpagina" style="display:none;">
                 <h2 class="section-title-lined">Custos Indiretos</h2>
                 <div class="table-responsive">
@@ -328,7 +335,6 @@
                 </div>
             </div>
 
-            <!-- SUBPÁGINA: PRODUTOS -->
             <div id="cadastrar-produtos" class="subpagina" style="display:none;">
                 <h2 class="section-title-lined">Montagem de Produtos</h2>
                 <form id="form-produtos-cadastrados">
@@ -353,7 +359,6 @@
                 </div>
             </div>
 
-            <!-- SUBPÁGINA: CÁLCULO -->
             <div id="calculo-precificacao" class="subpagina" style="display:none;">
                 <h2 class="section-title-lined">Calculadora de Preço</h2>
                 <div class="form-group">
@@ -374,7 +379,6 @@
                 <button id="btn-gerar-nota">Salvar Cálculo</button>
             </div>
 
-            <!-- SUBPÁGINA: HISTÓRICO -->
             <div id="historico-precificacao" class="subpagina" style="display:none;">
                 <h2 class="section-title-lined">Histórico de Cálculos</h2>
                 <div class="table-responsive">
