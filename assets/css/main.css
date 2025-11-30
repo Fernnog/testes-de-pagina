@@ -462,3 +462,63 @@ button:hover { background-color: #5a8289; }
     }
     .form-row .form-group { width: 100%; }
 }
+
+/* =========================================
+   6. EFEITO RIPPLE (ONDA DE TOQUE)
+   ========================================= */
+/* Garante que o efeito não vaze do botão */
+button, .hub-card, .btn-ripple {
+    position: relative;
+    overflow: hidden;
+    transform: translate3d(0, 0, 0); /* Aceleração de hardware */
+}
+
+.ripple-effect {
+    position: absolute;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.4); /* Onda branca translúcida */
+    width: 100px;
+    height: 100px;
+    margin-top: -50px;
+    margin-left: -50px;
+    animation: ripple-anim 0.6s linear;
+    pointer-events: none; /* O clique passa através da onda */
+}
+
+@keyframes ripple-anim {
+    from { opacity: 1; transform: scale(0); }
+    to { opacity: 0; transform: scale(2.5); }
+}
+
+/* =========================================
+   7. RESPONSIVIDADE GLOBAL (MOBILE)
+   ========================================= */
+@media (max-width: 768px) {
+    /* Container Principal: Mais espaço útil */
+    .mobile-container {
+        width: 95% !important;
+        padding: 15px !important;
+        margin-top: 60px !important;
+    }
+
+    /* Texto Legível: Evita zoom indesejado e cansaço visual */
+    body, input, select, textarea, button {
+        font-size: 16px !important;
+    }
+
+    /* Botão Voltar: Fixo e sempre acessível */
+    .btn-back-hub {
+        top: 10px;
+        left: 10px;
+        padding: 8px 12px;
+        font-size: 0.9rem;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    /* Ajuste do Hub */
+    .hub-card {
+        width: 100%; /* Cartões ocupam largura total no celular */
+        margin-bottom: 20px;
+    }
+}
