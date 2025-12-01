@@ -41,12 +41,12 @@ body {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     text-align: center;
     
-    /* FIX 1: FLEXBOX - Obriga o container a crescer com o conteúdo */
+    /* FLEXBOX - Obriga o container a crescer com o conteúdo */
     display: flex;
     flex-direction: column;
     height: auto; 
     
-    /* FIX 2: DIMENSÕES E ESPAÇAMENTO */
+    /* DIMENSÕES E ESPAÇAMENTO */
     width: 90%;
     max-width: 400px; /* Largura confortável para Desktop */
     margin: 0 auto;
@@ -101,24 +101,27 @@ body {
     background-color: #fff; 
 }
 
-/* BOTÃO DE ENTRAR */
+/* BOTÃO DE ENTRAR (AJUSTADO PARA TAMANHO COMPACTO) */
 .auth-buttons button {
-    width: 100%;
-    padding: 12px;
-    background-color: var(--cor-principal);
+    width: auto; /* ANTES: 100% | AGORA: Automático conforme conteúdo */
+    min-width: 150px; /* Garante um tamanho mínimo clicável e elegante */
+    padding: 12px 40px; /* Espaçamento interno lateral */
+    
+    background-color: #687f82; /* Ajustado para tom mais escuro conforme print */
     color: white;
     border: none;
     border-radius: var(--border-radius-input);
     font-size: 16px;
     cursor: pointer;
-    margin-top: 20px; /* Espaço extra acima */
+    margin-top: 20px; 
     transition: background-color 0.3s, transform 0.1s;
+    display: inline-block;
     
-    box-sizing: border-box; /* Mantém o botão dentro do container */
+    box-sizing: border-box; 
 }
 
 .auth-buttons button:hover {
-    background-color: #5a8289;
+    background-color: #5a6e70;
 }
 
 .auth-buttons button:active {
