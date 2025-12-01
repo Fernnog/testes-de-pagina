@@ -68,11 +68,12 @@ body {
     font-size: 1.2rem;
 }
 
-/* LOGOTIPO (CORREÇÃO DE TAMANHO) */
-.logo-container img {
-    /* FIX 3: Largura travada para evitar que o logo "exploda" ao carregar */
-    width: 150px;
-    max-width: 100%;
+/* LOGOTIPO LOGIN (CORREÇÃO DE TAMANHO APLICADA) */
+.logo-container img, 
+#logo-login {
+    /* Largura travada com !important para vencer regras de responsividade genéricas */
+    width: 140px !important;
+    max-width: 140px !important;
     height: auto;
     display: block;
     margin: 0 auto;
@@ -356,9 +357,14 @@ body {
     background-color: #fff;
 }
 
+/* LOGOTIPO MÓDULOS (CORREÇÃO DE TAMANHO APLICADA) */
 .module-logo-small {
-    width: 80px; height: auto;
-    display: block; margin: 0 auto 10px auto;
+    /* Largura travada com !important para evitar conflito com CSS dos módulos */
+    width: 80px !important;
+    max-width: 80px !important;
+    height: auto;
+    display: block; 
+    margin: 0 auto 10px auto;
 }
 
 .module-title-main {
