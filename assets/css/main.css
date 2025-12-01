@@ -1,4 +1,8 @@
 /* assets/css/main.css */
+
+/* =========================================
+   1. IMPORTAÇÕES E VARIÁVEIS GLOBAIS
+   ========================================= */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
 
@@ -19,7 +23,7 @@ body {
 }
 
 /* =========================================
-   1. AUTH SCREEN (LOGIN REFINADO & CORRIGIDO)
+   2. TELA DE LOGIN (AUTH SCREEN) - CORRIGIDA
    ========================================= */
 #auth-screen {
     display: flex;
@@ -27,34 +31,53 @@ body {
     align-items: center;
     min-height: 100vh;
     padding: 20px;
-    display: none; /* Oculto inicialmente, controlado pelo JS */
+    display: none; /* Controlado via JS */
 }
 
+/* CONTAINER PRINCIPAL DO LOGIN */
 .auth-container {
-    background-color: #e5c4bf; /* Fundo Rosa suave do box de login */
-    padding: 40px 30px; /* Ajuste para melhor respiro vertical */
+    background-color: #e5c4bf; /* Fundo Rosa */
     border-radius: 15px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Sombra mais suave */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     text-align: center;
     
-    /* CORREÇÃO DE LAYOUT (Desktop/Tablet) */
+    /* DEFINIÇÃO DE TAMANHO E ESPAÇAMENTO */
     width: 90%;
-    max-width: 400px; /* Aumentado para melhor visualização em PC */
+    max-width: 400px; /* Largura confortável para Desktop */
     margin: 0 auto;
-    box-sizing: border-box; /* Garante que padding não estoure a largura */
+    
+    padding: 40px 30px; 
+    padding-bottom: 50px; /* ESPAÇO EXTRA: Segura o botão dentro da caixa */
+    
+    box-sizing: border-box; /* Garante que padding não aumente a largura total */
+    
+    /* FLEXBOX: Obriga o container a crescer conforme o conteúdo */
+    display: flex;
+    flex-direction: column;
+    height: auto; 
 }
 
+/* FORMULÁRIO */
+.auth-form {
+    width: 100%; /* Ocupa toda a largura do container flex */
+}
+
+.auth-form h2 {
+    color: #687f82;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+}
+
+/* LOGOTIPO E MARCA */
 .logo-container img {
-    /* ESTABILIZAÇÃO DO LOGOTIPO */
-    width: 150px; /* Largura fixa base */
+    width: 150px;
     max-width: 100%;
     height: auto;
     display: block;
     margin: 0 auto;
-    object-fit: contain;
+    object-fit: contain; /* Evita distorção da imagem */
 }
 
-/* NOME PÉROLA RARA (Roboto) */
 .login-brand-name {
     font-family: 'Roboto', sans-serif;
     font-weight: 700;
@@ -64,13 +87,7 @@ body {
     letter-spacing: 0.5px;
 }
 
-.auth-form h2 {
-    color: #687f82;
-    margin-bottom: 20px;
-    font-size: 1.2rem;
-}
-
-/* Estilo dos Inputs na tela de login */
+/* INPUTS */
 .auth-form input {
     width: 100%;
     padding: 12px;
@@ -78,10 +95,11 @@ body {
     border: 1px solid #ccc;
     border-radius: var(--border-radius-input);
     font-size: 16px;
-    box-sizing: border-box; /* Previne overflow */
+    box-sizing: border-box; /* Previne que o input saia da caixa */
     background-color: #fff; 
 }
 
+/* BOTÃO DE ENTRAR */
 .auth-buttons button {
     width: 100%;
     padding: 12px;
@@ -91,11 +109,10 @@ body {
     border-radius: var(--border-radius-input);
     font-size: 16px;
     cursor: pointer;
-    margin-top: 15px;
+    margin-top: 20px; /* Afastamento superior */
     transition: background-color 0.3s, transform 0.1s;
     
-    /* CORREÇÃO DO BOTÃO SAINDO DA CAIXA */
-    box-sizing: border-box; 
+    box-sizing: border-box; /* Garante que bordas/padding fiquem dentro dos 100% */
 }
 
 .auth-buttons button:hover {
@@ -106,14 +123,20 @@ body {
     transform: scale(0.98);
 }
 
+.auth-message {
+    margin-top: 15px;
+    font-size: 0.9rem;
+    min-height: 20px; /* Reserva espaço para mensagem não pular layout */
+}
+
 /* =========================================
-   2. SPLASH SCREEN (REFINADA)
+   3. SPLASH SCREEN (TELA DE TRANSIÇÃO)
    ========================================= */
 #splash-screen {
     position: fixed;
     top: 0; left: 0;
     width: 100vw; height: 100vh;
-    background-color: #ecd5d1; /* Rosa da paleta Pérola Rara */
+    background-color: #ecd5d1;
     z-index: 9999;
     display: flex;
     flex-direction: column;
@@ -151,7 +174,7 @@ body {
 }
 
 /* =========================================
-   3. HUB (MENU PRINCIPAL)
+   4. HUB (MENU PRINCIPAL)
    ========================================= */
 #hub-screen {
     max-width: 1000px;
@@ -213,8 +236,8 @@ body {
 .hub-card:hover .card-icon {
     transform: scale(1.1);
 }
-
 .card-icon svg { stroke: var(--cor-principal); }
+
 .hub-card h3 { color: #444; margin-bottom: 10px; }
 .card-action { color: var(--cor-principal); font-weight: bold; text-transform: uppercase; font-size: 0.85rem; }
 
@@ -246,7 +269,7 @@ body {
 .btn-logout-solid:active { transform: scale(0.98); }
 
 /* =========================================
-   4. CHANGELOG / VERSION WIDGET
+   5. WIDGET DE VERSÃO (CHANGELOG)
    ========================================= */
 #version-indicator {
     position: fixed;
@@ -254,7 +277,8 @@ body {
     font-size: 0.75rem; color: #aaa;
     cursor: pointer;
     background: rgba(255,255,255,0.8);
-    padding: 5px 10px; border-radius: 10px;
+    padding: 5px 10px;
+    border-radius: 10px;
     z-index: 1000;
     transition: all 0.3s;
     font-family: sans-serif;
@@ -285,6 +309,7 @@ body {
 .changelog-version { font-weight: bold; color: #7aa2a9; font-size: 1.1rem; }
 .changelog-date { font-size: 0.85rem; color: #999; margin-bottom: 8px; }
 .changelog-list { padding-left: 20px; margin: 5px 0; font-size: 0.95rem; line-height: 1.5; color: #555; }
+
 .close-changelog {
     position: absolute; top: 15px; right: 20px;
     font-size: 1.8rem; cursor: pointer; color: #999;
@@ -295,7 +320,7 @@ body {
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 /* =========================================
-   5. MÓDULOS INTERNOS
+   6. MÓDULOS INTERNOS (ORÇAMENTOS E PRECIFICAÇÃO)
    ========================================= */
 .mobile-container {
     width: 90%;
@@ -373,6 +398,7 @@ body {
     border-bottom: 1px solid #ccc;
 }
 
+/* INPUTS DOS MÓDULOS */
 #module-orcamentos input, #module-orcamentos select, #module-orcamentos textarea,
 #module-precificacao input, #module-precificacao select, #module-precificacao textarea {
     width: 100%;
@@ -389,6 +415,7 @@ body {
 ::placeholder { color: rgba(255,255,255, 0.7); }
 input[readonly] { opacity: 0.9; cursor: default; }
 
+/* TABELAS */
 .table-responsive {
     width: 100%;
     overflow-x: auto;
@@ -413,6 +440,7 @@ th {
 
 td { padding: 10px; border-bottom: 1px solid #eee; }
 
+/* BOTÕES GERAIS DOS MÓDULOS */
 button {
     background-color: var(--cor-principal);
     color: white;
@@ -424,11 +452,13 @@ button {
 }
 button:hover { background-color: #5a8289; }
 
+/* ANIMAÇÕES */
 @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* MEDIA QUERIES (MOBILE) */
 @media (max-width: 768px) {
     .nav-lined ul li a { font-size: 0.85rem; padding: 5px 8px; }
     .module-header-styled { margin-bottom: 20px; }
