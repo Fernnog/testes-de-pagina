@@ -19,7 +19,7 @@ body {
 }
 
 /* =========================================
-   1. AUTH SCREEN (LOGIN REFINADO)
+   1. AUTH SCREEN (LOGIN REFINADO & CORRIGIDO)
    ========================================= */
 #auth-screen {
     display: flex;
@@ -32,19 +32,26 @@ body {
 
 .auth-container {
     background-color: #e5c4bf; /* Fundo Rosa suave do box de login */
-    padding: 30px;
+    padding: 40px 30px; /* Ajuste para melhor respiro vertical */
     border-radius: 15px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Sombra mais suave */
     text-align: center;
-    width: 100%;
-    max-width: 320px;
+    
+    /* CORREÇÃO DE LAYOUT (Desktop/Tablet) */
+    width: 90%;
+    max-width: 400px; /* Aumentado para melhor visualização em PC */
+    margin: 0 auto;
+    box-sizing: border-box; /* Garante que padding não estoure a largura */
 }
 
 .logo-container img {
-    max-width: 150px;
+    /* ESTABILIZAÇÃO DO LOGOTIPO */
+    width: 150px; /* Largura fixa base */
+    max-width: 100%;
     height: auto;
     display: block;
     margin: 0 auto;
+    object-fit: contain;
 }
 
 /* NOME PÉROLA RARA (Roboto) */
@@ -71,7 +78,7 @@ body {
     border: 1px solid #ccc;
     border-radius: var(--border-radius-input);
     font-size: 16px;
-    box-sizing: border-box;
+    box-sizing: border-box; /* Previne overflow */
     background-color: #fff; 
 }
 
@@ -84,15 +91,23 @@ body {
     border-radius: var(--border-radius-input);
     font-size: 16px;
     cursor: pointer;
-    margin-top: 10px;
-    transition: background-color 0.3s;
+    margin-top: 15px;
+    transition: background-color 0.3s, transform 0.1s;
+    
+    /* CORREÇÃO DO BOTÃO SAINDO DA CAIXA */
+    box-sizing: border-box; 
 }
+
 .auth-buttons button:hover {
     background-color: #5a8289;
 }
 
+.auth-buttons button:active {
+    transform: scale(0.98);
+}
+
 /* =========================================
-   2. SPLASH SCREEN (REFINADA - Prioridade 1)
+   2. SPLASH SCREEN (REFINADA)
    ========================================= */
 #splash-screen {
     position: fixed;
@@ -104,10 +119,9 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    transition: opacity 0.5s ease; /* Transição suave para o fade-out */
+    transition: opacity 0.5s ease;
 }
 
-/* MELHORIA: Container de conteúdo para centralização perfeita */
 .splash-content {
     display: flex;
     flex-direction: column;
@@ -121,25 +135,23 @@ body {
     width: 150px;
     margin-bottom: 20px;
     animation: fadeInUp 1s ease;
-    display: block; /* Garante comportamento de bloco */
+    display: block;
 }
 
 .splash-slogan {
     font-family: 'Dancing Script', cursive;
     font-size: 1.8rem;
-    color: #7aa2a9; /* Azul Petróleo para contraste no rosa */
+    color: #7aa2a9; 
     text-align: center;
     padding: 0 20px;
     animation: fadeInUp 1.5s ease;
     margin-top: 10px;
-    
-    /* MELHORIA: Ajustes para Mobile */
     max-width: 90%;
     line-height: 1.4;
 }
 
 /* =========================================
-   3. HUB (MENU PRINCIPAL - REFINADO)
+   3. HUB (MENU PRINCIPAL)
    ========================================= */
 #hub-screen {
     max-width: 1000px;
@@ -151,7 +163,6 @@ body {
 .hub-header img { width: 120px; margin-bottom: 15px; }
 .hub-header h1 { color: var(--cor-principal); font-weight: 300; margin: 0 0 10px 0; }
 
-/* Novo: Cartão de Informação do Usuário */
 .user-info-card {
     display: inline-flex;
     align-items: center;
@@ -166,7 +177,6 @@ body {
 }
 .user-icon { font-size: 1.1rem; }
 
-/* Container dos Cards */
 .hub-cards-container {
     display: flex;
     justify-content: center;
@@ -175,7 +185,6 @@ body {
     margin-bottom: 40px;
 }
 
-/* Cards com Interação (Hover) */
 .hub-card {
     background: #fff;
     width: 300px;
@@ -185,16 +194,14 @@ body {
     text-align: center;
     cursor: pointer;
     border: 1px solid #eee;
-    
-    /* Melhoria UX: Transição Suave */
     transition: all 0.3s ease;
     position: relative;
     top: 0;
 }
 
 .hub-card:hover { 
-    transform: translateY(-8px); /* Card "flutua" ao passar o mouse */
-    box-shadow: 0 15px 30px rgba(223, 182, 176, 0.4); /* Sombra Rosa */
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(223, 182, 176, 0.4);
     border-color: #dfb6b0;
 }
 
@@ -204,14 +211,13 @@ body {
     transition: transform 0.3s ease;
 }
 .hub-card:hover .card-icon {
-    transform: scale(1.1); /* Ícone cresce levemente */
+    transform: scale(1.1);
 }
 
 .card-icon svg { stroke: var(--cor-principal); }
 .hub-card h3 { color: #444; margin-bottom: 10px; }
 .card-action { color: var(--cor-principal); font-weight: bold; text-transform: uppercase; font-size: 0.85rem; }
 
-/* Novo: Slogan no Rodapé do Hub */
 .hub-footer-branding {
     text-align: center;
     margin: 20px 0 30px 0;
@@ -223,11 +229,10 @@ body {
     margin: 0;
 }
 
-/* Novo: Botão Logout Sólido */
 .hub-footer-actions { text-align: center; }
 
 .btn-logout-solid {
-    background-color: #7aa2a9; /* Azul Petróleo */
+    background-color: #7aa2a9; 
     color: #fff;
     border: none;
     padding: 10px 35px;
@@ -237,38 +242,28 @@ body {
     box-shadow: 0 4px 15px rgba(122, 162, 169, 0.3);
     transition: background 0.3s, transform 0.1s;
 }
-.btn-logout-solid:hover {
-    background-color: #5a8289;
-}
-.btn-logout-solid:active {
-    transform: scale(0.98);
-}
+.btn-logout-solid:hover { background-color: #5a8289; }
+.btn-logout-solid:active { transform: scale(0.98); }
 
 /* =========================================
-   4. CHANGELOG / VERSION WIDGET (Prioridade 1)
+   4. CHANGELOG / VERSION WIDGET
    ========================================= */
-/* Indicador no canto da tela */
 #version-indicator {
     position: fixed;
-    bottom: 10px;
-    right: 10px;
-    font-size: 0.75rem;
-    color: #aaa;
+    bottom: 10px; right: 10px;
+    font-size: 0.75rem; color: #aaa;
     cursor: pointer;
     background: rgba(255,255,255,0.8);
-    padding: 5px 10px;
-    border-radius: 10px;
+    padding: 5px 10px; border-radius: 10px;
     z-index: 1000;
     transition: all 0.3s;
     font-family: sans-serif;
 }
 #version-indicator:hover {
-    color: #7aa2a9;
-    background: #fff;
+    color: #7aa2a9; background: #fff;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-/* Modal Overlay */
 .changelog-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.5); z-index: 2000;
@@ -276,15 +271,11 @@ body {
     animation: fadeIn 0.3s;
 }
 
-/* Conteúdo do Modal */
 .changelog-modal {
     background: #fff; 
-    width: 90%; 
-    max-width: 500px;
-    padding: 25px; 
-    border-radius: 15px;
-    max-height: 80vh; 
-    overflow-y: auto;
+    width: 90%; max-width: 500px;
+    padding: 25px; border-radius: 15px;
+    max-height: 80vh; overflow-y: auto;
     position: relative;
     box-shadow: 0 10px 40px rgba(0,0,0,0.2);
 }
@@ -301,14 +292,11 @@ body {
 }
 .close-changelog:hover { color: #555; }
 
-/* Animação básica */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 /* =========================================
-   5. MÓDULOS INTERNOS (Estilos Mantidos)
+   5. MÓDULOS INTERNOS
    ========================================= */
-
-/* Container geral para mobile e desktop */
 .mobile-container {
     width: 90%;
     max-width: 1000px;
@@ -319,7 +307,6 @@ body {
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
-/* Botão Voltar */
 .btn-back-hub {
     position: fixed;
     top: 15px; left: 15px;
@@ -333,7 +320,6 @@ body {
     font-weight: bold;
 }
 
-/* HEADER DOS MÓDULOS */
 .module-header-styled {
     text-align: center;
     margin-bottom: 30px;
@@ -341,10 +327,8 @@ body {
 }
 
 .module-logo-small {
-    width: 80px;
-    height: auto;
-    display: block;
-    margin: 0 auto 10px auto;
+    width: 80px; height: auto;
+    display: block; margin: 0 auto 10px auto;
 }
 
 .module-title-main {
@@ -355,7 +339,6 @@ body {
     margin: 0 0 15px 0;
 }
 
-/* MENU COM LINHAS ("Sanduíche") */
 .nav-lined {
     border-top: 3px solid var(--cor-principal);
     border-bottom: 1px solid var(--cor-principal);
@@ -378,11 +361,8 @@ body {
     transition: background 0.2s;
 }
 
-.nav-lined ul li a:hover {
-    background-color: #e3f2fd;
-}
+.nav-lined ul li a:hover { background-color: #e3f2fd; }
 
-/* TÍTULOS DE SEÇÃO COM LINHA FINA */
 .section-title-lined {
     color: var(--cor-principal);
     text-align: center;
@@ -393,31 +373,22 @@ body {
     border-bottom: 1px solid #ccc;
 }
 
-/* INPUTS ESTILO "ROSA" (Global para os módulos) */
-/* MELHORIA: Adicionado box-sizing: border-box para garantir que o width: 100% não quebre no Android */
 #module-orcamentos input, #module-orcamentos select, #module-orcamentos textarea,
 #module-precificacao input, #module-precificacao select, #module-precificacao textarea {
     width: 100%;
     padding: 10px;
-    background-color: var(--cor-secundaria); /* Rosa #dfb6b0 */
-    color: #fff; /* Texto Branco */
+    background-color: var(--cor-secundaria); 
+    color: #fff; 
     border: none;
-    border-radius: var(--border-radius-input); /* 15px */
+    border-radius: var(--border-radius-input); 
     font-size: 1rem;
-    box-sizing: border-box; /* Garante layout correto no mobile */
+    box-sizing: border-box; 
     margin-bottom: 10px;
 }
 
-::placeholder {
-    color: rgba(255,255,255, 0.7);
-}
+::placeholder { color: rgba(255,255,255, 0.7); }
+input[readonly] { opacity: 0.9; cursor: default; }
 
-input[readonly] {
-    opacity: 0.9;
-    cursor: default;
-}
-
-/* TABELAS RESPONSIVAS */
 .table-responsive {
     width: 100%;
     overflow-x: auto;
@@ -440,12 +411,8 @@ th {
     text-align: left;
 }
 
-td {
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-}
+td { padding: 10px; border-bottom: 1px solid #eee; }
 
-/* Botões de Ação Gerais */
 button {
     background-color: var(--cor-principal);
     color: white;
@@ -457,24 +424,14 @@ button {
 }
 button:hover { background-color: #5a8289; }
 
-/* Animações */
 @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Media Queries Mobile */
 @media (max-width: 768px) {
-    .nav-lined ul li a {
-        font-size: 0.85rem;
-        padding: 5px 8px;
-    }
-    
+    .nav-lined ul li a { font-size: 0.85rem; padding: 5px 8px; }
     .module-header-styled { margin-bottom: 20px; }
-    
-    .form-row {
-        display: flex;
-        flex-direction: column;
-    }
+    .form-row { display: flex; flex-direction: column; }
     .form-row .form-group { width: 100%; }
 }
