@@ -1,4 +1,4 @@
-/* assets/css/main.css */
+/* assets/css/main.css - ARQUIVO COMPLETO E DEFINITIVO */
 
 /* =========================================
    1. IMPORTAÇÕES E VARIÁVEIS GLOBAIS
@@ -34,32 +34,32 @@ body {
     display: none; /* Controlado via JS */
 }
 
-/* CONTAINER PRINCIPAL DO LOGIN */
+/* CONTAINER PRINCIPAL DO LOGIN (BLINDADO CONTRA OVERFLOW) */
 .auth-container {
     background-color: #e5c4bf; /* Fundo Rosa */
     border-radius: 15px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     text-align: center;
     
-    /* DEFINIÇÃO DE TAMANHO E ESPAÇAMENTO */
+    /* FIX 1: FLEXBOX - Obriga o container a crescer com o conteúdo */
+    display: flex;
+    flex-direction: column;
+    height: auto; 
+    
+    /* FIX 2: DIMENSÕES E ESPAÇAMENTO */
     width: 90%;
     max-width: 400px; /* Largura confortável para Desktop */
     margin: 0 auto;
     
     padding: 40px 30px; 
-    padding-bottom: 50px; /* ESPAÇO EXTRA: Segura o botão dentro da caixa */
+    padding-bottom: 50px; /* Margem de segurança inferior para o botão */
     
-    box-sizing: border-box; /* Garante que padding não aumente a largura total */
-    
-    /* FLEXBOX: Obriga o container a crescer conforme o conteúdo */
-    display: flex;
-    flex-direction: column;
-    height: auto; 
+    box-sizing: border-box; /* Garante que padding não aumente a largura */
 }
 
 /* FORMULÁRIO */
 .auth-form {
-    width: 100%; /* Ocupa toda a largura do container flex */
+    width: 100%; /* Ocupa 100% do container flex */
 }
 
 .auth-form h2 {
@@ -68,14 +68,15 @@ body {
     font-size: 1.2rem;
 }
 
-/* LOGOTIPO E MARCA */
+/* LOGOTIPO (CORREÇÃO DE TAMANHO) */
 .logo-container img {
+    /* FIX 3: Largura travada para evitar que o logo "exploda" ao carregar */
     width: 150px;
     max-width: 100%;
     height: auto;
     display: block;
     margin: 0 auto;
-    object-fit: contain; /* Evita distorção da imagem */
+    object-fit: contain; 
 }
 
 .login-brand-name {
@@ -95,7 +96,7 @@ body {
     border: 1px solid #ccc;
     border-radius: var(--border-radius-input);
     font-size: 16px;
-    box-sizing: border-box; /* Previne que o input saia da caixa */
+    box-sizing: border-box; /* Previne overflow lateral */
     background-color: #fff; 
 }
 
@@ -109,10 +110,10 @@ body {
     border-radius: var(--border-radius-input);
     font-size: 16px;
     cursor: pointer;
-    margin-top: 20px; /* Afastamento superior */
+    margin-top: 20px; /* Espaço extra acima */
     transition: background-color 0.3s, transform 0.1s;
     
-    box-sizing: border-box; /* Garante que bordas/padding fiquem dentro dos 100% */
+    box-sizing: border-box; /* Mantém o botão dentro do container */
 }
 
 .auth-buttons button:hover {
@@ -126,7 +127,7 @@ body {
 .auth-message {
     margin-top: 15px;
     font-size: 0.9rem;
-    min-height: 20px; /* Reserva espaço para mensagem não pular layout */
+    min-height: 20px;
 }
 
 /* =========================================
@@ -186,6 +187,7 @@ body {
 .hub-header img { width: 120px; margin-bottom: 15px; }
 .hub-header h1 { color: var(--cor-principal); font-weight: 300; margin: 0 0 10px 0; }
 
+/* Badge de Usuário */
 .user-info-card {
     display: inline-flex;
     align-items: center;
@@ -200,6 +202,7 @@ body {
 }
 .user-icon { font-size: 1.1rem; }
 
+/* Cards do Menu */
 .hub-cards-container {
     display: flex;
     justify-content: center;
@@ -241,6 +244,7 @@ body {
 .hub-card h3 { color: #444; margin-bottom: 10px; }
 .card-action { color: var(--cor-principal); font-weight: bold; text-transform: uppercase; font-size: 0.85rem; }
 
+/* Rodapé do Hub */
 .hub-footer-branding {
     text-align: center;
     margin: 20px 0 30px 0;
@@ -320,7 +324,7 @@ body {
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 /* =========================================
-   6. MÓDULOS INTERNOS (ORÇAMENTOS E PRECIFICAÇÃO)
+   6. MÓDULOS INTERNOS (Geral)
    ========================================= */
 .mobile-container {
     width: 90%;
@@ -345,6 +349,7 @@ body {
     font-weight: bold;
 }
 
+/* Headers dos Módulos */
 .module-header-styled {
     text-align: center;
     margin-bottom: 30px;
@@ -364,6 +369,7 @@ body {
     margin: 0 0 15px 0;
 }
 
+/* Navegação Interna */
 .nav-lined {
     border-top: 3px solid var(--cor-principal);
     border-bottom: 1px solid var(--cor-principal);
@@ -398,7 +404,7 @@ body {
     border-bottom: 1px solid #ccc;
 }
 
-/* INPUTS DOS MÓDULOS */
+/* INPUTS GERAIS DOS MÓDULOS */
 #module-orcamentos input, #module-orcamentos select, #module-orcamentos textarea,
 #module-precificacao input, #module-precificacao select, #module-precificacao textarea {
     width: 100%;
@@ -415,7 +421,7 @@ body {
 ::placeholder { color: rgba(255,255,255, 0.7); }
 input[readonly] { opacity: 0.9; cursor: default; }
 
-/* TABELAS */
+/* TABELAS GERAIS */
 .table-responsive {
     width: 100%;
     overflow-x: auto;
@@ -440,7 +446,7 @@ th {
 
 td { padding: 10px; border-bottom: 1px solid #eee; }
 
-/* BOTÕES GERAIS DOS MÓDULOS */
+/* BOTÕES GERAIS */
 button {
     background-color: var(--cor-principal);
     color: white;
