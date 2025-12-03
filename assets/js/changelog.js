@@ -6,6 +6,16 @@
  */
 const changeLogData = [
     {
+        version: "1.0.1",
+        date: "24/05/2024",
+        changes: [
+            "🖨️ Restauração da funcionalidade 'Imprimir Orçamento' com layout otimizado.",
+            "💰 Inclusão de campos gerenciais ('Margem de Lucro' e 'Custo Mão de Obra') na edição de pedidos.",
+            "🎨 Implementação de regras CSS de impressão (@media print) para ocultar menus e elementos de interface.",
+            "🔧 Ajustes na persistência de dados financeiros no Firebase."
+        ]
+    },
+    {
         version: "1.0.0",
         date: "24/05/2024",
         changes: [
