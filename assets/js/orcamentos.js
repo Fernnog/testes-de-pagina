@@ -28,6 +28,8 @@ export async function initOrcamentos() {
     window.formatarEntradaMoeda = formatarEntradaMoeda;
     window.atualizarTotaisEdicao = atualizarTotaisEdicao;
     window.atualizarRestanteEdicao = atualizarRestanteEdicao;
+    // Nova função global para impressão
+    window.visualizarImpressao = visualizarImpressao;
 
     await carregarDados();
     
@@ -155,6 +157,7 @@ function mostrarPagina(idPagina) {
 // ==========================================================================
 
 function formatarMoeda(valor) {
+    if (valor === undefined || valor === null) return 'R$ 0,00';
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
@@ -181,7 +184,7 @@ function gerarNumeroFormatado(numero) {
 }
 
 function limparCamposMoeda() {
-    const campos = ['valorFrete', 'valorOrcamento', 'total', 'entrada', 'restante', 'margemLucro', 'custoMaoDeObra'];
+    const campos = ['valorFrete', 'valorOrcamento', 'total', 'entrada', 'restante', 'margemLucroEdicao', 'custoMaoDeObraEdicao'];
     campos.forEach(id => {
         const el = document.getElementById(id);
         if(el) el.value = 'R$ 0,00';
@@ -266,7 +269,6 @@ async function gerarOrcamento() {
     
     alert("Orçamento gerado!");
     mostrarPagina('orcamentos-gerados');
-    // exibirOrcamentoEmHTML(dados); // Se desejar reativar a impressão
 }
 
 // ATUALIZAÇÃO DE ORÇAMENTO
@@ -335,21 +337,119 @@ function mostrarOrcamentosGerados() {
         
         const cellAcoes = row.cells[5];
         
+        // Botão Imprimir (Nova Funcionalidade Prioridade 1)
+        const btnImprimir = document.createElement('button');
+        btnImprimir.textContent = "Imprimir";
+        btnImprimir.style.marginRight = "5px";
+        btnImprimir.onclick = () => visualizarImpressao(orc);
+        cellAcoes.appendChild(btnImprimir);
+
         if (!orc.pedidoGerado) {
             const btnEditar = document.createElement('button');
             btnEditar.textContent = "Editar";
+            btnEditar.style.marginRight = "5px";
             btnEditar.onclick = () => editarOrcamento(orc.id);
+            cellAcoes.appendChild(btnEditar);
             
             const btnGerar = document.createElement('button');
             btnGerar.textContent = "Gerar Pedido";
             btnGerar.onclick = () => gerarPedido(orc.id);
-            
-            cellAcoes.appendChild(btnEditar);
             cellAcoes.appendChild(btnGerar);
         } else {
-            cellAcoes.textContent = "Concluído";
+            const span = document.createElement('span');
+            span.textContent = " Pedido Gerado";
+            cellAcoes.appendChild(span);
         }
     });
+}
+
+// NOVA FUNÇÃO: Visualizar Impressão (Prioridade 1)
+function visualizarImpressao(orcamento) {
+    const janela = window.open('', '_blank');
+    
+    // Formatação de datas e pagamento
+    const dtOrc = orcamento.dataOrcamento ? orcamento.dataOrcamento.split('-').reverse().join('/') : '';
+    const dtVal = orcamento.dataValidade ? orcamento.dataValidade.split('-').reverse().join('/') : '';
+    const pagamento = Array.isArray(orcamento.pagamento) ? orcamento.pagamento.join(', ') : orcamento.pagamento;
+
+    // Construção do HTML de Impressão
+    const html = `
+        <html>
+        <head>
+            <title>Orçamento ${orcamento.numero}</title>
+            <style>
+                body { font-family: 'Arial', sans-serif; padding: 40px; color: #333; }
+                .header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid #7aa2a9; padding-bottom: 20px; }
+                .header h1 { color: #7aa2a9; margin: 0; }
+                .header p { color: #777; font-size: 0.9em; margin: 5px 0; }
+                .info-section { margin-bottom: 30px; line-height: 1.6; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 20px; }
+                th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+                th { background-color: #f2f2f2; color: #333; }
+                .totais { text-align: right; margin-top: 30px; }
+                .totais h3 { color: #7aa2a9; }
+                .obs { margin-top: 40px; font-size: 0.9em; color: #555; border-top: 1px solid #eee; padding-top: 10px; }
+                @media print {
+                    button { display: none; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>Pérola Rara</h1>
+                <p>Orçamento Nº ${orcamento.numero}</p>
+                <p>(65) 99250-3151 | @perolararafraldapersonalizada</p>
+            </div>
+            
+            <div class="info-section">
+                <strong>Cliente:</strong> ${orcamento.cliente || '-'}<br>
+                <strong>Cidade:</strong> ${orcamento.cidade || '-'}<br>
+                <strong>Telefone:</strong> ${orcamento.telefone || '-'}<br>
+                <strong>Data do Orçamento:</strong> ${dtOrc}<br>
+                <strong>Validade:</strong> ${dtVal}<br>
+                <strong>Tema:</strong> ${orcamento.tema || '-'}<br>
+                <strong>Cores:</strong> ${orcamento.cores || '-'}
+            </div>
+
+            <h3>Produtos</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Qtd</th>
+                        <th>Descrição</th>
+                        <th>Valor Unit.</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${orcamento.produtos.map(p => `
+                        <tr>
+                            <td>${p.quantidade}</td>
+                            <td>${p.descricao}</td>
+                            <td>${formatarMoeda(p.valorUnit)}</td>
+                            <td>${formatarMoeda(p.valorTotal)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+
+            <div class="totais">
+                <p><strong>Frete:</strong> ${formatarMoeda(orcamento.valorFrete)}</p>
+                <h3>Total Geral: ${formatarMoeda(orcamento.total)}</h3>
+                <p><strong>Forma de Pagamento:</strong> ${pagamento}</p>
+            </div>
+
+            ${orcamento.observacoes ? `<div class="obs"><strong>Observações:</strong><br>${orcamento.observacoes}</div>` : ''}
+
+            <div style="text-align: center; margin-top: 50px;">
+                <button onclick="window.print()" style="padding: 10px 20px; background: #7aa2a9; color: white; border: none; border-radius: 5px; cursor: pointer;">Imprimir</button>
+            </div>
+        </body>
+        </html>
+    `;
+    
+    janela.document.write(html);
+    janela.document.close();
 }
 
 function editarOrcamento(id) {
@@ -414,7 +514,10 @@ async function gerarPedido(orcamentoId) {
         entrada: 0,
         restante: orc.total,
         produtos: orc.produtos,
-        tipo: 'pedido'
+        tipo: 'pedido',
+        // Campos financeiros iniciais
+        custoMaoDeObra: 0,
+        margemLucro: 0
     };
 
     await salvarDados(pedido, 'pedido');
@@ -470,6 +573,14 @@ function editarPedido(id) {
     document.getElementById("restanteEdicao").value = formatarMoeda(pedido.restante || 0);
     document.getElementById("observacoesEdicao").value = pedido.observacoes;
 
+    // Prioridade 1: Preencher novos campos financeiros
+    if (document.getElementById("custoMaoDeObraEdicao")) {
+        document.getElementById("custoMaoDeObraEdicao").value = formatarMoeda(pedido.custoMaoDeObra || 0);
+    }
+    if (document.getElementById("margemLucroEdicao")) {
+        document.getElementById("margemLucroEdicao").value = formatarMoeda(pedido.margemLucro || 0);
+    }
+
     const tbody = document.querySelector("#tabelaProdutosEdicao tbody");
     tbody.innerHTML = '';
     pedido.produtos.forEach(p => {
@@ -490,6 +601,10 @@ async function atualizarPedido() {
     if (!pedidoEditando) return;
     const index = pedidos.findIndex(p => p.id === pedidoEditando);
     
+    // Prioridade 1: Ler novos campos financeiros
+    const custoMO = document.getElementById("custoMaoDeObraEdicao") ? converterMoedaParaNumero(document.getElementById("custoMaoDeObraEdicao").value) : 0;
+    const margem = document.getElementById("margemLucroEdicao") ? converterMoedaParaNumero(document.getElementById("margemLucroEdicao").value) : 0;
+
     const dados = {
         ...pedidos[index],
         cliente: document.getElementById("clienteEdicao").value,
@@ -498,8 +613,10 @@ async function atualizarPedido() {
         total: converterMoedaParaNumero(document.getElementById("totalEdicao").value),
         entrada: converterMoedaParaNumero(document.getElementById("entradaEdicao").value),
         restante: converterMoedaParaNumero(document.getElementById("restanteEdicao").value),
+        // Novos campos salvos
+        custoMaoDeObra: custoMO,
+        margemLucro: margem,
         produtos: []
-        // ... outros campos conforme necessário
     };
 
     document.querySelectorAll("#tabelaProdutosEdicao tbody tr").forEach(row => {
@@ -561,14 +678,12 @@ function atualizarRestanteEdicao() {
 
 // Filtros e Relatórios (Simplificado)
 function filtrarOrcamentos() {
-    // Implementação básica de recarga, adicione lógica de filtro se necessário
     mostrarOrcamentosGerados();
 }
 function filtrarPedidos() {
     mostrarPedidosRealizados();
 }
 function filtrarPedidosRelatorio() {
-    // Implemente a lógica de preencher a tabela de relatório aqui
     alert("Funcionalidade de Relatório pronta para implementação.");
 }
 function gerarRelatorioXLSX() {
@@ -581,3 +696,4 @@ window.excluirProdutoEdicao = excluirProdutoEdicao;
 window.formatarEntradaMoeda = formatarEntradaMoeda;
 window.atualizarTotaisEdicao = atualizarTotaisEdicao;
 window.atualizarRestanteEdicao = atualizarRestanteEdicao;
+window.visualizarImpressao = visualizarImpressao;
