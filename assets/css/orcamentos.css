@@ -1,7 +1,6 @@
-/* assets/css/orcamentos.css - ARQUIVO COMPLETO E CORRIGIDO */
+/* assets/css/orcamentos.css - ARQUIVO COMPLETO */
 
-/* ==== 1. RESET DE SEGURANÇA (NOVO) ==== */
-/* Garante que bordas e preenchimentos não aumentem a largura dos elementos */
+/* ==== 1. RESET DE SEGURANÇA ==== */
 * {
     box-sizing: border-box;
 }
@@ -16,7 +15,6 @@ body {
     color: #333;
     margin: 0;
     padding: 0;
-    /* TRAVA DE SEGURANÇA MOBILE: Impede que a tela balance lateralmente */
     overflow-x: hidden;
     width: 100%;
 }
@@ -29,7 +27,7 @@ body {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Estilos de Linhas (HR) Originais */
+/* Estilos de Linhas (HR) */
 hr.titulo {
     border: 2px solid #7aa2a9;
     margin-bottom: 10px;
@@ -59,7 +57,7 @@ hr.final-tabela {
     margin-bottom: 20px;
 }
 
-/* ==== 4. CABEÇALHO (PÁGINA PRINCIPAL) ==== */
+/* ==== 4. CABEÇALHO ==== */
 .top-bar {
     display: flex;
     justify-content: flex-end;
@@ -119,9 +117,7 @@ nav ul li a:hover {
     color: #333;
 }
 
-/* ==== 5. FORMULÁRIOS (ÁREA CORRIGIDA COM ALTA PRIORIDADE) ==== */
-/* Usamos #module-orcamentos (ID do container pai) para forçar a aplicação do estilo */
-
+/* ==== 5. FORMULÁRIOS ==== */
 #form-orcamento, #form-edicao-pedido {
     margin-bottom: 30px;
 }
@@ -136,25 +132,23 @@ label {
     font-weight: bold;
 }
 
-/* INPUTS: Correção de largura e especificidade */
-/* Adicionei #module-orcamentos antes para garantir que esse CSS vença o main.css */
+/* Inputs Específicos do Módulo */
 #module-orcamentos input[type="text"],
 #module-orcamentos input[type="number"],
 #module-orcamentos input[type="date"],
 #module-orcamentos input[type="email"],
 #module-orcamentos textarea,
 #module-orcamentos select,
-/* Mantendo seletores genéricos para garantir compatibilidade caso usados fora do módulo */
 input[type="text"],
 input[type="number"],
 input[type="date"],
 input[type="email"],
 textarea,
 select {
-    box-sizing: border-box !important; /* CRÍTICO */
+    box-sizing: border-box !important;
     width: 100%;
     max-width: 100%;
-    min-width: 0; /* Permite encolher no mobile */
+    min-width: 0;
     padding: 12px;
     border: 1px solid #ccc;
     border-radius: 20px;
@@ -169,7 +163,7 @@ input:focus, textarea:focus, select:focus {
     box-shadow: 0 0 5px rgba(122, 162, 169, 0.5);
 }
 
-/* LAYOUT FLEXBOX (Substitui o antigo float) */
+/* Layout Flexbox para Formulários */
 .form-row {
     display: flex;
     flex-wrap: wrap;
@@ -185,8 +179,8 @@ input:focus, textarea:focus, select:focus {
 .form-row .form-group {
     float: none;
     margin-right: 0;
-    flex: 1; /* Divide espaço igualmente */
-    min-width: 200px; /* No Desktop, mantém um tamanho mínimo saudável */
+    flex: 1;
+    min-width: 200px;
 }
 
 .form-row .form-group:last-child {
@@ -194,8 +188,31 @@ input:focus, textarea:focus, select:focus {
 }
 
 input[type="checkbox"] {
-    width: auto !important; /* Checkbox não pode ser 100% width */
+    width: auto !important;
     margin-right: 5px;
+}
+
+/* ==== 5.1 ESTILOS RESTAURADOS (CAMPOS FINANCEIROS) ==== */
+/* Destaque para Custo de Mão de Obra e Margem de Lucro */
+.form-row.valores-pedido {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px dashed #ccc;
+    background-color: rgba(122, 162, 169, 0.05); /* Fundo sutil */
+    border-radius: 10px;
+    padding: 15px;
+}
+
+.form-row.valores-pedido label {
+    color: #7aa2a9;
+    font-weight: bold;
+}
+
+.campo-calculado {
+    background-color: #cce5e9 !important; /* Azul claro para read-only */
+    color: #333 !important;
+    font-weight: bold;
+    cursor: default;
 }
 
 /* ==== 6. TABELAS ==== */
@@ -214,33 +231,6 @@ th, td {
 th {
     background-color: #dfb6b0;
     color: white;
-}
-
-/* Classes de Relatório Originais */
-.relatorio-table {
-    width: 80%;
-    margin: 20px auto;
-    border-collapse: collapse;
-}
-
-.relatorio-table th,
-.relatorio-table td {
-    padding: 10px;
-    text-align: center;
-    border: 1px solid #ccc;
-}
-
-.relatorio-table th {
-    background-color: #cce5e9;
-    color: #333;
-}
-
-.relatorio-table tr:nth-child(even) {
-    background-color: #f0f8fa;
-}
-
-.relatorio-table tr:nth-child(odd) {
-    background-color: #f8f8f8;
 }
 
 .table-responsive {
@@ -269,7 +259,6 @@ button:hover {
     background-color: #5a8289;
 }
 
-/* Botões específicos de navegação */
 #lista-pedidos button, #relatorio button, #backup button {
     display: block;
     margin: 0 auto 20px auto;
@@ -321,9 +310,8 @@ nav ul li a[onclick="limparPagina()"]:hover {
     background-color: #c89790;
 }
 
-/* ==== 10. MEDIA QUERIES (CRÍTICO - MOBILE FIX) ==== */
+/* ==== 10. MEDIA QUERIES (MOBILE) ==== */
 @media (max-width: 768px) {
-    /* Container ocupa 100% da viewport real */
     .container, 
     .mobile-container,
     #module-orcamentos .container {
@@ -335,7 +323,6 @@ nav ul li a[onclick="limparPagina()"]:hover {
         overflow-x: hidden !important;
     }
 
-    /* Formulários em coluna única forçada */
     .form-row,
     #module-orcamentos .form-row {
         flex-direction: column !important;
@@ -346,12 +333,11 @@ nav ul li a[onclick="limparPagina()"]:hover {
     .form-row .form-group,
     #module-orcamentos .form-row .form-group {
         width: 100% !important;
-        min-width: 0 !important; /* CRÍTICO: Permite encolher */
+        min-width: 0 !important;
         margin: 0 0 10px 0 !important;
         flex: none !important;
     }
 
-    /* Inputs garantidos em 100% */
     input[type="text"],
     input[type="number"],
     input[type="date"],
@@ -362,7 +348,6 @@ nav ul li a[onclick="limparPagina()"]:hover {
         max-width: 100% !important;
     }
 
-    /* Ajuste de Navegação Mobile */
     nav ul {
         display: flex;
         flex-direction: column;
@@ -385,14 +370,12 @@ nav ul li a[onclick="limparPagina()"]:hover {
         border: 1px solid #eee;
     }
 
-    /* Botões Full Width */
     button {
         width: 100%;
         margin-bottom: 10px;
-        padding: 15px; /* Área de toque maior */
+        padding: 15px;
     }
     
-    /* Tabelas */
     .table-responsive {
         width: 100% !important;
         display: block !important;
@@ -400,96 +383,92 @@ nav ul li a[onclick="limparPagina()"]:hover {
     }
     
     table {
-        min-width: 600px; /* Garante scroll apenas na tabela */
+        min-width: 600px;
         width: 100%;
     }
 }
 
-/* ==== 11. ESTILOS EXTRAS (MANTIDOS) ==== */
-.form-row.valores-pedido label {
-    color: #7aa2a9;
-    font-weight: bold;
-}
-
-/* Seção de Autenticação (Login) */
-#authSection {
-    background-color: #e6f7ff;
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    margin-bottom: 20px;
-    display: inline-block;
-    text-align: center;
-}
-
-#authSection input[type="email"],
-#authSection input[type="password"] {
-    background-color: #f8f8f8;
-    color: #333;
-    border: 1px solid #ddd;
-    border-radius: 15px;
-    padding: 8px 12px;
-    margin-bottom: 8px;
-    width: 100%;
-    font-size: 14px;
-}
-
-#authSection div {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-#authSection button {
-    background-color: #a8d5e3;
-    color: #fff;
-    padding: 8px 15px;
-    border-radius: 15px;
-    font-size: 14px;
-    margin: 4px;
-    cursor: pointer;
-    border: none;
-    transition: background-color 0.3s ease;
-    width: auto;
-    min-width: auto;
-}
-
-#authSection button:hover {
-    background-color: #7cb3c2;
-}
-
-#authSection #authStatus,
-#authSection #passwordResetMessage {
-    font-size: 0.9em;
-    margin-top: 10px;
-    color: #555;
-}
-
-#authSection #btnForgotPasswordContainer {
-    margin-left: 10px;
-}
-
-#authSection #btnForgotPassword {
-    background: none;
-    color: #7aa2a9;
-    border: none;
-    padding: 8px 0;
-    font-size: 14px;
-    cursor: pointer;
-    text-decoration: none;
-    margin: 0;
-    align-self: center;
-    width: auto;
-}
-
-#authSection #btnForgotPassword:hover {
-    text-decoration: underline;
-    color: #5a8289;
-    background-color: transparent;
-}
-
-.campo-calculado {
-    background-color: #cce5e9;
-    color: #333;
-    font-weight: bold;
+/* ==== 11. REGRAS DE IMPRESSÃO (NOVO) ==== */
+/* Estas regras garantem que a impressão funcione tanto via Ctrl+P na tela 
+   quanto em uma janela popup que herde este CSS */
+@media print {
+    /* Ocultar elementos de navegação e interface do sistema */
+    body > *:not(#appContent), /* Oculta tudo que não for o conteúdo principal se imprimir direto */
+    .btn-back-hub,
+    nav,
+    button,
+    .no-print,
+    .filtro-data,
+    #auth-screen,
+    #hub-screen,
+    #splash-screen {
+        display: none !important;
     }
+
+    /* Reset de container para usar largura total do papel */
+    .container, .mobile-container, #module-orcamentos {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+
+    /* Estilização para o conteúdo impresso */
+    body {
+        background: white !important;
+        font-size: 12pt;
+        color: black !important;
+    }
+
+    /* Ajustes de Tabela para Impressão */
+    table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        page-break-inside: auto;
+    }
+
+    tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+
+    th, td {
+        border: 1px solid #000 !important; /* Bordas pretas nítidas */
+        color: #000 !important;
+        background-color: transparent !important; /* Remove fundos coloridos para economizar tinta */
+        padding: 5px !important;
+    }
+
+    th {
+        font-weight: bold;
+        border-bottom: 2px solid #000 !important;
+    }
+
+    /* Inputs aparecem como texto limpo */
+    input, textarea, select {
+        border: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        resize: none !important;
+        color: #000 !important;
+        box-shadow: none !important;
+        font-weight: normal;
+    }
+
+    /* Cabeçalho de Impressão (se visível) */
+    .header-orcamento h1 {
+        color: #000 !important;
+        margin: 0;
+    }
+
+    .header-orcamento p {
+        color: #333 !important;
+    }
+
+    hr {
+        border-color: #000 !important;
+    }
+}
