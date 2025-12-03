@@ -127,6 +127,7 @@
             </header>
             
             <div id="appContent">
+                <!-- FORMULÁRIO DE NOVO ORÇAMENTO -->
                 <section id="form-orcamento" class="pagina">
                     <h2 class="section-title-lined">Novo Orçamento</h2>
                     <form id="orcamento">
@@ -181,6 +182,7 @@
                     </form>
                 </section>
 
+                <!-- LISTA DE ORÇAMENTOS GERADOS -->
                 <section id="orcamentos-gerados" class="pagina" style="display: none;">
                     <h2 class="section-title-lined">Orçamentos Gerados</h2>
                     <button onclick="filtrarOrcamentos()">Atualizar Lista</button>
@@ -192,6 +194,7 @@
                     </div>
                 </section>
 
+                <!-- LISTA DE PEDIDOS REALIZADOS -->
                 <section id="lista-pedidos" class="pagina" style="display: none;">
                     <h2 class="section-title-lined">Pedidos Realizados</h2>
                     <button onclick="filtrarPedidos()">Atualizar Lista</button>
@@ -203,13 +206,28 @@
                     </div>
                 </section>
                 
+                <!-- FORMULÁRIO DE EDIÇÃO DE PEDIDO (RESTAURADO) -->
                 <section id="form-edicao-pedido" class="pagina" style="display: none;">
                     <h2 class="section-title-lined">Editar Pedido</h2>
                     <input type="hidden" id="dataPedidoEdicao">
-                    <div class="form-group"><label>Cliente:</label><input type="text" id="clienteEdicao"></div>
-                    <div class="form-group"><label>Entrega:</label><input type="date" id="dataEntregaEdicao"></div>
-                    <div class="form-group"><label>Endereço:</label><input type="text" id="enderecoEdicao"></div>
                     
+                    <!-- Dados Básicos -->
+                    <div class="form-row">
+                        <div class="form-group"><label>Cliente:</label><input type="text" id="clienteEdicao"></div>
+                        <div class="form-group"><label>Entrega:</label><input type="date" id="dataEntregaEdicao"></div>
+                    </div>
+                    <div class="form-group"><label>Endereço:</label><input type="text" id="enderecoEdicao"></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Cidade:</label><input type="text" id="cidadeEdicao"></div>
+                        <div class="form-group"><label>Telefone:</label><input type="text" id="contatoEdicao"></div>
+                    </div>
+                    <div class="form-row">
+                         <div class="form-group"><label>Tema:</label><input type="text" id="temaEdicao"></div>
+                         <div class="form-group"><label>Cores:</label><input type="text" id="coresEdicao"></div>
+                    </div>
+
+                    <!-- Tabela de Produtos -->
+                    <h3>Produtos</h3>
                     <div class="table-responsive">
                         <table id="tabelaProdutosEdicao">
                             <thead><tr><th>Qtd</th><th>Desc</th><th>Unit</th><th>Total</th><th>Ação</th></tr></thead>
@@ -218,7 +236,49 @@
                     </div>
                     <button type="button" id="btnAddProdutoEdicao">Add Produto</button>
 
-                    <div class="form-group"><label>Total Geral:</label><input type="text" id="totalEdicao"></div>
+                    <!-- Campos Financeiros (Frete, Subtotal, MO, Margem, Total) -->
+                    <div class="form-row valores-pedido" style="margin-top: 20px;">
+                        <div class="form-group">
+                            <label>Frete (R$):</label>
+                            <input type="text" id="valorFreteEdicao" placeholder="R$ 0,00" oninput="formatarEntradaMoeda(this)" onblur="atualizarTotaisEdicao()">
+                        </div>
+                        <div class="form-group">
+                            <label>Subtotal Produtos (R$):</label>
+                            <input type="text" id="valorPedidoEdicao" placeholder="R$ 0,00" oninput="formatarEntradaMoeda(this)" onblur="atualizarTotaisEdicao()">
+                        </div>
+                    </div>
+
+                    <!-- CAMPOS RESTAURADOS: Mão de Obra e Margem de Lucro -->
+                    <div class="form-row valores-pedido">
+                        <div class="form-group">
+                            <label style="color: #7aa2a9; font-weight: bold;">Custo Mão de Obra (R$):</label>
+                            <input type="text" id="custoMaoDeObraEdicao" placeholder="R$ 0,00" oninput="formatarEntradaMoeda(this)">
+                        </div>
+                        <div class="form-group">
+                            <label style="color: #7aa2a9; font-weight: bold;">Margem de Lucro (R$):</label>
+                            <input type="text" id="margemLucroEdicao" placeholder="R$ 0,00" oninput="formatarEntradaMoeda(this)">
+                        </div>
+                    </div>
+                    <!-- FIM CAMPOS RESTAURADOS -->
+
+                    <div class="form-row valores-pedido">
+                        <div class="form-group">
+                            <label>Total Geral (R$):</label>
+                            <input type="text" id="totalEdicao" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Entrada (R$):</label>
+                            <input type="text" id="entradaEdicao" placeholder="R$ 0,00" oninput="formatarEntradaMoeda(this)" onblur="atualizarRestanteEdicao()">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Restante (R$):</label>
+                        <input type="text" id="restanteEdicao" readonly>
+                    </div>
+
+                    <div class="form-group"><label>Observações:</label><textarea id="observacoesEdicao"></textarea></div>
+
                     <button type="button" id="btnSalvarPedidoEdicao">Salvar Pedido</button>
                 </section>
 
