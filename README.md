@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="assets/logo.png" width="150">
-</p>
-
 # Portal Pérola Rara - Sistema Integrado de Gestão
 
 > *"Onde a arte se encontra com o amor em cada detalhe."*
