@@ -1,4 +1,8 @@
-# 💎 Portal Pérola Rara - Sistema Integrado de Gestão
+<p align="center">
+  <img src="assets/logo.png" alt="Logotipo do Plano de Leitura" width="150">
+</p>
+
+# Portal Pérola Rara - Sistema Integrado de Gestão
 
 > *"Onde a arte se encontra com o amor em cada detalhe."*
 
