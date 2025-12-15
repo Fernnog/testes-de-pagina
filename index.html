@@ -7,43 +7,46 @@
     
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#ecd5d1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
+    
+    <!-- Fontes -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
     
+    <!-- Estilos -->
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/orcamentos.css">
     <link rel="stylesheet" href="assets/css/precificacao.css">
 
+    <!-- Bibliotecas Externas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
+    <!-- Módulos JS -->
     <script type="module" src="assets/js/main.js"></script>
     <script type="module" src="assets/js/orcamentos.js"></script>
     <script type="module" src="assets/js/precificacao.js"></script>
 </head>
 <body>
 
+    <!-- 1. TELA DE LOGIN -->
     <section id="auth-screen">
         <div class="auth-container">
             <div class="auth-form">
                 <div class="logo-container">
-                    <img src="assets/images/logo_perola_rara.png" alt="Logo Pérola Rara" id="logo-login" width="150" height="150">
+                    <img src="assets/images/logo_perola_rara.png" alt="Logo Pérola Rara" id="logo-login" width="150">
                     <h1 class="login-brand-name">Pérola Rara</h1>
                 </div>
                 <h2>Acesso ao Portal</h2>
                 
                 <div class="form-group">
                     <label for="email">Email:</label>
-                    <input type="email" id="email" name="email" placeholder="Digite seu email" onkeydown="if(event.key === 'Enter') document.getElementById('password').focus()">
+                    <input type="email" id="email" name="email" placeholder="Digite seu email">
                 </div>
                 <div class="form-group">
                     <label for="password">Senha:</label>
-                    <input type="password" id="password" name="password" placeholder="Digite sua senha" onkeydown="if(event.key === 'Enter') document.getElementById('loginBtn').click()">
+                    <input type="password" id="password" name="password" placeholder="Digite sua senha">
                 </div>
                 <div class="auth-buttons">
                     <button type="button" id="loginBtn">Entrar</button>
@@ -53,68 +56,58 @@
         </div>
     </section>
 
+    <!-- 2. SPLASH SCREEN (Carregamento) -->
     <section id="splash-screen" style="display: none;">
         <div class="splash-content">
-            <img src="assets/images/logo_perola_rara.png" alt="Logo" class="splash-logo" width="150" height="150">
+            <img src="assets/images/logo_perola_rara.png" alt="Logo" class="splash-logo" width="150">
             <p class="splash-slogan">"Onde a arte se encontra com o amor em cada detalhe."</p>
         </div>
     </section>
 
+    <!-- 3. HUB CENTRAL (Menu Principal) -->
     <section id="hub-screen" style="display: none;">
         <header class="hub-header">
-            <div class="logo-wrapper">
-                <img src="assets/images/logo_perola_rara.png" alt="Logo Pérola Rara">
+            <img src="assets/images/logo_perola_rara.png" alt="Logo" width="120">
+            <div class="welcome-text">
+                <h1>Painel Administrativo</h1>
+                <div class="user-info-card">
+                    <span class="user-icon">👤</span>
+                    <span id="user-email-display">...</span>
+                </div>
             </div>
-           <div class="welcome-text">
-       <h1>Painel Administrativo da Empresa Pérola Rara</h1>
-    
-    <div class="user-info-card">
-        <span class="user-icon">👤</span>
-        <span id="user-email-display">...</span>
-    </div>
-</div>
         </header>
 
         <div class="hub-cards-container">
+            <!-- Card Orçamentos -->
             <div class="hub-card" id="btn-go-orcamentos">
-                <div class="card-decoration"></div>
-                <div class="card-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M9 14h6"></path><path d="M9 10h6"></path><path d="M9 18h6"></path></svg>
-                </div>
+                <div class="card-icon">📋</div>
                 <h3>Gestão de Pedidos</h3>
                 <p>Gerencie clientes, orçamentos e fila de produção.</p>
                 <div class="card-footer"><span class="card-action">Acessar &rarr;</span></div>
             </div>
 
+            <!-- Card Precificação -->
             <div class="hub-card" id="btn-go-precificacao">
-                <div class="card-decoration"></div>
-                <div class="card-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="14"></line><line x1="12" y1="14" x2="12" y2="14"></line><line x1="8" y1="14" x2="8" y2="14"></line><line x1="16" y1="18" x2="16" y2="18"></line><line x1="12" y1="18" x2="12" y2="18"></line><line x1="8" y1="18" x2="8" y2="18"></line></svg>
-                </div>
+                <div class="card-icon">💰</div>
                 <h3>Precificação</h3>
                 <p>Calcule custos de materiais e defina preços de venda.</p>
                 <div class="card-footer"><span class="card-action">Acessar &rarr;</span></div>
             </div>
         </div>
 
-        <div class="hub-footer-branding">
-            <p class="slogan-hub">"Onde a arte se encontra com o amor em cada detalhe."</p>
-        </div>
-
         <div class="hub-footer-actions">
             <button id="hubLogoutBtn" class="btn-logout-solid">Desconectar</button>
         </div>
-
         <div id="version-container"></div>
     </section>
 
+    <!-- 4. MÓDULO: ORÇAMENTOS (COMPLETO) -->
     <section id="module-orcamentos" style="display: none;">
         <button class="btn-back-hub">⬅ Voltar ao Menu</button>
         
         <div class="container mobile-container">
             <header class="module-header-styled">
-                 <img src="assets/images/logo_perola_rara.png" class="module-logo-small" alt="Logo">
-                 <h1 class="module-title-main">Pérola Rara</h1>
+                 <h1 class="module-title-main">Gestão de Pedidos</h1>
                  
                  <nav class="nav-lined">
                     <ul>
@@ -206,7 +199,7 @@
                     </div>
                 </section>
                 
-                <!-- FORMULÁRIO DE EDIÇÃO DE PEDIDO (RESTAURADO) -->
+                <!-- FORMULÁRIO DE EDIÇÃO DE PEDIDO -->
                 <section id="form-edicao-pedido" class="pagina" style="display: none;">
                     <h2 class="section-title-lined">Editar Pedido</h2>
                     <input type="hidden" id="dataPedidoEdicao">
@@ -236,7 +229,7 @@
                     </div>
                     <button type="button" id="btnAddProdutoEdicao">Add Produto</button>
 
-                    <!-- Campos Financeiros (Frete, Subtotal, MO, Margem, Total) -->
+                    <!-- Campos Financeiros -->
                     <div class="form-row valores-pedido" style="margin-top: 20px;">
                         <div class="form-group">
                             <label>Frete (R$):</label>
@@ -248,7 +241,6 @@
                         </div>
                     </div>
 
-                    <!-- CAMPOS RESTAURADOS: Mão de Obra e Margem de Lucro -->
                     <div class="form-row valores-pedido">
                         <div class="form-group">
                             <label style="color: #7aa2a9; font-weight: bold;">Custo Mão de Obra (R$):</label>
@@ -259,7 +251,6 @@
                             <input type="text" id="margemLucroEdicao" placeholder="R$ 0,00" oninput="formatarEntradaMoeda(this)">
                         </div>
                     </div>
-                    <!-- FIM CAMPOS RESTAURADOS -->
 
                     <div class="form-row valores-pedido">
                         <div class="form-group">
@@ -291,6 +282,7 @@
         </div>
     </section>
 
+    <!-- 5. MÓDULO: PRECIFICAÇÃO (INTEGRADO DO ARQUIVO ANTIGO) -->
     <section id="module-precificacao" style="display: none;">
         <button class="btn-back-hub">⬅ Voltar ao Menu</button>
 
@@ -306,116 +298,258 @@
                         <li><a href="#" data-submenu="custos-indiretos" class="nav-link">Custos Indiretos</a></li>
                         <li><a href="#" data-submenu="cadastrar-produtos" class="nav-link">Produtos</a></li>
                         <li><a href="#" data-submenu="calculo-precificacao" class="nav-link">Calculadora</a></li>
-                        <li><a href="#" data-submenu="historico-precificacao" class="nav-link">Histórico</a></li>
+                        <li><a href="#" data-submenu="precificacoes-geradas" class="nav-link">Histórico</a></li>
                     </ul>
                  </nav>
             </header>
 
+            <!-- ABA: MATERIAIS -->
             <div id="materiais-insumos" class="subpagina">
-                <h2 class="section-title-lined">Cadastro de Materiais</h2>
+                <h2 class="section-title-lined">Cadastro de Materiais e Insumos</h2>
+                <hr class="aviso-separador">
+                <p class="aviso-unidades" style="text-align: center; font-size: 0.9em; color: #555;">
+                    <strong>Atenção:</strong> Preencha dimensões em <span>cm</span> (Área/Comprimento). Para Litro/Quilo/Unidade, use as unidades padrão (L, kg, un).
+                </p>
+                <hr class="aviso-separador">
+                
                 <form id="form-materiais-insumos">
                     <div class="form-group">
-                        <label>Nome:</label><input type="text" id="nome-material">
+                        <label>Nome do Material:</label>
+                        <input type="text" id="nome-material">
                     </div>
                     <div class="form-group">
-                        <label>Tipo:</label>
-                        <label><input type="radio" name="tipo-material" value="unidade" checked> Unidade</label>
-                        <label><input type="radio" name="tipo-material" value="comprimento"> Comprimento</label>
+                        <label>Tipo de Material:</label><br>
+                        <label><input type="radio" name="tipo-material" value="comprimento" checked> Metro (Comprimento)</label>
+                        <label><input type="radio" name="tipo-material" value="litro"> Litro</label>
+                        <label><input type="radio" name="tipo-material" value="quilo"> Quilo</label>
+                        <label><input type="radio" name="tipo-material" value="unidade"> Unidade</label>
+                        <label><input type="radio" name="tipo-material" value="area"> Área (m²)</label>
                     </div>
+                    
+                    <!-- Campos Dinâmicos -->
+                    <div class="form-group" id="campos-comprimento">
+                        <label>Comprimento (cm):</label>
+                        <input type="number" id="comprimento-cm" step="0.01" value="100">
+                    </div>
+                    <div class="form-group" id="campos-litro" style="display: none;">
+                        <label>Volume (ml):</label>
+                        <input type="number" id="volume-ml" step="0.01" value="1000">
+                    </div>
+                    <div class="form-group" id="campos-quilo" style="display: none;">
+                        <label>Peso (g):</label>
+                        <input type="number" id="peso-g" step="0.01" value="1000">
+                    </div>
+                    <div class="form-group" id="campos-area" style="display: none;">
+                        <label>Dimensões (cm):</label>
+                        <div class="area-inputs" style="display:flex; align-items:center; gap:5px;">
+                          <input type="number" id="largura-cm" step="0.01" value="100" placeholder="Largura">
+                          <span>x</span>
+                          <input type="number" id="altura-cm" step="0.01" value="100" placeholder="Altura">
+                        </div>
+                    </div>
+
                     <div class="form-group">
-                        <label>Custo Total Compra:</label><input type="number" id="valor-total-material" step="0.01">
+                        <label>Valor Total Compra (R$):</label>
+                        <input type="number" id="valor-total-material" step="0.01">
                     </div>
-                    <button type="button" id="cadastrar-material-insumo-btn">Salvar Material</button>
+                    <button type="button" id="cadastrar-material-insumo-btn">Cadastrar Material</button>
                 </form>
-                <input type="text" id="busca-material" placeholder="Filtrar..." onkeyup="buscarMateriaisCadastrados()">
+                
+                <div class="form-group">
+                    <input type="text" id="busca-material" placeholder="Filtrar cadastrados..." onkeyup="buscarMateriaisCadastrados()">
+                </div>
                 
                 <div class="table-responsive">
-                    <table id="tabela-materiais-insumos">
-                        <thead><tr><th>Nome</th><th>Tipo</th><th>Medida</th><th>Custo Tot.</th><th>Unitário</th><th>Ações</th></tr></thead>
+                    <table id="tabela-materiais-insumos" class="tabela-gerada">
+                        <thead><tr><th>Nome</th><th>Tipo</th><th>Medida</th><th>Custo Loja</th><th>Custo Unit.</th><th>Ações</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
             </div>
 
+            <!-- ABA: MÃO DE OBRA -->
             <div id="mao-de-obra" class="subpagina" style="display:none;">
-                <h2 class="section-title-lined">Configuração de Mão de Obra</h2>
-                <div class="form-group">
-                    <label>Salário Desejado:</label>
-                    <input type="number" id="salario-receber">
-                </div>
-                <div class="form-group">
-                    <label>Horas Mensais:</label>
-                    <input type="number" id="horas-trabalhadas" value="220">
-                </div>
-                <button id="btn-salvar-mao-de-obra">Salvar Configuração</button>
+                <h2 class="section-title-lined">Custo de Mão de Obra</h2>
+                <form id="form-mao-de-obra">
+                    <div class="form-group">
+                        <label>Salário a receber (R$):</label>
+                        <input type="number" id="salario-receber" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Horas trabalhadas por mês:</label>
+                        <input type="number" id="horas-trabalhadas" value="220">
+                    </div>
+                    <div class="form-group">
+                        <label>Valor da hora (Calculado):</label>
+                        <input type="number" id="valor-hora" readonly style="background-color: #cae6e7; font-weight: bold;">
+                    </div>
+                    
+                    <button type="button" id="btn-salvar-mao-de-obra">Salvar Configuração</button>
+                    <button type="button" id="btn-editar-mao-de-obra" style="display:none;">Editar</button>
+
+                    <hr class="linha-separadora">
+                    
+                    <h3>Encargos (Férias e 13º)</h3>
+                    <div class="form-group">
+                        <label>Incluir encargos?</label>
+                        <label><input type="radio" id="incluir-ferias-13o-sim" name="incluir-ferias-13o"> Sim</label>
+                        <label><input type="radio" id="incluir-ferias-13o-nao" name="incluir-ferias-13o" checked> Não</label>
+                    </div>
+                    <div class="form-group">
+                        <label>Custo Adicional por Hora (R$):</label>
+                        <input type="number" id="custo-ferias-13o" readonly style="background-color: #cae6e7;">
+                    </div>
+                </form>
             </div>
 
+            <!-- ABA: CUSTOS INDIRETOS -->
             <div id="custos-indiretos" class="subpagina" style="display:none;">
                 <h2 class="section-title-lined">Custos Indiretos</h2>
+                <ul id="lista-custos-indiretos">
+                    <!-- Preenchido via JS -->
+                </ul>
+                <button type="button" id="adicionarCustoIndiretoBtn">+ Custo Adicional</button>
+                
+                <div class="form-group" style="margin-top:20px;">
+                    <input type="text" id="busca-custo-indireto" placeholder="Buscar custo..." onkeyup="buscarCustosIndiretosCadastrados()">
+                </div>
                 <div class="table-responsive">
-                    <table id="tabela-custos-indiretos">
+                    <table id="tabela-custos-indiretos" class="tabela-gerada">
                         <thead><tr><th>Descrição</th><th>Mensal</th><th>Por Hora</th><th>Ação</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
             </div>
 
+            <!-- ABA: PRODUTOS -->
             <div id="cadastrar-produtos" class="subpagina" style="display:none;">
                 <h2 class="section-title-lined">Montagem de Produtos</h2>
                 <form id="form-produtos-cadastrados">
-                    <div class="form-group"><label>Nome do Produto:</label><input type="text" id="nome-produto"></div>
-                    <div style="position:relative;">
-                        <input type="text" id="pesquisa-material" placeholder="Pesquisar material...">
+                    <div class="form-group">
+                        <label>Nome do Produto:</label>
+                        <input type="text" id="nome-produto">
+                    </div>
+                    
+                    <div class="form-group" style="position:relative;">
+                        <label>Adicionar Material:</label>
+                        <input type="text" id="pesquisa-material" placeholder="Digite para pesquisar...">
                         <div id="resultados-pesquisa" style="display:none; position:absolute; background:white; border:1px solid #ccc; width:100%; max-height:150px; overflow-y:auto; z-index:100;"></div>
                     </div>
+                    
                     <div class="table-responsive">
-                        <table id="tabela-materiais-produto">
-                            <thead><tr><th>Material</th><th>Tipo</th><th>Custo Base</th><th>Dim/Qtd</th><th>Qtd</th><th>Total</th><th>Ação</th></tr></thead>
+                        <table id="tabela-materiais-produto" class="tabela-gerada">
+                            <thead><tr><th>Material</th><th>Tipo</th><th>Custo Unit.</th><th>Dimensões</th><th>Qtd</th><th>Total</th><th>Ação</th></tr></thead>
                             <tbody></tbody>
                         </table>
                     </div>
-                    <button type="button" id="cadastrar-produto-btn">Salvar Produto</button>
+                    <button type="button" id="cadastrar-produto-btn">Cadastrar Produto</button>
                 </form>
+
+                <h2>Produtos Cadastrados</h2>
+                <input type="text" id="busca-produto" placeholder="Buscar produto..." onkeyup="buscarProdutosCadastrados()">
                 <div class="table-responsive">
-                    <table id="tabela-produtos">
-                        <thead><tr><th>Produto</th><th>Itens</th><th>-</th><th>Custo Total</th><th>Ação</th></tr></thead>
+                    <table id="tabela-produtos" class="tabela-gerada">
+                        <thead><tr><th>Nome</th><th>Itens</th><th>-</th><th>Custo Total</th><th>Ação</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
             </div>
 
+            <!-- ABA: CÁLCULO -->
             <div id="calculo-precificacao" class="subpagina" style="display:none;">
                 <h2 class="section-title-lined">Calculadora de Preço</h2>
                 <div class="form-group">
-                    <label>Selecione Produto:</label>
-                    <input type="text" id="produto-pesquisa" placeholder="Busque um produto...">
-                    <div id="produto-resultados" class="hidden" style="display:none; position:absolute; background:white; border:1px solid #ccc; max-height:150px; overflow-y:auto; z-index:100;"></div>
+                    <label>Cliente (Opcional):</label>
+                    <input type="text" id="nome-cliente">
                 </div>
-                <div class="info-box">
-                    <p>Custo Materiais: <span id="custo-produto">R$ 0,00</span></p>
-                    <p>Subtotal (Custo): <span id="subtotal">R$ 0,00</span></p>
+
+                <div class="calculation-container">
+                    <div class="section">
+                        <label>Produto:</label>
+                        <input type="text" id="produto-pesquisa" placeholder="Buscar produto...">
+                        <div id="produto-resultados" class="hidden" style="display:none; position:absolute; background:white; border:1px solid #ccc; z-index:100;"></div>
+                        <span class="bracket">}</span>
+                        <span id="custo-produto">R$ 0,00</span>
+                    </div>
+                    <div id="detalhes-produto" style="display:none;">
+                        <ul id="lista-materiais-produto"></ul>
+                    </div>
+
+                    <div class="section">
+                        <label>Horas Gastas:</label>
+                        <input type="number" id="horas-produto" value="1" style="width: 80px;">
+                        <span class="bracket">}</span>
+                        <div id="detalhes-mao-de-obra" style="font-size:0.9em;">
+                            <div>MO: <span id="custo-mao-de-obra-detalhe">R$ 0,00</span></div>
+                            <div>Encargos: <span id="custo-ferias-13o-detalhe">R$ 0,00</span></div>
+                            <div><strong>Total MO: <span id="total-mao-de-obra">R$ 0,00</span></strong></div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <label>Custos Indiretos:</label>
+                        <span class="bracket">}</span>
+                        <span id="custo-indireto">R$ 0,00</span>
+                    </div>
+                    <div id="detalhes-custos-indiretos" style="display:none;">
+                        <ul id="lista-custos-indiretos-detalhes"></ul>
+                    </div>
+
+                    <hr class="subtotal-line">
+                    
+                    <div class="section subtotal">
+                        <span>Subtotal (Custo): </span>
+                        <span id="subtotal">R$ 0,00</span>
+                    </div>
+
+                    <div class="section">
+                        <label>Margem de Lucro (%):</label>
+                        <input type="number" id="margem-lucro-final" value="50" style="width:80px;">
+                        <span> -> </span>
+                        <span id="margem-lucro-valor">R$ 0,00</span>
+                    </div>
+
+                    <div class="section total">
+                        <span>Total Sugerido:</span>
+                        <span id="total-final">R$ 0,00</span>
+                    </div>
+
+                    <div class="section" style="background: #f0f0f0; padding: 10px; border-radius: 10px; margin-top: 10px;">
+                        <label>Taxa Cartão:</label>
+                        <label><input type="radio" id="incluir-taxa-credito-sim" name="taxa"> Sim</label>
+                        <label><input type="radio" id="incluir-taxa-credito-nao" name="taxa" checked> Não</label>
+                        <input type="number" id="taxa-credito-percentual" value="6" style="width:50px;">%
+                        <button type="button" id="btn-salvar-taxa-credito" style="padding: 2px 10px; font-size: 0.8em;">Ok</button>
+                        <div style="text-align:right; margin-top:5px;">
+                            <span>Taxa: <span id="taxa-credito-valor">R$ 0,00</span></span><br>
+                            <strong>Final com Taxa: <span id="total-final-com-taxas" style="font-size:1.2em;">R$ 0,00</span></strong>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Margem de Lucro (%):</label>
-                    <input type="number" id="margem-lucro-final" value="50">
+
+                <div style="text-align: center; margin-top: 20px;">
+                    <button type="button" id="btn-gerar-nota">Salvar Precificação</button>
                 </div>
-                <h3>Preço Final Sugerido: <strong id="total-final" style="font-size:1.4em;">R$ 0,00</strong></h3>
-                <div class="form-group"><label>Cliente:</label><input type="text" id="nome-cliente"></div>
-                <button id="btn-gerar-nota">Salvar Cálculo</button>
             </div>
 
-            <div id="historico-precificacao" class="subpagina" style="display:none;">
-                <h2 class="section-title-lined">Histórico de Cálculos</h2>
+            <!-- ABA: HISTÓRICO -->
+            <div id="precificacoes-geradas" class="subpagina" style="display:none;">
+                <h2 class="section-title-lined">Histórico de Precificações</h2>
+                <div class="form-group">
+                    <input type="text" id="busca-precificacao" placeholder="Filtrar por cliente..." onkeyup="buscarPrecificacoesGeradas()">
+                </div>
                 <div class="table-responsive">
-                    <table id="tabela-precificacoes-geradas">
-                        <thead><tr><th>ID</th><th>Cliente</th><th>Ação</th></tr></thead>
+                    <table id="tabela-precificacoes-geradas" class="tabela-gerada">
+                        <thead><tr><th>Nº/Ano</th><th>Cliente</th><th>Ações</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
             </div>
+
         </div>
     </section>
 
+    <!-- SERVICE WORKER (Para PWA) -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
