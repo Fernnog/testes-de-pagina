@@ -6,6 +6,15 @@
  */
 const changeLogData = [
     {
+        version: "1.0.2",
+        date: "05/12/2025",
+        changes: [
+            "🐛 Correção Crítica: O campo de busca de produtos na Calculadora de Precificação agora exibe a lista de sugestões corretamente.",
+            "🎨 Melhoria UI: A lista de resultados da busca recebeu sombreamento e melhor posicionamento para não quebrar o layout.",
+            "🔧 Ajuste Técnico: Refinamento na lógica de exibição/ocultação (classe .hidden) dos resultados de pesquisa."
+        ]
+    },
+    {
         version: "1.0.1",
         date: "03/12/2025",
         changes: [
@@ -40,7 +49,7 @@ export function initChangelog() {
         return;
     }
 
-    // Pega a versão mais recente
+    // Pega a versão mais recente (o primeiro item do array)
     const latestVer = changeLogData[0].version;
 
     // Cria o elemento visual do indicador
