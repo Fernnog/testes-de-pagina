@@ -757,3 +757,44 @@ input[type="checkbox"] {
     width: 100%;
     margin-bottom: 10px; /* Dá um respiro antes das opções começarem */
 }
+
+/* ========================================================= */
+/*  POWER UX V1.0.4: Spinner e Navegação por Teclado        */
+/* ========================================================= */
+
+/* Wrapper para o input de busca + spinner */
+.input-wrapper input {
+    width: 100% !important; /* Força largura total dentro do wrapper */
+    margin: 0 !important;   /* Remove margem padrão para alinhar com wrapper */
+    box-sizing: border-box;
+    padding-right: 35px;    /* Espaço para o spinner não sobrepor texto longo */
+}
+
+/* Spinner de Carregamento */
+.spinner {
+    position: absolute;
+    right: 15px; /* Distância da borda direita do input */
+    top: 50%;
+    transform: translateY(-50%); /* Centraliza verticalmente */
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3; /* Cor fundo do anel */
+    border-top: 2px solid #7aa2a9; /* Cor principal girando */
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    pointer-events: none; /* Garante que o clique passe através dele */
+    z-index: 1002;
+}
+
+/* Animação de rotação */
+@keyframes spin {
+    0% { transform: translateY(-50%) rotate(0deg); }
+    100% { transform: translateY(-50%) rotate(360deg); }
+}
+
+/* Item selecionado via Setas do Teclado ou Hover */
+#produto-resultados div.selected {
+    background-color: #7aa2a9; /* Cor principal da marca */
+    color: white;
+    font-weight: bold;
+}
