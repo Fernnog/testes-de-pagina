@@ -35,6 +35,7 @@ let custosIndiretosAdicionais = [];
 let produtoEmEdicao = null;
 let materialEmEdicao = null;
 let moduleInitialized = false;
+let searchIndex = -1; // NOVO: Controle da navegação por teclado na busca
 
 // ==========================================================================
 // 3. INICIALIZAÇÃO E CARREGAMENTO
@@ -142,7 +143,6 @@ async function carregarDados() {
 // ==========================================================================
 
 // Função utilitária para atrasar a execução (Debounce)
-// Implementada para otimizar a busca de produtos na calculadora
 function debounce(func, wait) {
     let timeout;
     return function(...args) {
@@ -179,14 +179,43 @@ function setupEventListeners() {
     const inputMat = document.getElementById('pesquisa-material');
     if(inputMat) inputMat.addEventListener('input', buscarMateriaisAutocomplete);
 
-    // Cálculo - AQUI APLICAMOS O DEBOUNCE
+    // Cálculo - AQUI APLICAMOS O DEBOUNCE E LISTENERS DE TECLADO
     const inputProd = document.getElementById('produto-pesquisa');
     if(inputProd) {
-        // Usa debounce com 300ms de espera
+        // Usa debounce com 300ms de espera para o input
         inputProd.addEventListener('input', debounce(buscarProdutosAutocomplete, 300));
+        
+        // NOVO: Navegação por Teclado na Busca (ArrowUp, ArrowDown, Enter)
+        inputProd.addEventListener('keydown', (e) => {
+            const div = document.getElementById('produto-resultados');
+            if (div.classList.contains('hidden')) return;
+
+            const items = div.querySelectorAll('div');
+            if (items.length === 0) return;
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault(); // Evita cursor mover no input
+                searchIndex++;
+                if (searchIndex >= items.length) searchIndex = 0; // Loop volta ao topo
+                updateSelection(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                searchIndex--;
+                if (searchIndex < 0) searchIndex = items.length - 1; // Loop vai pro final
+                updateSelection(items);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (searchIndex > -1 && items[searchIndex]) {
+                    items[searchIndex].click(); // Dispara o evento de clique
+                }
+            } else if (e.key === 'Escape') {
+                div.classList.add('hidden');
+                searchIndex = -1;
+            }
+        });
     }
     
-    // [PRIORIDADE 2] Fechar autocomplete ao clicar fora
+    // Fechar autocomplete ao clicar fora
     document.addEventListener('click', (e) => {
         const resultsDiv = document.getElementById('produto-resultados');
         const searchInput = document.getElementById('produto-pesquisa');
@@ -195,6 +224,7 @@ function setupEventListeners() {
             // Se o clique não foi no input E não foi dentro da lista de resultados
             if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
                 resultsDiv.classList.add('hidden');
+                searchIndex = -1;
             }
         }
     });
@@ -816,42 +846,72 @@ async function removerProduto(id) {
 }
 
 // ==========================================================================
-// 9. MÓDULO: CÁLCULO DE PREÇO
+// 9. MÓDULO: CÁLCULO DE PREÇO (MODIFICADO V1.0.4)
 // ==========================================================================
-// [PRIORIDADE 1] Correção da função de busca para garantir exibição correta
+
+// Função com suporte a Spinner e lógica para teclado
 function buscarProdutosAutocomplete() {
     const termo = this.value.toLowerCase();
     const div = document.getElementById('produto-resultados');
-    div.innerHTML = ''; // Limpa resultados anteriores
+    const spinner = document.getElementById('search-spinner');
+    
+    // Ativa Spinner visualmente
+    if(spinner) spinner.classList.remove('hidden');
+
+    div.innerHTML = '';
+    searchIndex = -1; // Reseta seleção ao digitar
 
     if (!termo) { 
-        div.classList.add('hidden'); // Usa classe CSS em vez de style.display
+        div.classList.add('hidden');
+        if(spinner) spinner.classList.add('hidden');
         return; 
     }
 
-    // Filtra os produtos
     const results = produtos.filter(p => p.nome.toLowerCase().includes(termo));
 
     if (results.length === 0) {
         div.classList.add('hidden');
+        if(spinner) spinner.classList.add('hidden');
         return;
     }
 
-    // Se achou produtos, remove a classe hidden para mostrar a lista
     div.classList.remove('hidden');
 
-    results.forEach(p => {
+    results.forEach((p, index) => {
         const item = document.createElement('div');
         item.textContent = p.nome;
-        // Ao clicar, seleciona e esconde a lista
+        // Importante: Guarda o índice para referência do teclado
+        item.dataset.index = index; 
+        
         item.onclick = () => {
             selecionarProdutoParaCalculo(p);
             div.classList.add('hidden');
-            // Opcional: Mantém o nome no input
             document.getElementById('produto-pesquisa').value = p.nome; 
+            searchIndex = -1;
         };
+        
+        // Suporte mouse hover híbrido com teclado
+        item.onmouseenter = () => {
+            searchIndex = index;
+            updateSelection(div.querySelectorAll('div'));
+        };
+
         div.appendChild(item);
     });
+
+    // Desativa spinner (em cenário real com API, isso seria no 'finally' da promise)
+    // Pequeno delay para efeito visual
+    if(spinner) setTimeout(() => spinner.classList.add('hidden'), 300); 
+}
+
+// Função Auxiliar para atualizar seleção visual
+function updateSelection(items) {
+    items.forEach(item => item.classList.remove('selected'));
+    if (searchIndex > -1 && items[searchIndex]) {
+        items[searchIndex].classList.add('selected');
+        // Garante que o item esteja visível se a lista tiver scroll
+        items[searchIndex].scrollIntoView({ block: 'nearest' });
+    }
 }
 
 function selecionarProdutoParaCalculo(prod) {
@@ -1074,7 +1134,7 @@ async function removerPrecificacao(id) {
 }
 
 // ==========================================================================
-// 11. FUNÇÕES AUXILIARES DE CÁLCULO (IMPORTANTE: REINTRODUZIDAS)
+// 11. FUNÇÕES AUXILIARES DE CÁLCULO
 // ==========================================================================
 
 // Função essencial para recalcular o custo dos itens dentro dos produtos 
