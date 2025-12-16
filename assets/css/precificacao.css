@@ -66,15 +66,6 @@ body {
     color: #333;
 }
 
-/* Opcional:  Fundo #e5c4bf para os inputs da tela de autenticação */
-/*
-.auth-form input[type="email"],
-.auth-form input[type="password"] {
-    background-color: #e5c4bf;
-    color: #333;
-}
-*/
-
 .auth-buttons {
     display: flex;
     justify-content: space-between;
@@ -119,56 +110,53 @@ body {
 
 /* ====  ESTILOS PARA A TOP-BAR (autenticado)  ==== */
 
-/* Estilos *específicos* para a top-bar quando autenticado */
 body.authenticated .top-bar .user-info {
-    color: #333; /* Mantém a cor do texto (ou ajuste se quiser) */
-    background-color: var(--cor-autenticacao-2); /* Fundo #ecd5d1 para o texto */
-    padding: 5px 10px; /* Espaçamento interno para o fundo */
-    border-radius: 20px; /* Bordas arredondadas */
-    display: inline-block; /* Importante para o padding e border-radius funcionarem */
+    color: #333; 
+    background-color: var(--cor-autenticacao-2); 
+    padding: 5px 10px; 
+    border-radius: 20px; 
+    display: inline-block; 
 }
 
 body.authenticated #logoutBtn.logout-button {
-    background-color: var(--cor-autenticacao-1); /* Cor #687f82 para o botão */
-    color: white; /* Mantém o texto em branco */
-     /*Outras propriedades já existentes do botão*/
+    background-color: var(--cor-autenticacao-1);
+    color: white; 
     margin: 0;
-    padding: 8px 15px; /* Ajusta o padding para combinar com o container */
+    padding: 8px 15px; 
     border-radius: 20px;
-    font-size: 14px; /* Ajusta o tamanho da fonte se necessário */
+    font-size: 14px; 
     border: none;
     cursor: pointer;
     margin-top: 10px;
 }
 
 body.authenticated #logoutBtn.logout-button:hover {
-    background-color: #4a5c5e; /* Cor mais escura no hover (ajuste) */
+    background-color: #4a5c5e; 
 }
-/*Manter fundo da .top-bar-content original*/
+
  .top-bar-content {
-    background-color: #e3f2fd; /* Fundo claro e delicado - mesmo do auth-container */
-    padding: 8px 15px; /* Adiciona um pouco de padding interno */
-    border-radius: 20px; /* Arredonda as bordas para combinar com outros elementos */
-    display: flex;         /* Para alinhar user-info e logoutBtn horizontalmente */
-    align-items: center;   /* Alinha verticalmente os itens dentro */
-    justify-content: space-between; /* Espaçamento entre user-info e logoutBtn se necessário */
-    gap: 15px;             /* Espaçamento entre os itens dentro (user-info e logoutBtn) */
+    background-color: #e3f2fd; 
+    padding: 8px 15px; 
+    border-radius: 20px; 
+    display: flex;         
+    align-items: center;   
+    justify-content: space-between; 
+    gap: 15px;             
 }
 
 /* ====  ESTILOS PARA O SLOGAN  ==== */
 
 .slogan {
-    margin-top: 20px; /* Espaço acima do slogan */
-    color: #555;    /* Cor do texto do slogan */
+    margin-top: 20px; 
+    color: #555;    
 }
 
-/* Logo na tela de autenticação */
 .auth-form .logo-container{
     margin-top: 0px;
     margin-bottom: 10px;
 }
 
-/* ====  RESTANTE DOS ESTILOS (já existentes)  ==== */
+/* ====  RESTANTE DOS ESTILOS  ==== */
 
 #app-container {
     width: 90%;
@@ -534,30 +522,6 @@ td {
   display: flex;
 }
 
-#produto-resultados {
-    position: absolute;
-    z-index: 10;
-    border: 1px solid #ccc;
-    background-color: #fff;
-    max-height: 200px;
-    overflow-y: auto;
-    width: calc(80% - 20px);
-}
-
-#produto-resultados div {
-    padding: 8px;
-    cursor: pointer;
-    border-bottom: 1px solid #eee;
-}
-
-#produto-resultados div:hover {
-    background-color: #f0f0f0;
-}
-
-#produto-resultados.hidden{
-  display: none;
-}
-
 #produto-pesquisa{
     width: calc(100% - 22px);
 }
@@ -647,16 +611,12 @@ td {
     padding: 10px 20px;
 }
 
-/*Removido .top-bar-content e colocado acima*/
-
 .top-bar .user-info {
     font-size: 0.9em;
     color: #666;
     padding: 5px 10px;
-    margin: 0;     /* Remove margens padrão se houver */
+    margin: 0;     
 }
-
-/*Removido #logoutBtn.logout-button e colocado acima*/
 
 .tabela-precificacao-detalhada {
     width: 95%;
@@ -703,4 +663,43 @@ td {
 
 .tabela-precificacao-detalhada tbody tr:hover {
     background-color: #f2f2f2;
+}
+
+/* ========================================================= */
+/*  NOVO CSS PARA O AUTOCOMPLETE (CORREÇÃO DE BUG)          */
+/* ========================================================= */
+
+/* Utilitário para ocultar elementos de forma definitiva */
+.hidden {
+    display: none !important;
+}
+
+/* Estilo do Dropdown de Produtos */
+#produto-resultados {
+    position: absolute;
+    top: 100%; /* Aparece logo abaixo do input */
+    left: 0;
+    width: 100%; /* Mesma largura do container pai */
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 0 0 8px 8px; /* Arredonda apenas bordas inferiores */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Sombra suave para destacar */
+    max-height: 200px; /* Limita altura */
+    overflow-y: auto; /* Rolagem se houver muitos itens */
+    z-index: 1000; /* Garante que fique acima de outros elementos */
+}
+
+/* Itens individuais da lista */
+#produto-resultados div {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    color: #333; /* Garante legibilidade */
+    transition: background 0.2s;
+}
+
+/* Efeito ao passar o mouse */
+#produto-resultados div:hover {
+    background-color: #e3f2fd; /* Azul bem claro para destaque */
+    color: #333;
 }
