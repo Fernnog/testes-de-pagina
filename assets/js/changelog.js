@@ -6,12 +6,21 @@
  */
 const changeLogData = [
     {
+        version: "1.0.4",
+        date: "06/12/2025",
+        changes: [
+            "🚀 Power UX: Navegação profissional por teclado na busca de produtos (Setas ↑/↓ e Enter).",
+            "⏳ Feedback Visual: Adicionado indicador de carregamento (spinner) no campo de busca.",
+            "💎 Refinamento de Interface: Destaque visual claro para o item selecionado na lista de sugestões."
+        ]
+    },
+    {
         version: "1.0.3",
         date: "05/12/2025",
         changes: [
             "⚡ Otimização (Debounce): A busca de produtos agora aguarda você parar de digitar, tornando o sistema mais rápido em celulares.",
             "🖱️ UX Melhorada: A lista de sugestões fecha automaticamente ao clicar fora dela, limpando a tela.",
-            "🎨 Correção Visual: Alinhamento dos botões de seleção (Materiais e Encargos) corrigido. Agora o texto fica ao lado da opção, não quebrado."
+            "🎨 Correção Visual: Alinhamento dos botões de seleção (Materiais e Encargos) corrigido."
         ]
     },
     {
@@ -29,7 +38,7 @@ const changeLogData = [
         changes: [
             "🖨️ Restauração da funcionalidade 'Imprimir Orçamento' com layout otimizado.",
             "💰 Inclusão de campos gerenciais ('Margem de Lucro' e 'Custo Mão de Obra') na edição de pedidos.",
-            "🎨 Implementação de regras CSS de impressão (@media print) para ocultar menus e elementos de interface.",
+            "🎨 Implementação de regras CSS de impressão para relatórios mais limpos.",
             "🔧 Ajustes na persistência de dados financeiros no Firebase."
         ]
     },
