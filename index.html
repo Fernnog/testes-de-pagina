@@ -455,7 +455,7 @@
                 </div>
             </div>
 
-            <!-- ABA: CÁLCULO -->
+            <!-- ABA: CÁLCULO (ALTERADO PARA CORREÇÃO DO AUTOCOMPLETE) -->
             <div id="calculo-precificacao" class="subpagina" style="display:none;">
                 <h2 class="section-title-lined">Calculadora de Preço</h2>
                 <div class="form-group">
@@ -464,10 +464,12 @@
                 </div>
 
                 <div class="calculation-container">
-                    <div class="section">
+                    <div class="section" style="position: relative;"> <!-- CORREÇÃO: position: relative -->
                         <label>Produto:</label>
-                        <input type="text" id="produto-pesquisa" placeholder="Buscar produto...">
-                        <div id="produto-resultados" class="hidden" style="display:none; position:absolute; background:white; border:1px solid #ccc; z-index:100;"></div>
+                        <!-- CORREÇÃO: autocomplete off -->
+                        <input type="text" id="produto-pesquisa" placeholder="Buscar produto..." autocomplete="off">
+                        <!-- CORREÇÃO: removido estilo inline e display:none -->
+                        <div id="produto-resultados" class="hidden"></div>
                         <span class="bracket">}</span>
                         <span id="custo-produto">R$ 0,00</span>
                     </div>
