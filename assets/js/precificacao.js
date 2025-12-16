@@ -171,6 +171,19 @@ function setupEventListeners() {
     const inputProd = document.getElementById('produto-pesquisa');
     if(inputProd) inputProd.addEventListener('input', buscarProdutosAutocomplete);
     
+    // [PRIORIDADE 2] Fechar autocomplete ao clicar fora
+    document.addEventListener('click', (e) => {
+        const resultsDiv = document.getElementById('produto-resultados');
+        const searchInput = document.getElementById('produto-pesquisa');
+        
+        if (resultsDiv && searchInput) {
+            // Se o clique não foi no input E não foi dentro da lista de resultados
+            if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
+                resultsDiv.classList.add('hidden');
+            }
+        }
+    });
+    
     bindClick('#btn-gerar-nota', gerarNotaPrecificacao);
     
     // Listeners de recálculo
@@ -790,26 +803,40 @@ async function removerProduto(id) {
 // ==========================================================================
 // 9. MÓDULO: CÁLCULO DE PREÇO
 // ==========================================================================
+// [PRIORIDADE 1] Correção da função de busca para garantir exibição correta
 function buscarProdutosAutocomplete() {
     const termo = this.value.toLowerCase();
     const div = document.getElementById('produto-resultados');
-    div.innerHTML = '';
-    
-    if(!termo) { div.classList.add('hidden'); return; }
-    
+    div.innerHTML = ''; // Limpa resultados anteriores
+
+    if (!termo) { 
+        div.classList.add('hidden'); // Usa classe CSS em vez de style.display
+        return; 
+    }
+
+    // Filtra os produtos
     const results = produtos.filter(p => p.nome.toLowerCase().includes(termo));
+
+    if (results.length === 0) {
+        div.classList.add('hidden');
+        return;
+    }
+
+    // Se achou produtos, remove a classe hidden para mostrar a lista
     div.classList.remove('hidden');
-    
+
     results.forEach(p => {
         const item = document.createElement('div');
         item.textContent = p.nome;
+        // Ao clicar, seleciona e esconde a lista
         item.onclick = () => {
             selecionarProdutoParaCalculo(p);
             div.classList.add('hidden');
+            // Opcional: Mantém o nome no input
+            document.getElementById('produto-pesquisa').value = p.nome; 
         };
         div.appendChild(item);
     });
-    if(results.length === 0) div.classList.add('hidden');
 }
 
 function selecionarProdutoParaCalculo(prod) {
