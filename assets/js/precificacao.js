@@ -140,6 +140,18 @@ async function carregarDados() {
 // ==========================================================================
 // 4. LÓGICA DE NAVEGAÇÃO E HELPERS
 // ==========================================================================
+
+// Função utilitária para atrasar a execução (Debounce)
+// Implementada para otimizar a busca de produtos na calculadora
+function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+        const context = this;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), wait);
+    };
+}
+
 function setupEventListeners() {
     // Navegação
     document.querySelectorAll('#module-precificacao nav ul li a.nav-link').forEach(link => {
@@ -167,9 +179,12 @@ function setupEventListeners() {
     const inputMat = document.getElementById('pesquisa-material');
     if(inputMat) inputMat.addEventListener('input', buscarMateriaisAutocomplete);
 
-    // Cálculo
+    // Cálculo - AQUI APLICAMOS O DEBOUNCE
     const inputProd = document.getElementById('produto-pesquisa');
-    if(inputProd) inputProd.addEventListener('input', buscarProdutosAutocomplete);
+    if(inputProd) {
+        // Usa debounce com 300ms de espera
+        inputProd.addEventListener('input', debounce(buscarProdutosAutocomplete, 300));
+    }
     
     // [PRIORIDADE 2] Fechar autocomplete ao clicar fora
     document.addEventListener('click', (e) => {
