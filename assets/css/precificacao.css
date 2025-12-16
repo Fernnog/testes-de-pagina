@@ -742,9 +742,18 @@ input[type="checkbox"] {
 
 /* 4. Layout em Grid para as opções de Tipo de Material */
 /* Target específico para o grupo de radios de materiais para melhor uso do espaço */
+/* Mantém o container como flex para as opções ficarem lado a lado */
 #form-materiais-insumos .form-group:nth-child(2) {
     display: flex;
     flex-wrap: wrap;
-    gap: 15px;
+    gap: 15px; /* Espaçamento entre as opções */
     align-items: center;
+}
+
+/* NOVO: Força o Título "Tipo de Material:" a quebrar a linha */
+/* Isso garante que ele fique sozinho na primeira linha */
+#form-materiais-insumos .form-group:nth-child(2) > label:first-child {
+    flex-basis: 100%; /* Ocupa 100% da largura do container */
+    width: 100%;
+    margin-bottom: 10px; /* Dá um respiro antes das opções começarem */
 }
