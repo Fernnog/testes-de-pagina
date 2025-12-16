@@ -6,6 +6,15 @@
  */
 const changeLogData = [
     {
+        version: "1.0.3",
+        date: "05/12/2025",
+        changes: [
+            "⚡ Otimização (Debounce): A busca de produtos agora aguarda você parar de digitar, tornando o sistema mais rápido em celulares.",
+            "🖱️ UX Melhorada: A lista de sugestões fecha automaticamente ao clicar fora dela, limpando a tela.",
+            "🎨 Correção Visual: Alinhamento dos botões de seleção (Materiais e Encargos) corrigido. Agora o texto fica ao lado da opção, não quebrado."
+        ]
+    },
+    {
         version: "1.0.2",
         date: "05/12/2025",
         changes: [
