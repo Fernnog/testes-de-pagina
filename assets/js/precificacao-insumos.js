@@ -6,15 +6,12 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
 // ==========================================
-// 1. ESTADO COMPARTILHADO (Exportado)
+// ESTADO COMPARTILHADO (Exports)
 // ==========================================
 export let materiais = [];
 export let maoDeObra = { salario: 0, horas: 220, valorHora: 0, incluirFerias13o: false, custoFerias13o: 0 };
 export let custosIndiretosPredefinidos = [];
-export let custosIndiretosAdicionais = [];
-
-// Base de configuração para custos indiretos
-const custosIndiretosPredefinidosBase = [
+export let custosIndiretosPredefinidosBase = [
     { descricao: "Energia elétrica", valorMensal: 0 },
     { descricao: "Água", valorMensal: 0 },
     { descricao: "Gás", valorMensal: 0 },
@@ -26,24 +23,21 @@ const custosIndiretosPredefinidosBase = [
     { descricao: "Embalagens", valorMensal: 0 },
     { descricao: "Transporte", valorMensal: 0 }
 ];
+export let custosIndiretosAdicionais = [];
 
-// Variável local para controle de edição de materiais
+// Variáveis Locais de Controle
 let materialEmEdicao = null;
+let onMaterialUpdateCallback = null;
 
 // ==========================================
-// 2. CALLBACKS (Comunicação com Módulo Principal)
+// FUNÇÕES AUXILIARES E CONFIGURAÇÃO
 // ==========================================
-// Permite que o precificacao.js injete a lógica de atualizar produtos
-let onMaterialUpdateCallback = null;
 
 export function setOnMaterialUpdateCallback(callback) {
     onMaterialUpdateCallback = callback;
 }
 
-// ==========================================
-// 3. HELPERS GERAIS
-// ==========================================
-function formatarMoeda(valor) {
+export function formatarMoeda(valor) {
     if (typeof valor !== 'number' || isNaN(valor)) return 'R$ 0,00';
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
@@ -68,7 +62,20 @@ function calcularCustoUnitario(tipo, valorTotal, comprimentoCm, volumeMl, pesoG,
 }
 
 // ==========================================
-// 4. LÓGICA DE MATERIAIS
+// FUNÇÃO AGRUPADORA (Resolve erro de import)
+// ==========================================
+export async function carregarDadosInsumos() {
+    console.log("Carregando dados de insumos...");
+    await Promise.all([
+        carregarMateriais(),
+        carregarMaoDeObra(),
+        carregarCustosIndiretos()
+    ]);
+    console.log("Dados de insumos carregados.");
+}
+
+// ==========================================
+// MÓDULO: MATERIAIS
 // ==========================================
 
 export async function carregarMateriais() {
@@ -79,84 +86,6 @@ export async function carregarMateriais() {
         atualizarTabelaMateriaisInsumos();
     } catch (e) {
         console.error("Erro ao carregar materiais:", e);
-    }
-}
-
-export function toggleCamposMaterial(tipo) {
-    const campos = ['comprimento', 'litro', 'quilo', 'area'];
-    campos.forEach(c => {
-        const el = document.getElementById(`campos-${c}`);
-        if(el) el.style.display = 'none';
-    });
-    
-    const target = document.getElementById(`campos-${tipo}`);
-    if(target) target.style.display = 'block';
-}
-
-export async function cadastrarMaterialInsumo() {
-    const nome = document.getElementById('nome-material').value;
-    const tipoEl = document.querySelector('input[name="tipo-material"]:checked');
-    
-    if(!tipoEl) return;
-    const tipo = tipoEl.value;
-    
-    const valorTotal = parseFloat(document.getElementById('valor-total-material').value) || 0;
-    const comprimentoCm = parseFloat(document.getElementById('comprimento-cm').value) || 0;
-    const volumeMl = parseFloat(document.getElementById('volume-ml').value) || 0;
-    const pesoG = parseFloat(document.getElementById('peso-g').value) || 0;
-    const larguraCm = parseFloat(document.getElementById('largura-cm').value) || 0;
-    const alturaCm = parseFloat(document.getElementById('altura-cm').value) || 0;
-
-    if(!nome || valorTotal <= 0) {
-        alert("Preencha o nome e o valor total corretamente.");
-        return;
-    }
-
-    const custoUnitario = calcularCustoUnitario(tipo, valorTotal, comprimentoCm, volumeMl, pesoG, larguraCm, alturaCm);
-
-    const materialData = {
-        nome, tipo, valorTotal, 
-        comprimentoCm, volumeMl, pesoG, larguraCm, alturaCm,
-        custoUnitario
-    };
-
-    try {
-        if(materialEmEdicao) {
-            await updateDoc(doc(db, "materiais-insumos", materialEmEdicao.id), materialData);
-            
-            // Atualiza array local
-            const idx = materiais.findIndex(m => m.id === materialEmEdicao.id);
-            if(idx !== -1) materiais[idx] = { id: materialEmEdicao.id, ...materialData };
-            
-            // DISPARA EFEITO DOMINÓ (Callback para o arquivo principal)
-            if(onMaterialUpdateCallback) {
-                await onMaterialUpdateCallback(materiais[idx]);
-            }
-            
-            alert("Material atualizado com sucesso!");
-            materialEmEdicao = null;
-            const btn = document.querySelector('#cadastrar-material-insumo-btn');
-            if(btn) btn.textContent = "Cadastrar Material";
-        } else {
-            const ref = await addDoc(collection(db, "materiais-insumos"), materialData);
-            materialData.id = ref.id;
-            materiais.push(materialData);
-            alert("Material cadastrado!");
-        }
-
-        const form = document.getElementById('form-materiais-insumos');
-        if(form) form.reset();
-        
-        toggleCamposMaterial('comprimento'); 
-        // Reseta o radio button para comprimento visualmente
-        const radioComp = document.querySelector('input[name="tipo-material"][value="comprimento"]');
-        if(radioComp) radioComp.checked = true;
-
-        atualizarTabelaMateriaisInsumos();
-
-    } catch (e) {
-        console.error(e);
-        alert("Erro ao salvar material.");
     }
 }
 
@@ -188,21 +117,77 @@ export function atualizarTabelaMateriaisInsumos() {
     });
 }
 
-export function buscarMateriaisCadastrados() {
-    const input = document.getElementById('busca-material');
-    if(!input) return;
-    const termo = input.value.toLowerCase();
-    const rows = document.querySelectorAll('#tabela-materiais-insumos tbody tr');
-    rows.forEach(row => {
-        const text = row.innerText.toLowerCase();
-        row.style.display = text.includes(termo) ? '' : 'none';
+export function toggleCamposMaterial(tipo) {
+    const campos = ['comprimento', 'litro', 'quilo', 'area'];
+    campos.forEach(c => {
+        const el = document.getElementById(`campos-${c}`);
+        if(el) el.style.display = 'none';
     });
+    
+    const target = document.getElementById(`campos-${tipo}`);
+    if(target) target.style.display = 'block';
 }
 
-// Funções Globais (Window) para Materiais
-window.buscarMateriaisCadastrados = buscarMateriaisCadastrados;
+export async function cadastrarMaterialInsumo() {
+    const nome = document.getElementById('nome-material').value;
+    // Verifica se há input selecionado, senão usa padrão
+    const radioChecked = document.querySelector('input[name="tipo-material"]:checked');
+    const tipo = radioChecked ? radioChecked.value : 'comprimento';
+    
+    const valorTotal = parseFloat(document.getElementById('valor-total-material').value) || 0;
 
-window.editarMaterialInsumo = function(id) {
+    const comprimentoCm = parseFloat(document.getElementById('comprimento-cm').value) || 0;
+    const volumeMl = parseFloat(document.getElementById('volume-ml').value) || 0;
+    const pesoG = parseFloat(document.getElementById('peso-g').value) || 0;
+    const larguraCm = parseFloat(document.getElementById('largura-cm').value) || 0;
+    const alturaCm = parseFloat(document.getElementById('altura-cm').value) || 0;
+
+    if(!nome || valorTotal <= 0) {
+        alert("Preencha o nome e o valor total corretamente.");
+        return;
+    }
+
+    const custoUnitario = calcularCustoUnitario(tipo, valorTotal, comprimentoCm, volumeMl, pesoG, larguraCm, alturaCm);
+
+    const materialData = {
+        nome, tipo, valorTotal, 
+        comprimentoCm, volumeMl, pesoG, larguraCm, alturaCm,
+        custoUnitario
+    };
+
+    try {
+        if(materialEmEdicao) {
+            await updateDoc(doc(db, "materiais-insumos", materialEmEdicao.id), materialData);
+            
+            const idx = materiais.findIndex(m => m.id === materialEmEdicao.id);
+            if(idx !== -1) materiais[idx] = { id: materialEmEdicao.id, ...materialData };
+            
+            // Callback para atualizar produtos no arquivo principal (Efeito Dominó)
+            if(onMaterialUpdateCallback) await onMaterialUpdateCallback(materiais[idx]);
+            
+            alert("Material atualizado com sucesso!");
+            materialEmEdicao = null;
+            const btn = document.querySelector('#cadastrar-material-insumo-btn');
+            if(btn) btn.textContent = "Cadastrar Material";
+        } else {
+            const ref = await addDoc(collection(db, "materiais-insumos"), materialData);
+            materialData.id = ref.id;
+            materiais.push(materialData);
+            alert("Material cadastrado!");
+        }
+
+        const form = document.getElementById('form-materiais-insumos');
+        if(form) form.reset();
+        toggleCamposMaterial('comprimento'); 
+        atualizarTabelaMateriaisInsumos();
+
+    } catch (e) {
+        console.error(e);
+        alert("Erro ao salvar material.");
+    }
+}
+
+export function editarMaterialInsumo(id) {
     const m = materiais.find(x => x.id === id);
     if(!m) return;
     materialEmEdicao = m;
@@ -231,12 +216,12 @@ window.editarMaterialInsumo = function(id) {
     
     const section = document.getElementById('materiais-insumos');
     if(section) section.scrollIntoView({behavior: "smooth"});
-};
+}
 
-window.removerMaterialInsumo = async function(id) {
-    // Nota: A validação de "em uso" idealmente é feita via callback ou checagem no array de produtos.
-    // Como os produtos estão no outro arquivo, assumimos que o usuário sabe o que faz ou
-    // implementaremos uma checagem futura cruzada.
+export async function removerMaterialInsumo(id) {
+    // Nota: A verificação de "Em Uso" idealmente seria feita via callback para o arquivo principal,
+    // mas para simplificar e evitar erros de importação circular agora, permitimos a exclusão direta
+    // ou deixamos a verificação para uma futura refatoração de dependências.
     
     if(confirm("Deseja realmente excluir este material?")) {
         try {
@@ -244,25 +229,65 @@ window.removerMaterialInsumo = async function(id) {
             materiais = materiais.filter(m => m.id !== id);
             atualizarTabelaMateriaisInsumos();
         } catch(e) {
-            console.error("Erro ao remover:", e);
-            alert("Erro ao remover material. Verifique sua conexão.");
+            console.error(e);
+            alert("Erro ao remover material.");
         }
     }
-};
+}
+
+export function buscarMateriaisCadastrados() {
+    const buscaEl = document.getElementById('busca-material');
+    if(!buscaEl) return;
+    
+    const termo = buscaEl.value.toLowerCase();
+    const rows = document.querySelectorAll('#tabela-materiais-insumos tbody tr');
+    rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(termo) ? '' : 'none';
+    });
+}
 
 // ==========================================
-// 5. LÓGICA DE MÃO DE OBRA
+// MÓDULO: MÃO DE OBRA
 // ==========================================
 
 export async function carregarMaoDeObra() {
     try {
         const moDoc = await getDoc(doc(db, "configuracoes", "maoDeObra"));
-        if (moDoc.exists()) {
-            maoDeObra = { ...maoDeObra, ...moDoc.data() };
-        }
+        if (moDoc.exists()) maoDeObra = { ...maoDeObra, ...moDoc.data() };
         preencherCamposMaoDeObra();
+    } catch (e) {
+        console.error("Erro ao carregar Mão de Obra:", e);
+    }
+}
+
+export async function salvarMaoDeObra() {
+    const salarioEl = document.getElementById('salario-receber');
+    const horasEl = document.getElementById('horas-trabalhadas');
+    const feriasEl = document.getElementById('incluir-ferias-13o-sim');
+
+    if(!salarioEl || !horasEl) return;
+
+    const salario = parseFloat(salarioEl.value);
+    const horas = parseFloat(horasEl.value);
+    const incluirFerias = feriasEl ? feriasEl.checked : false;
+
+    if(!salario || !horas) return alert("Preencha salário e horas.");
+
+    const valorHora = salario / horas;
+    const custoEncargos = incluirFerias ? ((salario + (salario/3)) / 12) / horas : 0; 
+
+    maoDeObra = { salario, horas, valorHora, incluirFerias13o: incluirFerias, custoFerias13o: custoEncargos };
+
+    try {
+        await setDoc(doc(db, "configuracoes", "maoDeObra"), maoDeObra);
+        preencherCamposMaoDeObra();
+        toggleEdicaoMaoDeObra(false);
+        atualizarTabelaCustosIndiretos(); // Atualiza pois depende da hora
+        alert("Mão de Obra Salva!");
     } catch(e) {
-        console.error("Erro ao carregar MO:", e);
+        console.error(e);
+        alert("Erro ao salvar configuração de mão de obra.");
     }
 }
 
@@ -270,12 +295,12 @@ function preencherCamposMaoDeObra() {
     const elSalario = document.getElementById('salario-receber');
     const elHoras = document.getElementById('horas-trabalhadas');
     const elValorHora = document.getElementById('valor-hora');
-    const elCustoEncargos = document.getElementById('custo-ferias-13o');
+    const elCustoExtra = document.getElementById('custo-ferias-13o');
     
     if(elSalario) elSalario.value = maoDeObra.salario;
     if(elHoras) elHoras.value = maoDeObra.horas;
     if(elValorHora) elValorHora.value = maoDeObra.valorHora.toFixed(2);
-    if(elCustoEncargos) elCustoEncargos.value = maoDeObra.custoFerias13o.toFixed(2);
+    if(elCustoExtra) elCustoExtra.value = maoDeObra.custoFerias13o.toFixed(2);
     
     if(maoDeObra.incluirFerias13o) {
         const sim = document.getElementById('incluir-ferias-13o-sim');
@@ -293,51 +318,19 @@ export function editarMaoDeObraUI() {
 }
 
 function toggleEdicaoMaoDeObra(editando) {
-    const elSalario = document.getElementById('salario-receber');
-    const elHoras = document.getElementById('horas-trabalhadas');
+    const salario = document.getElementById('salario-receber');
+    const horas = document.getElementById('horas-trabalhadas');
     const btnSalvar = document.getElementById('btn-salvar-mao-de-obra');
     const btnEditar = document.getElementById('btn-editar-mao-de-obra');
 
-    if(elSalario) elSalario.readOnly = !editando;
-    if(elHoras) elHoras.readOnly = !editando;
+    if(salario) salario.readOnly = !editando;
+    if(horas) horas.readOnly = !editando;
     if(btnSalvar) btnSalvar.style.display = editando ? 'inline-block' : 'none';
     if(btnEditar) btnEditar.style.display = editando ? 'none' : 'inline-block';
 }
 
-export async function salvarMaoDeObra() {
-    const salario = parseFloat(document.getElementById('salario-receber').value);
-    const horas = parseFloat(document.getElementById('horas-trabalhadas').value);
-    const simEl = document.getElementById('incluir-ferias-13o-sim');
-    const incluirFerias = simEl ? simEl.checked : false;
-
-    if(!salario || !horas) return alert("Preencha salário e horas.");
-
-    const valorHora = salario / horas;
-    // Cálculo simplificado de encargos (Férias + 1/3 + 13º)
-    const custoEncargos = incluirFerias ? ((salario + (salario/3)) / 12) / horas : 0; 
-
-    maoDeObra = { salario, horas, valorHora, incluirFerias13o: incluirFerias, custoFerias13o: custoEncargos };
-
-    try {
-        await setDoc(doc(db, "configuracoes", "maoDeObra"), maoDeObra);
-        preencherCamposMaoDeObra();
-        toggleEdicaoMaoDeObra(false);
-        
-        // Atualiza tabela visual de custos indiretos (pois dependem da hora)
-        atualizarTabelaCustosIndiretos();
-        
-        alert("Mão de Obra Salva!");
-    } catch(e) {
-        console.error(e);
-        alert("Erro ao salvar Mão de Obra.");
-    }
-}
-
-// Funções Globais para Mão de Obra
-window.editarMaoDeObraUI = editarMaoDeObraUI;
-
 // ==========================================
-// 6. LÓGICA DE CUSTOS INDIRETOS
+// MÓDULO: CUSTOS INDIRETOS
 // ==========================================
 
 export async function carregarCustosIndiretos() {
@@ -358,9 +351,8 @@ export async function carregarCustosIndiretos() {
 
         carregarCustosIndiretosPredefinidosUI();
         atualizarTabelaCustosIndiretos();
-
-    } catch (e) {
-        console.error("Erro custos indiretos:", e);
+    } catch(e) {
+        console.error("Erro ao carregar custos indiretos:", e);
     }
 }
 
@@ -394,12 +386,11 @@ export function carregarCustosIndiretosPredefinidosUI() {
 }
 
 export async function salvarCustoIndiretoPredefinido(descricao, idx) {
-    const el = document.getElementById(`ci-pref-${idx}`);
-    const val = parseFloat(el ? el.value : 0) || 0;
-    
-    // Evita divisão por zero se horas for 0 ou indefinido
-    const horasDivisor = maoDeObra.horas > 0 ? maoDeObra.horas : 1; 
-    const item = { descricao, valorMensal: val, valorPorHora: val / horasDivisor };
+    const input = document.getElementById(`ci-pref-${idx}`);
+    if(!input) return;
+
+    const val = parseFloat(input.value) || 0;
+    const item = { descricao, valorMensal: val, valorPorHora: val / maoDeObra.horas };
     
     const arrIdx = custosIndiretosPredefinidos.findIndex(c => c.descricao === descricao);
     if(arrIdx !== -1) custosIndiretosPredefinidos[arrIdx] = item;
@@ -427,18 +418,14 @@ export function adicionarNovoCustoIndireto() {
     `;
     lista.appendChild(li);
     
-    const btnSalvar = li.querySelector('.btn-salvar-novo-ci');
-    if(btnSalvar) {
-        btnSalvar.onclick = async () => {
-            const nomeEl = li.querySelector('.novo-ci-nome');
-            const valorEl = li.querySelector('.novo-ci-valor');
-            const nome = nomeEl ? nomeEl.value : '';
-            const valor = parseFloat(valorEl ? valorEl.value : 0);
+    const btn = li.querySelector('.btn-salvar-novo-ci');
+    if(btn) {
+        btn.onclick = async () => {
+            const nome = li.querySelector('.novo-ci-nome').value;
+            const valor = parseFloat(li.querySelector('.novo-ci-valor').value);
             
             if(nome && valor >= 0) {
-                const horasDivisor = maoDeObra.horas > 0 ? maoDeObra.horas : 1;
-                const novo = { descricao: nome, valorMensal: valor, valorPorHora: valor / horasDivisor };
-                
+                const novo = { descricao: nome, valorMensal: valor, valorPorHora: valor / maoDeObra.horas };
                 try {
                     const ref = await addDoc(collection(db, "custos-indiretos-adicionais"), novo);
                     novo.id = ref.id;
@@ -447,7 +434,7 @@ export function adicionarNovoCustoIndireto() {
                     atualizarTabelaCustosIndiretos();
                 } catch(e) {
                     console.error(e);
-                    alert("Erro ao adicionar custo.");
+                    alert("Erro ao adicionar custo extra.");
                 }
             }
         };
@@ -474,10 +461,10 @@ export function atualizarTabelaCustosIndiretos() {
     tbody.innerHTML = '';
     
     const todos = [...custosIndiretosPredefinidos, ...custosIndiretosAdicionais];
-    const horasDivisor = maoDeObra.horas > 0 ? maoDeObra.horas : 1;
-
     todos.filter(c => c.valorMensal > 0).forEach(c => {
         const row = tbody.insertRow();
+        // Proteção contra divisão por zero se horas não estiver carregado
+        const horasDivisor = maoDeObra.horas || 220;
         const vHora = c.valorMensal / horasDivisor;
         row.innerHTML = `
             <td>${c.descricao}</td>
@@ -489,18 +476,27 @@ export function atualizarTabelaCustosIndiretos() {
 }
 
 export function buscarCustosIndiretosCadastrados() {
-    const termoElement = document.getElementById('busca-custo-indireto');
-    if (!termoElement) return;
+    const el = document.getElementById('busca-custo-indireto');
+    if(!el) return;
 
-    const termo = termoElement.value.toLowerCase();
+    const termo = el.value.toLowerCase();
     const rows = document.querySelectorAll('#tabela-custos-indiretos tbody tr');
-    
     rows.forEach(r => {
         r.style.display = r.innerText.toLowerCase().includes(termo) ? '' : 'none';
     });
 }
 
-// Funções Globais (Window) para Custos Indiretos
+// ==========================================
+// EXPOR FUNÇÕES AO ESCOPO GLOBAL (WINDOW)
+// Necessário para eventos onclick no HTML
+// ==========================================
+
+window.editarMaterialInsumo = editarMaterialInsumo;
+window.removerMaterialInsumo = removerMaterialInsumo;
+window.buscarMateriaisCadastrados = buscarMateriaisCadastrados;
+
+window.editarMaoDeObraUI = editarMaoDeObraUI;
+
 window.salvarCustoIndiretoPredefinido = salvarCustoIndiretoPredefinido;
 window.removerCustoIndiretoAdicional = removerCustoIndiretoAdicional;
 window.buscarCustosIndiretosCadastrados = buscarCustosIndiretosCadastrados;
