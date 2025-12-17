@@ -11,8 +11,7 @@ let materiais = [];
 let produtos = [];
 let precificacoesGeradas = [];
 let maoDeObra = { salario: 0, horas: 220, valorHora: 0, incluirFerias13o: false, custoFerias13o: 0 };
-let taxaCredito = { percentual: 6, incluir: false }; // Padrão 6% conforme antigo
-let proximoNumeroPrecificacao = 1;
+let taxaCredito = { percentual: 6, incluir: false }; // Padrão 6%
 let margemLucroPadrao = 50;
 
 // Custos Indiretos
@@ -35,7 +34,7 @@ let custosIndiretosAdicionais = [];
 let produtoEmEdicao = null;
 let materialEmEdicao = null;
 let moduleInitialized = false;
-let searchIndex = -1; // NOVO: Controle da navegação por teclado na busca
+let searchIndex = -1; // Controle da navegação por teclado na busca
 
 // ==========================================================================
 // 3. INICIALIZAÇÃO E CARREGAMENTO
@@ -44,7 +43,6 @@ export async function initPrecificacao() {
     console.log("Inicializando Módulo Precificação Completo...");
     
     // EXPOR FUNÇÕES AO ESCOPO GLOBAL (WINDOW)
-    // Necessário porque o HTML gerado dinamicamente usa onclick="funcao()"
     window.buscarMateriaisCadastrados = buscarMateriaisCadastrados;
     window.editarMaterialInsumo = editarMaterialInsumo;
     window.removerMaterialInsumo = removerMaterialInsumo;
@@ -77,10 +75,8 @@ async function carregarDados() {
     if (!user) return;
 
     try {
-        // A. Configurações Globais
-        const numDoc = await getDoc(doc(db, "configuracoes", "numeracao"));
-        if (numDoc.exists()) proximoNumeroPrecificacao = numDoc.data().proximoNumero;
-
+        // A. Configurações Globais (Mão de Obra e Taxas)
+        // Nota: Removemos a leitura de 'numeracao' pois a lógica agora é dinâmica
         const moDoc = await getDoc(doc(db, "configuracoes", "maoDeObra"));
         if (moDoc.exists()) maoDeObra = { ...maoDeObra, ...moDoc.data() };
 
@@ -142,7 +138,6 @@ async function carregarDados() {
 // 4. LÓGICA DE NAVEGAÇÃO E HELPERS
 // ==========================================================================
 
-// Função utilitária para atrasar a execução (Debounce)
 function debounce(func, wait) {
     let timeout;
     return function(...args) {
@@ -179,13 +174,12 @@ function setupEventListeners() {
     const inputMat = document.getElementById('pesquisa-material');
     if(inputMat) inputMat.addEventListener('input', buscarMateriaisAutocomplete);
 
-    // Cálculo - AQUI APLICAMOS O DEBOUNCE E LISTENERS DE TECLADO
+    // Cálculo - Busca de Produto
     const inputProd = document.getElementById('produto-pesquisa');
     if(inputProd) {
-        // Usa debounce com 300ms de espera para o input
         inputProd.addEventListener('input', debounce(buscarProdutosAutocomplete, 300));
         
-        // NOVO: Navegação por Teclado na Busca (ArrowUp, ArrowDown, Enter)
+        // Navegação por Teclado na Busca
         inputProd.addEventListener('keydown', (e) => {
             const div = document.getElementById('produto-resultados');
             if (div.classList.contains('hidden')) return;
@@ -194,19 +188,19 @@ function setupEventListeners() {
             if (items.length === 0) return;
             
             if (e.key === 'ArrowDown') {
-                e.preventDefault(); // Evita cursor mover no input
+                e.preventDefault();
                 searchIndex++;
-                if (searchIndex >= items.length) searchIndex = 0; // Loop volta ao topo
+                if (searchIndex >= items.length) searchIndex = 0;
                 updateSelection(items);
             } else if (e.key === 'ArrowUp') {
                 e.preventDefault();
                 searchIndex--;
-                if (searchIndex < 0) searchIndex = items.length - 1; // Loop vai pro final
+                if (searchIndex < 0) searchIndex = items.length - 1;
                 updateSelection(items);
             } else if (e.key === 'Enter') {
                 e.preventDefault();
                 if (searchIndex > -1 && items[searchIndex]) {
-                    items[searchIndex].click(); // Dispara o evento de clique
+                    items[searchIndex].click();
                 }
             } else if (e.key === 'Escape') {
                 div.classList.add('hidden');
@@ -221,7 +215,6 @@ function setupEventListeners() {
         const searchInput = document.getElementById('produto-pesquisa');
         
         if (resultsDiv && searchInput) {
-            // Se o clique não foi no input E não foi dentro da lista de resultados
             if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
                 resultsDiv.classList.add('hidden');
                 searchIndex = -1;
@@ -287,47 +280,38 @@ function calcularCustoUnitario(tipo, valorTotal, comprimentoCm, volumeMl, pesoG,
     if (valorTotal <= 0) return 0;
 
     switch (tipo) {
-        case "comprimento": custo = valorTotal / (comprimentoCm / 100); break; // R$/metro
-        case "litro": custo = valorTotal / (volumeMl / 1000); break; // R$/litro
-        case "quilo": custo = valorTotal / (pesoG / 1000); break; // R$/kg
-        case "unidade": custo = valorTotal; break; // R$/unidade
-        case "area": custo = valorTotal / ((larguraCm / 100) * (alturaCm / 100)); break; // R$/m²
+        case "comprimento": custo = valorTotal / (comprimentoCm / 100); break;
+        case "litro": custo = valorTotal / (volumeMl / 1000); break;
+        case "quilo": custo = valorTotal / (pesoG / 1000); break;
+        case "unidade": custo = valorTotal; break;
+        case "area": custo = valorTotal / ((larguraCm / 100) * (alturaCm / 100)); break;
     }
     return custo;
 }
 
-// --- FUNÇÃO DE EFEITO DOMINÓ (ATUALIZAÇÃO EM CASCATA) ---
 async function atualizarCustosProdutosPorMaterial(material) {
     console.log(`Atualizando produtos que usam: ${material.nome}`);
     
-    // Filtra produtos que contêm este material
     const produtosAfetados = produtos.filter(p => p.materiais.some(m => m.materialId === material.id));
 
     for (const prod of produtosAfetados) {
-        // Atualiza o custo unitário e recalcula o total de cada item
         prod.materiais.forEach(item => {
             if (item.materialId === material.id) {
-                // Atualiza a referência do custo unitário do material
                 item.material.custoUnitario = material.custoUnitario;
-                // Recalcula o custo total deste item específico (função auxiliar abaixo)
                 item.custoTotal = calcularCustoTotalItem(item); 
             }
         });
         
-        // Recalcula o custo total do produto (soma dos itens)
         prod.custoTotal = prod.materiais.reduce((acc, item) => acc + item.custoTotal, 0);
 
-        // Salva no Banco
         await updateDoc(doc(db, "produtos", prod.id), {
             materiais: prod.materiais,
             custoTotal: prod.custoTotal
         });
     }
     
-    // Atualiza tabela visualmente se houver mudanças
     if (produtosAfetados.length > 0) {
         atualizarTabelaProdutosCadastrados();
-        // Se houver um produto selecionado na calculadora que foi afetado, recalcula a tela de precificação
         const produtoSelecionadoNome = document.getElementById('produto-pesquisa').value;
         if (produtoSelecionadoNome) {
             const produtoSelecionado = produtos.find(p => p.nome === produtoSelecionadoNome);
@@ -366,16 +350,14 @@ async function cadastrarMaterialInsumo() {
         if(materialEmEdicao) {
             await updateDoc(doc(db, "materiais-insumos", materialEmEdicao.id), materialData);
             
-            // Atualiza array local
             const idx = materiais.findIndex(m => m.id === materialEmEdicao.id);
             if(idx !== -1) materiais[idx] = { id: materialEmEdicao.id, ...materialData };
             
-            // DISPARA EFEITO DOMINÓ
             await atualizarCustosProdutosPorMaterial(materiais[idx]);
             
             alert("Material atualizado com sucesso!");
             materialEmEdicao = null;
-            document.querySelector('#cadastrar-material-insumo-btn').textContent = "Cadastrar";
+            document.querySelector('#cadastrar-material-insumo-btn').textContent = "Cadastrar Material";
         } else {
             const ref = await addDoc(collection(db, "materiais-insumos"), materialData);
             materialData.id = ref.id;
@@ -486,7 +468,6 @@ async function salvarMaoDeObra() {
     if(!salario || !horas) return alert("Preencha salário e horas.");
 
     const valorHora = salario / horas;
-    // Cálculo simplificado de encargos (Férias + 1/3 + 13º)
     const custoEncargos = incluirFerias ? ((salario + (salario/3)) / 12) / horas : 0; 
 
     maoDeObra = { salario, horas, valorHora, incluirFerias13o: incluirFerias, custoFerias13o: custoEncargos };
@@ -496,7 +477,6 @@ async function salvarMaoDeObra() {
     preencherCamposMaoDeObra();
     toggleEdicaoMaoDeObra(false);
     
-    // Atualiza tabela visual de custos indiretos (pois dependem da hora)
     atualizarTabelaCustosIndiretos();
     
     alert("Mão de Obra Salva!");
@@ -533,7 +513,6 @@ function carregarCustosIndiretosPredefinidosUI() {
     if(!lista) return;
     lista.innerHTML = '';
 
-    // Renderiza Predefinidos
     custosIndiretosPredefinidosBase.forEach((base, idx) => {
         const atual = custosIndiretosPredefinidos.find(c => c.descricao === base.descricao) || base;
         const li = document.createElement('li');
@@ -545,7 +524,6 @@ function carregarCustosIndiretosPredefinidosUI() {
         lista.appendChild(li);
     });
 
-    // Renderiza Adicionais
     custosIndiretosAdicionais.forEach(add => {
         const li = document.createElement('li');
         li.innerHTML = `
@@ -675,7 +653,6 @@ function adicionarMaterialNaTabelaProduto(mat, dadosSalvos = null) {
         valDimensao = dadosSalvos ? dadosSalvos.peso : mat.pesoG;
         inputDimensao = `<input type="number" class="dim-input" value="${valDimensao}" style="width:60px"> g`;
     } else {
-        // Unidade
         const qtdUn = dadosSalvos ? dadosSalvos.quantidadeMaterial : 1;
         inputDimensao = `<input type="number" class="dim-input" value="${qtdUn}" style="width:60px"> un`;
     }
@@ -702,7 +679,6 @@ function adicionarMaterialNaTabelaProduto(mat, dadosSalvos = null) {
 function recalcularLinhaProduto(row, mat) {
     const qtd = parseFloat(row.querySelector('.qtd-input').value) || 0;
     
-    // Constrói objeto temporário para usar a função auxiliar de cálculo
     const itemTemp = {
         tipo: mat.tipo,
         material: { custoUnitario: mat.custoUnitario },
@@ -742,7 +718,6 @@ async function cadastrarProduto() {
         const qtd = parseFloat(row.querySelector('.qtd-input').value);
         const custoItem = parseFloat(row.dataset.total);
 
-        // Resgata dimensões usadas
         let comp=0, larg=0, alt=0, vol=0, peso=0, qtdMat=0;
         
         if(tipo === 'comprimento') comp = parseFloat(row.querySelector('.dim-input').value);
@@ -846,20 +821,18 @@ async function removerProduto(id) {
 }
 
 // ==========================================================================
-// 9. MÓDULO: CÁLCULO DE PREÇO (MODIFICADO V1.0.4)
+// 9. MÓDULO: CÁLCULO DE PREÇO (COM AUTOCOMPLETE e SPINNER)
 // ==========================================================================
 
-// Função com suporte a Spinner e lógica para teclado
 function buscarProdutosAutocomplete() {
     const termo = this.value.toLowerCase();
     const div = document.getElementById('produto-resultados');
     const spinner = document.getElementById('search-spinner');
     
-    // Ativa Spinner visualmente
     if(spinner) spinner.classList.remove('hidden');
 
     div.innerHTML = '';
-    searchIndex = -1; // Reseta seleção ao digitar
+    searchIndex = -1;
 
     if (!termo) { 
         div.classList.add('hidden');
@@ -880,7 +853,6 @@ function buscarProdutosAutocomplete() {
     results.forEach((p, index) => {
         const item = document.createElement('div');
         item.textContent = p.nome;
-        // Importante: Guarda o índice para referência do teclado
         item.dataset.index = index; 
         
         item.onclick = () => {
@@ -890,7 +862,6 @@ function buscarProdutosAutocomplete() {
             searchIndex = -1;
         };
         
-        // Suporte mouse hover híbrido com teclado
         item.onmouseenter = () => {
             searchIndex = index;
             updateSelection(div.querySelectorAll('div'));
@@ -899,17 +870,13 @@ function buscarProdutosAutocomplete() {
         div.appendChild(item);
     });
 
-    // Desativa spinner (em cenário real com API, isso seria no 'finally' da promise)
-    // Pequeno delay para efeito visual
     if(spinner) setTimeout(() => spinner.classList.add('hidden'), 300); 
 }
 
-// Função Auxiliar para atualizar seleção visual
 function updateSelection(items) {
     items.forEach(item => item.classList.remove('selected'));
     if (searchIndex > -1 && items[searchIndex]) {
         items[searchIndex].classList.add('selected');
-        // Garante que o item esteja visível se a lista tiver scroll
         items[searchIndex].scrollIntoView({ block: 'nearest' });
     }
 }
@@ -931,7 +898,6 @@ function selecionarProdutoParaCalculo(prod) {
 }
 
 function calcularCustos() {
-    // 1. Custos Diretos
     const custoMat = converterMoeda(document.getElementById('custo-produto').textContent);
     const horas = parseFloat(document.getElementById('horas-produto').value) || 1;
     
@@ -942,7 +908,6 @@ function calcularCustos() {
     document.getElementById('custo-ferias-13o-detalhe').textContent = formatarMoeda(custoEncargos);
     document.getElementById('total-mao-de-obra').textContent = formatarMoeda(custoMO + custoEncargos);
 
-    // 2. Custos Indiretos
     const todosCI = [...custosIndiretosPredefinidos, ...custosIndiretosAdicionais];
     const valorHoraCI = todosCI.reduce((acc, c) => acc + (c.valorMensal / maoDeObra.horas), 0);
     const totalCI = valorHoraCI * horas;
@@ -959,11 +924,9 @@ function calcularCustos() {
     });
     document.getElementById('detalhes-custos-indiretos').style.display = 'block';
 
-    // 3. Subtotal
     const subtotal = custoMat + custoMO + custoEncargos + totalCI;
     document.getElementById('subtotal').textContent = formatarMoeda(subtotal);
 
-    // 4. Margem
     const margemPerc = parseFloat(document.getElementById('margem-lucro-final').value) || 0;
     const lucro = subtotal * (margemPerc / 100);
     const totalSemTaxa = subtotal + lucro;
@@ -999,30 +962,55 @@ function calcularTotalComTaxas() {
 }
 
 // ==========================================================================
-// 10. MÓDULO: GERAR E VISUALIZAR NOTA
+// 10. MÓDULO: GERAR E VISUALIZAR NOTA (REESTRUTURADO)
 // ==========================================================================
+
+// Função Auxiliar: Encontra o menor número inteiro disponível
+function obterProximoNumeroDisponivel() {
+    const numerosExistentes = precificacoesGeradas
+        .map(p => p.numero)
+        .sort((a, b) => a - b);
+
+    let esperado = 1;
+    for (const num of numerosExistentes) {
+        if (num === esperado) {
+            esperado++;
+        } else if (num > esperado) {
+            return esperado;
+        }
+    }
+    return esperado;
+}
+
+// Função Principal: Salva ou Atualiza a Precificação
 async function gerarNotaPrecificacao() {
-    const cliente = document.getElementById('nome-cliente').value || "Não informado";
     const prodNome = document.getElementById('produto-pesquisa').value;
     const totalFinal = converterMoeda(document.getElementById('total-final-com-taxas').textContent);
 
-    if(!prodNome || totalFinal <= 0) return alert("Calcule o preço antes de gerar a nota.");
+    if(!prodNome || totalFinal <= 0) return alert("Selecione um produto e calcule o preço antes de salvar.");
 
-    let novoNumero = 1;
-    try {
-        const refNum = doc(db, "configuracoes", "numeracao");
-        const snap = await getDoc(refNum);
-        if(snap.exists()) {
-            novoNumero = snap.data().proximoNumero + 1;
-        }
-        await setDoc(refNum, { proximoNumero: novoNumero });
-        proximoNumeroPrecificacao = novoNumero;
-    } catch(e) { console.error("Erro numeração", e); }
+    // VERIFICAÇÃO DE EXISTÊNCIA (Lógica de Trava de Segurança)
+    const precificacaoExistente = precificacoesGeradas.find(p => p.produto === prodNome);
+    
+    let idParaSalvar = null;
+    let numeroParaSalvar = 0;
+    let isUpdate = false;
+
+    if (precificacaoExistente) {
+        const confirmar = confirm(`O produto "${prodNome}" já possui uma precificação salva (Nº ${precificacaoExistente.numero}).\nDeseja atualizar os valores desta precificação existente?`);
+        
+        if (!confirmar) return; 
+        
+        idParaSalvar = precificacaoExistente.id;
+        numeroParaSalvar = precificacaoExistente.numero;
+        isUpdate = true;
+    } else {
+        numeroParaSalvar = obterProximoNumeroDisponivel();
+        isUpdate = false;
+    }
 
     const nota = {
-        numero: proximoNumeroPrecificacao,
-        ano: new Date().getFullYear(),
-        cliente,
+        numero: numeroParaSalvar,
         produto: prodNome,
         horas: document.getElementById('horas-produto').value,
         margem: document.getElementById('margem-lucro-final').value,
@@ -1036,12 +1024,26 @@ async function gerarNotaPrecificacao() {
     };
 
     try {
-        const ref = await addDoc(collection(db, "precificacoes-geradas"), nota);
-        nota.id = ref.id;
-        precificacoesGeradas.push(nota);
+        if (isUpdate) {
+            await setDoc(doc(db, "precificacoes-geradas", idParaSalvar), nota);
+            const index = precificacoesGeradas.findIndex(p => p.id === idParaSalvar);
+            if (index !== -1) precificacoesGeradas[index] = { id: idParaSalvar, ...nota };
+            
+            alert(`Precificação Nº ${nota.numero} atualizada com sucesso!`);
+        } else {
+            const ref = await addDoc(collection(db, "precificacoes-geradas"), nota);
+            nota.id = ref.id;
+            precificacoesGeradas.push(nota);
+            
+            alert(`Nova Precificação Nº ${nota.numero} salva com sucesso!`);
+        }
+        
         atualizarTabelaPrecificacoesGeradas();
-        alert(`Precificação Nº ${nota.numero} Gerada!`);
-    } catch(e) { console.error(e); alert("Erro ao salvar nota."); }
+        
+    } catch(e) { 
+        console.error(e); 
+        alert("Erro ao salvar precificação."); 
+    }
 }
 
 function getListaTexto(ulId) {
@@ -1055,13 +1057,14 @@ function atualizarTabelaPrecificacoesGeradas() {
     if(!tbody) return;
     tbody.innerHTML = '';
     
+    // Ordenar puramente pelo número
     const ordenadas = [...precificacoesGeradas].sort((a,b) => b.numero - a.numero);
 
     ordenadas.forEach(p => {
         const row = tbody.insertRow();
         row.innerHTML = `
-            <td>${p.numero}/${p.ano}</td>
-            <td>${p.cliente}</td>
+            <td>${p.numero}</td>
+            <td>${p.produto}</td>
             <td>
                 <button onclick="visualizarPrecificacao('${p.id}')">Visualizar</button>
                 <button onclick="removerPrecificacao('${p.id}')">Excluir</button>
@@ -1085,7 +1088,7 @@ function visualizarPrecificacao(id) {
     const html = `
         <html>
         <head>
-            <title>Nota ${p.numero}</title>
+            <title>Precificação ${p.numero}</title>
             <style>
                 body { font-family: sans-serif; padding: 20px; }
                 h1 { color: #7aa2a9; border-bottom: 2px solid #7aa2a9; }
@@ -1096,9 +1099,9 @@ function visualizarPrecificacao(id) {
             </style>
         </head>
         <body>
-            <h1>Pérola Rara - Precificação Nº ${p.numero}/${p.ano}</h1>
-            <p><strong>Cliente:</strong> ${p.cliente}</p>
+            <h1>Pérola Rara - Precificação Nº ${p.numero}</h1>
             <p><strong>Produto:</strong> ${p.produto}</p>
+            <p><strong>Data:</strong> ${new Date(p.dataGeracao).toLocaleDateString()}</p>
             
             <div class="box">
                 <div class="line"><span>Custo Materiais:</span> <span>${formatarMoeda(p.custoMateriais)}</span></div>
@@ -1137,13 +1140,10 @@ async function removerPrecificacao(id) {
 // 11. FUNÇÕES AUXILIARES DE CÁLCULO
 // ==========================================================================
 
-// Função essencial para recalcular o custo dos itens dentro dos produtos 
-// quando um material é atualizado (Efeito Dominó) ou na listagem interna.
 function calcularCustoTotalItem(item) {
     let custoTotal = 0;
     let quantidade = item.quantidade || 1;
 
-    // Se o item tem propriedades diretas (legado ou novo formato)
     const custoUnit = item.material ? item.material.custoUnitario : 0;
 
     if (item.tipo === "comprimento") {
