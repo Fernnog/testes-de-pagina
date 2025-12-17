@@ -5,6 +5,17 @@
  * Adicione novas versões no topo do array.
  */
 const changeLogData = [
+{
+version: "1.0.5",
+date: "07/12/2025",
+changes: [
+"🧠 Mudança de Paradigma: O módulo de Precificação agora é 100% focado no Produto, removendo o campo 'Cliente' para maior consistência dos dados.",
+"🔢 Numeração Inteligente: Implementado sistema de 'preenchimento de lacunas'. Ao excluir uma precificação (ex: Nº 2), o próximo registro assumirá este número automaticamente.",
+"👀 Feedback Visual em Tempo Real: Adicionado um 'Badge' de alerta ao selecionar um produto, informando instantaneamente se ele já possui preço salvo.",
+"🛡️ Proteção de Dados: Nova lógica de salvamento que detecta duplicidade e permite atualizar o registro existente em vez de criar cópias desnecessárias.",
+"🏷️ Interface: Renomeação do menu 'Calculadora' para 'Precificação' e limpeza visual do formulário."
+]
+},
     {
         version: "1.0.4",
         date: "06/12/2025",
@@ -44,7 +55,7 @@ const changeLogData = [
     },
     {
         version: "1.0.0",
-        date: "24/05/2024",
+        date: "01/12/2025",
         changes: [
             "✨ Refinamento visual da Splash Screen (Tema Rosé).",
             "🎨 Melhoria nos cards do Hub com efeitos de interatividade.",
