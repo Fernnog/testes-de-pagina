@@ -11,7 +11,7 @@ let materiais = [];
 let produtos = [];
 let precificacoesGeradas = [];
 let maoDeObra = { salario: 0, horas: 220, valorHora: 0, incluirFerias13o: false, custoFerias13o: 0 };
-let taxaCredito = { percentual: 6, incluir: false }; // Padrão 6%
+let taxaCredito = { percentual: 6, incluir: false }; // Padrão 6% conforme antigo
 let margemLucroPadrao = 50;
 
 // Custos Indiretos
@@ -76,8 +76,6 @@ async function carregarDados() {
 
     try {
         // A. Configurações Globais
-        // Nota: Removemos o carregamento de 'numeracao' pois agora usamos lógica de lacunas (gap filling)
-
         const moDoc = await getDoc(doc(db, "configuracoes", "maoDeObra"));
         if (moDoc.exists()) maoDeObra = { ...maoDeObra, ...moDoc.data() };
 
@@ -182,14 +180,14 @@ function setupEventListeners() {
         // Usa debounce com 300ms de espera para o input
         inputProd.addEventListener('input', debounce(buscarProdutosAutocomplete, 300));
         
-        // NOVO LISTENER: Limpar aviso ao apagar o campo
+        // Listener para limpar o badge se o usuário apagar o texto
         inputProd.addEventListener('input', (e) => {
             if (e.target.value === '') {
                  const avisoEl = document.getElementById('aviso-preco-existente');
                  if(avisoEl) avisoEl.classList.add('hidden');
             }
         });
-
+        
         // Navegação por Teclado na Busca (ArrowUp, ArrowDown, Enter)
         inputProd.addEventListener('keydown', (e) => {
             const div = document.getElementById('produto-resultados');
@@ -301,29 +299,38 @@ function calcularCustoUnitario(tipo, valorTotal, comprimentoCm, volumeMl, pesoG,
     return custo;
 }
 
+// --- FUNÇÃO DE EFEITO DOMINÓ (ATUALIZAÇÃO EM CASCATA) ---
 async function atualizarCustosProdutosPorMaterial(material) {
     console.log(`Atualizando produtos que usam: ${material.nome}`);
     
+    // Filtra produtos que contêm este material
     const produtosAfetados = produtos.filter(p => p.materiais.some(m => m.materialId === material.id));
 
     for (const prod of produtosAfetados) {
+        // Atualiza o custo unitário e recalcula o total de cada item
         prod.materiais.forEach(item => {
             if (item.materialId === material.id) {
+                // Atualiza a referência do custo unitário do material
                 item.material.custoUnitario = material.custoUnitario;
+                // Recalcula o custo total deste item específico (função auxiliar abaixo)
                 item.custoTotal = calcularCustoTotalItem(item); 
             }
         });
         
+        // Recalcula o custo total do produto (soma dos itens)
         prod.custoTotal = prod.materiais.reduce((acc, item) => acc + item.custoTotal, 0);
 
+        // Salva no Banco
         await updateDoc(doc(db, "produtos", prod.id), {
             materiais: prod.materiais,
             custoTotal: prod.custoTotal
         });
     }
     
+    // Atualiza tabela visualmente se houver mudanças
     if (produtosAfetados.length > 0) {
         atualizarTabelaProdutosCadastrados();
+        // Se houver um produto selecionado na calculadora que foi afetado, recalcula a tela de precificação
         const produtoSelecionadoNome = document.getElementById('produto-pesquisa').value;
         if (produtoSelecionadoNome) {
             const produtoSelecionado = produtos.find(p => p.nome === produtoSelecionadoNome);
@@ -362,14 +369,16 @@ async function cadastrarMaterialInsumo() {
         if(materialEmEdicao) {
             await updateDoc(doc(db, "materiais-insumos", materialEmEdicao.id), materialData);
             
+            // Atualiza array local
             const idx = materiais.findIndex(m => m.id === materialEmEdicao.id);
             if(idx !== -1) materiais[idx] = { id: materialEmEdicao.id, ...materialData };
             
+            // DISPARA EFEITO DOMINÓ
             await atualizarCustosProdutosPorMaterial(materiais[idx]);
             
             alert("Material atualizado com sucesso!");
             materialEmEdicao = null;
-            document.querySelector('#cadastrar-material-insumo-btn').textContent = "Cadastrar Material";
+            document.querySelector('#cadastrar-material-insumo-btn').textContent = "Cadastrar";
         } else {
             const ref = await addDoc(collection(db, "materiais-insumos"), materialData);
             materialData.id = ref.id;
@@ -480,6 +489,7 @@ async function salvarMaoDeObra() {
     if(!salario || !horas) return alert("Preencha salário e horas.");
 
     const valorHora = salario / horas;
+    // Cálculo simplificado de encargos (Férias + 1/3 + 13º)
     const custoEncargos = incluirFerias ? ((salario + (salario/3)) / 12) / horas : 0; 
 
     maoDeObra = { salario, horas, valorHora, incluirFerias13o: incluirFerias, custoFerias13o: custoEncargos };
@@ -488,6 +498,8 @@ async function salvarMaoDeObra() {
     
     preencherCamposMaoDeObra();
     toggleEdicaoMaoDeObra(false);
+    
+    // Atualiza tabela visual de custos indiretos (pois dependem da hora)
     atualizarTabelaCustosIndiretos();
     
     alert("Mão de Obra Salva!");
@@ -524,6 +536,7 @@ function carregarCustosIndiretosPredefinidosUI() {
     if(!lista) return;
     lista.innerHTML = '';
 
+    // Renderiza Predefinidos
     custosIndiretosPredefinidosBase.forEach((base, idx) => {
         const atual = custosIndiretosPredefinidos.find(c => c.descricao === base.descricao) || base;
         const li = document.createElement('li');
@@ -535,6 +548,7 @@ function carregarCustosIndiretosPredefinidosUI() {
         lista.appendChild(li);
     });
 
+    // Renderiza Adicionais
     custosIndiretosAdicionais.forEach(add => {
         const li = document.createElement('li');
         li.innerHTML = `
@@ -664,6 +678,7 @@ function adicionarMaterialNaTabelaProduto(mat, dadosSalvos = null) {
         valDimensao = dadosSalvos ? dadosSalvos.peso : mat.pesoG;
         inputDimensao = `<input type="number" class="dim-input" value="${valDimensao}" style="width:60px"> g`;
     } else {
+        // Unidade
         const qtdUn = dadosSalvos ? dadosSalvos.quantidadeMaterial : 1;
         inputDimensao = `<input type="number" class="dim-input" value="${qtdUn}" style="width:60px"> un`;
     }
@@ -690,6 +705,7 @@ function adicionarMaterialNaTabelaProduto(mat, dadosSalvos = null) {
 function recalcularLinhaProduto(row, mat) {
     const qtd = parseFloat(row.querySelector('.qtd-input').value) || 0;
     
+    // Constrói objeto temporário para usar a função auxiliar de cálculo
     const itemTemp = {
         tipo: mat.tipo,
         material: { custoUnitario: mat.custoUnitario },
@@ -729,6 +745,7 @@ async function cadastrarProduto() {
         const qtd = parseFloat(row.querySelector('.qtd-input').value);
         const custoItem = parseFloat(row.dataset.total);
 
+        // Resgata dimensões usadas
         let comp=0, larg=0, alt=0, vol=0, peso=0, qtdMat=0;
         
         if(tipo === 'comprimento') comp = parseFloat(row.querySelector('.dim-input').value);
@@ -832,7 +849,7 @@ async function removerProduto(id) {
 }
 
 // ==========================================================================
-// 9. MÓDULO: CÁLCULO DE PREÇO (MODIFICADO COM FEEDBACK VISUAL)
+// 9. MÓDULO: CÁLCULO DE PREÇO (MODIFICADO V1.0.4 + LÓGICA NOVO PRODUTO)
 // ==========================================================================
 
 // Função com suporte a Spinner e lógica para teclado
@@ -866,15 +883,16 @@ function buscarProdutosAutocomplete() {
     results.forEach((p, index) => {
         const item = document.createElement('div');
         item.textContent = p.nome;
+        // Importante: Guarda o índice para referência do teclado
         item.dataset.index = index; 
         
         item.onclick = () => {
             selecionarProdutoParaCalculo(p);
             div.classList.add('hidden');
-            document.getElementById('produto-pesquisa').value = p.nome; 
-            searchIndex = -1;
+            // searchIndex = -1; (Removido aqui para evitar conflito visual imediato, limpo no inicio)
         };
         
+        // Suporte mouse hover híbrido com teclado
         item.onmouseenter = () => {
             searchIndex = index;
             updateSelection(div.querySelectorAll('div'));
@@ -883,6 +901,7 @@ function buscarProdutosAutocomplete() {
         div.appendChild(item);
     });
 
+    // Desativa spinner
     if(spinner) setTimeout(() => spinner.classList.add('hidden'), 300); 
 }
 
@@ -891,11 +910,12 @@ function updateSelection(items) {
     items.forEach(item => item.classList.remove('selected'));
     if (searchIndex > -1 && items[searchIndex]) {
         items[searchIndex].classList.add('selected');
+        // Garante que o item esteja visível se a lista tiver scroll
         items[searchIndex].scrollIntoView({ block: 'nearest' });
     }
 }
 
-// NOVO: Função para verificar e exibir aviso de preço existente
+// Função Auxiliar para verificar precificação existente (Visual Feedback)
 function verificarPrecoExistente(nomeProduto) {
     const avisoEl = document.getElementById('aviso-preco-existente');
     if (!avisoEl) return;
@@ -906,14 +926,9 @@ function verificarPrecoExistente(nomeProduto) {
     if (existente) {
         avisoEl.textContent = `⚠️ Já precificado (Nº ${existente.numero})`;
         avisoEl.classList.remove('hidden');
-        avisoEl.title = `Data: ${new Date(existente.dataGeracao).toLocaleDateString()}`;
-        // Torna clicável para visualizar
-        avisoEl.style.cursor = 'pointer';
-        avisoEl.onclick = () => visualizarPrecificacao(existente.id);
     } else {
         avisoEl.classList.add('hidden');
         avisoEl.textContent = '';
-        avisoEl.onclick = null;
     }
 }
 
@@ -932,11 +947,12 @@ function selecionarProdutoParaCalculo(prod) {
     
     calcularCustos();
     
-    // CHAMADA NOVA: Verifica se já existe e mostra o aviso
+    // NOVA CHAMADA: Feedback Visual
     verificarPrecoExistente(prod.nome);
 }
 
 function calcularCustos() {
+    // 1. Custos Diretos
     const custoMat = converterMoeda(document.getElementById('custo-produto').textContent);
     const horas = parseFloat(document.getElementById('horas-produto').value) || 1;
     
@@ -947,6 +963,7 @@ function calcularCustos() {
     document.getElementById('custo-ferias-13o-detalhe').textContent = formatarMoeda(custoEncargos);
     document.getElementById('total-mao-de-obra').textContent = formatarMoeda(custoMO + custoEncargos);
 
+    // 2. Custos Indiretos
     const todosCI = [...custosIndiretosPredefinidos, ...custosIndiretosAdicionais];
     const valorHoraCI = todosCI.reduce((acc, c) => acc + (c.valorMensal / maoDeObra.horas), 0);
     const totalCI = valorHoraCI * horas;
@@ -963,9 +980,11 @@ function calcularCustos() {
     });
     document.getElementById('detalhes-custos-indiretos').style.display = 'block';
 
+    // 3. Subtotal
     const subtotal = custoMat + custoMO + custoEncargos + totalCI;
     document.getElementById('subtotal').textContent = formatarMoeda(subtotal);
 
+    // 4. Margem
     const margemPerc = parseFloat(document.getElementById('margem-lucro-final').value) || 0;
     const lucro = subtotal * (margemPerc / 100);
     const totalSemTaxa = subtotal + lucro;
@@ -1001,10 +1020,10 @@ function calcularTotalComTaxas() {
 }
 
 // ==========================================================================
-// 10. MÓDULO: GERAR E VISUALIZAR NOTA (REESTRUTURADO)
+// 10. MÓDULO: GERAR E VISUALIZAR NOTA (LÓGICA NOVA DE PRODUTO + NUMERAÇÃO)
 // ==========================================================================
 
-// Função Auxiliar para preenchimento de lacunas (Gap Filling)
+// Função Auxiliar de Numeração (Preenchimento de Buracos)
 function obterProximoNumeroDisponivel() {
     const numerosExistentes = precificacoesGeradas
         .map(p => p.numero)
@@ -1015,23 +1034,20 @@ function obterProximoNumeroDisponivel() {
         if (num === esperado) {
             esperado++;
         } else if (num > esperado) {
-            // Encontrou um buraco!
-            return esperado;
+            return esperado; // Achamos um buraco
         }
     }
-    // Se não tem buraco, retorna o próximo da fila
     return esperado;
 }
 
-// Geração de Nota com verificação de existência
 async function gerarNotaPrecificacao() {
-    // Removida referência ao cliente. O foco é o Produto.
+    // REMOVIDO CLIENTE, FOCO NO PRODUTO
     const prodNome = document.getElementById('produto-pesquisa').value;
     const totalFinal = converterMoeda(document.getElementById('total-final-com-taxas').textContent);
 
     if(!prodNome || totalFinal <= 0) return alert("Selecione um produto e calcule o preço antes de salvar.");
 
-    // VERIFICAÇÃO DE EXISTÊNCIA (Lógica de Trava de Segurança)
+    // VERIFICAÇÃO DE EXISTÊNCIA (Lógica por Produto)
     const precificacaoExistente = precificacoesGeradas.find(p => p.produto === prodNome);
     
     let idParaSalvar = null;
@@ -1039,23 +1055,22 @@ async function gerarNotaPrecificacao() {
     let isUpdate = false;
 
     if (precificacaoExistente) {
-        const confirmar = confirm(`O produto "${prodNome}" já possui uma precificação salva (Nº ${precificacaoExistente.numero}).\nDeseja atualizar os valores desta precificação existente?`);
+        // Fluxo de Atualização
+        const confirmar = confirm(`O produto "${prodNome}" já possui precificação (Nº ${precificacaoExistente.numero}).\nDeseja atualizar os valores mantendo este número?`);
+        if (!confirmar) return; 
         
-        if (!confirmar) return; // Usuário cancelou
-        
-        // Modo Edição: Mantém o ID e o Número antigo
         idParaSalvar = precificacaoExistente.id;
         numeroParaSalvar = precificacaoExistente.numero;
         isUpdate = true;
     } else {
-        // Modo Criação: Busca o buraco na numeração ou o próximo número
+        // Fluxo de Criação (Novo Número)
         numeroParaSalvar = obterProximoNumeroDisponivel();
         isUpdate = false;
     }
 
+    // Objeto da Nota (Sem cliente, sem ano, numero simplificado)
     const nota = {
         numero: numeroParaSalvar,
-        // ano removido conforme solicitação de numeração global
         produto: prodNome,
         horas: document.getElementById('horas-produto').value,
         margem: document.getElementById('margem-lucro-final').value,
@@ -1071,22 +1086,22 @@ async function gerarNotaPrecificacao() {
     try {
         if (isUpdate) {
             await setDoc(doc(db, "precificacoes-geradas", idParaSalvar), nota);
+            // Atualiza memória local
             const index = precificacoesGeradas.findIndex(p => p.id === idParaSalvar);
             if (index !== -1) precificacoesGeradas[index] = { id: idParaSalvar, ...nota };
-            
-            alert(`Precificação Nº ${nota.numero} atualizada com sucesso!`);
+            alert(`Precificação do produto "${prodNome}" atualizada!`);
         } else {
             const ref = await addDoc(collection(db, "precificacoes-geradas"), nota);
             nota.id = ref.id;
             precificacoesGeradas.push(nota);
-            
-            alert(`Nova Precificação Nº ${nota.numero} salva com sucesso!`);
+            alert(`Precificação Nº ${nota.numero} salva para "${prodNome}"!`);
         }
         
         atualizarTabelaPrecificacoesGeradas();
-        // Atualiza o aviso visual após salvar
-        verificarPrecoExistente(prodNome);
         
+        // Atualiza o badge visual imediatamente após salvar
+        verificarPrecoExistente(prodNome);
+
     } catch(e) { 
         console.error(e); 
         alert("Erro ao salvar precificação."); 
@@ -1104,7 +1119,7 @@ function atualizarTabelaPrecificacoesGeradas() {
     if(!tbody) return;
     tbody.innerHTML = '';
     
-    // Ordenar puramente pelo número (1, 2, 3...)
+    // Ordenar puramente pelo número
     const ordenadas = [...precificacoesGeradas].sort((a,b) => b.numero - a.numero);
 
     ordenadas.forEach(p => {
@@ -1121,6 +1136,7 @@ function atualizarTabelaPrecificacoesGeradas() {
 }
 
 function buscarPrecificacoesGeradas() {
+    // Filtro agora busca pelo nome do produto
     const termo = document.getElementById('busca-precificacao').value.toLowerCase();
     const rows = document.querySelectorAll('#tabela-precificacoes-geradas tbody tr');
     rows.forEach(r => {
@@ -1180,10 +1196,6 @@ async function removerPrecificacao(id) {
         await deleteDoc(doc(db, "precificacoes-geradas", id));
         precificacoesGeradas = precificacoesGeradas.filter(x => x.id !== id);
         atualizarTabelaPrecificacoesGeradas();
-        
-        // Se o produto excluído ainda estiver selecionado no input, atualizar o aviso
-        const inputProd = document.getElementById('produto-pesquisa');
-        if (inputProd) verificarPrecoExistente(inputProd.value);
     }
 }
 
@@ -1195,6 +1207,7 @@ function calcularCustoTotalItem(item) {
     let custoTotal = 0;
     let quantidade = item.quantidade || 1;
 
+    // Se o item tem propriedades diretas (legado ou novo formato)
     const custoUnit = item.material ? item.material.custoUnitario : 0;
 
     if (item.tipo === "comprimento") {
