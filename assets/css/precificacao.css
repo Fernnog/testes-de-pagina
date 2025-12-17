@@ -798,3 +798,44 @@ input[type="checkbox"] {
     color: white;
     font-weight: bold;
 }
+
+/* ========================================================= */
+/*  FEEDBACK VISUAL: PREÇO JÁ EXISTENTE (v1.0.5)            */
+/* ========================================================= */
+
+/* Estilo para a etiqueta de aviso de precificação existente */
+.badge-aviso {
+    display: inline-block;
+    background-color: #ff9800; /* Laranja alerta */
+    color: white;
+    font-size: 0.8rem;
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-left: 10px;
+    vertical-align: middle;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    animation: fadeInBadge 0.3s ease-in-out;
+    white-space: nowrap; /* Evita quebra de linha dentro do badge */
+}
+
+/* Garante que o hidden oculte com prioridade máxima */
+.hidden {
+    display: none !important;
+}
+
+/* Animação suave de aparecimento */
+@keyframes fadeInBadge {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Ajuste responsivo: Em telas muito pequenas, quebra a linha para não espremer */
+@media (max-width: 480px) {
+    .badge-aviso {
+        display: block;
+        margin-left: 0;
+        margin-top: 5px;
+        width: fit-content;
+    }
+}
