@@ -3,36 +3,27 @@
 // 1. IMPORTAÇÕES
 import { db, auth } from './firebase-config.js';
 import { 
-    collection, doc, setDoc, getDocs, updateDoc, deleteDoc, addDoc, getDoc 
+    collection, doc, setDoc, getDocs, updateDoc, deleteDoc, addDoc 
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
-// 2. VARIÁVEIS DE ESTADO GLOBAIS
-let materiais = [];
+// IMPORTAÇÃO DO NOVO MÓDULO (Lógica de Insumos, MO e Custos Indiretos)
+import { 
+    materiais, maoDeObra, custosIndiretosPredefinidos, custosIndiretosAdicionais,
+    carregarDadosInsumos,
+    cadastrarMaterialInsumo, editarMaterialInsumo, removerMaterialInsumo, buscarMateriaisCadastrados, toggleCamposMaterial,
+    salvarMaoDeObra, editarMaoDeObraUI,
+    adicionarNovoCustoIndireto, salvarCustoIndiretoPredefinido, removerCustoIndiretoAdicional, buscarCustosIndiretosCadastrados,
+    setOnMaterialUpdateCallback, getUnidadeSigla
+} from './precificacao-insumos.js';
+
+// 2. VARIÁVEIS DE ESTADO LOCAIS (Apenas Produtos e Histórico)
 let produtos = [];
 let precificacoesGeradas = [];
-let maoDeObra = { salario: 0, horas: 220, valorHora: 0, incluirFerias13o: false, custoFerias13o: 0 };
-let taxaCredito = { percentual: 6, incluir: false }; // Padrão 6% conforme antigo
+let taxaCredito = { percentual: 6, incluir: false };
 let margemLucroPadrao = 50;
-
-// Custos Indiretos
-let custosIndiretosPredefinidosBase = [
-    { descricao: "Energia elétrica", valorMensal: 0 },
-    { descricao: "Água", valorMensal: 0 },
-    { descricao: "Gás", valorMensal: 0 },
-    { descricao: "Aluguel do espaço", valorMensal: 0 },
-    { descricao: "Depreciação equipamentos", valorMensal: 0 },
-    { descricao: "Internet/Telefone", valorMensal: 0 },
-    { descricao: "MEI/Impostos", valorMensal: 0 },
-    { descricao: "Marketing", valorMensal: 0 },
-    { descricao: "Embalagens", valorMensal: 0 },
-    { descricao: "Transporte", valorMensal: 0 }
-];
-let custosIndiretosPredefinidos = JSON.parse(JSON.stringify(custosIndiretosPredefinidosBase));
-let custosIndiretosAdicionais = [];
 
 // Variáveis de Controle
 let produtoEmEdicao = null;
-let materialEmEdicao = null;
 let moduleInitialized = false;
 let searchIndex = -1; // Controle da navegação por teclado na busca
 
@@ -40,25 +31,32 @@ let searchIndex = -1; // Controle da navegação por teclado na busca
 // 3. INICIALIZAÇÃO E CARREGAMENTO
 // ==========================================================================
 export async function initPrecificacao() {
-    console.log("Inicializando Módulo Precificação Completo...");
+    console.log("Inicializando Módulo Precificação (Modularizado)...");
     
-    // EXPOR FUNÇÕES AO ESCOPO GLOBAL (WINDOW)
+    // A. EXPOR FUNÇÕES AO ESCOPO GLOBAL (WINDOW)
+    // Isso garante que os botões do HTML (onclick=...) continuem funcionando
+    // mesmo que a lógica esteja importada do outro arquivo.
+    
+    // Funções de Insumos (Delegadas para o novo módulo)
     window.buscarMateriaisCadastrados = buscarMateriaisCadastrados;
     window.editarMaterialInsumo = editarMaterialInsumo;
     window.removerMaterialInsumo = removerMaterialInsumo;
-    
     window.buscarCustosIndiretosCadastrados = buscarCustosIndiretosCadastrados;
     window.salvarCustoIndiretoPredefinido = salvarCustoIndiretoPredefinido;
     window.removerCustoIndiretoAdicional = removerCustoIndiretoAdicional;
     
+    // Funções Locais (Produtos e Cálculo)
     window.buscarProdutosCadastrados = buscarProdutosCadastrados;
     window.editarProduto = editarProduto;
     window.removerProduto = removerProduto;
-    
     window.buscarPrecificacoesGeradas = buscarPrecificacoesGeradas;
     window.visualizarPrecificacao = visualizarPrecificacao;
     window.removerPrecificacao = removerPrecificacao;
     
+    // B. CONFIGURAR COMUNICAÇÃO ENTRE MÓDULOS
+    // Registra a função local de "Efeito Dominó" para ser chamada pelo módulo de insumos
+    setOnMaterialUpdateCallback(atualizarCustosProdutosPorMaterial);
+
     await carregarDados();
     
     if (!moduleInitialized) {
@@ -66,7 +64,7 @@ export async function initPrecificacao() {
         moduleInitialized = true;
     }
     
-    // Exibe a primeira aba por padrão
+    // Exibe a primeira aba por padrão (mesmo que seja do outro módulo, a navegação é controlada aqui ou no HTML)
     mostrarSubMenu('materiais-insumos');
 }
 
@@ -75,18 +73,14 @@ async function carregarDados() {
     if (!user) return;
 
     try {
-        // A. Configurações Globais
-        const moDoc = await getDoc(doc(db, "configuracoes", "maoDeObra"));
-        if (moDoc.exists()) maoDeObra = { ...maoDeObra, ...moDoc.data() };
+        // 1. Carrega dados base do módulo vizinho
+        await carregarDadosInsumos();
 
-        const taxaDoc = await getDoc(doc(db, "configuracoes", "taxaCredito"));
+        // 2. Carrega configurações locais
+        const taxaDoc = await getDoc(doc(db, "configuracoes", "taxaCredito")); // Função getDoc precisa ser importada? Sim, ver imports
         if (taxaDoc.exists()) taxaCredito = { ...taxaCredito, ...taxaDoc.data() };
 
-        // B. Coleções Principais
-        const matSnap = await getDocs(collection(db, "materiais-insumos"));
-        materiais = [];
-        matSnap.forEach(d => materiais.push({id: d.id, ...d.data()}));
-
+        // 3. Carrega Coleções Locais
         const prodSnap = await getDocs(collection(db, "produtos"));
         produtos = [];
         prodSnap.forEach(d => produtos.push({id: d.id, ...d.data()}));
@@ -95,23 +89,7 @@ async function carregarDados() {
         precificacoesGeradas = [];
         precSnap.forEach(d => precificacoesGeradas.push({id: d.id, ...d.data()}));
 
-        // C. Custos Indiretos
-        const ciPreSnap = await getDocs(collection(db, "custos-indiretos-predefinidos"));
-        ciPreSnap.forEach(d => {
-            const data = d.data();
-            const idx = custosIndiretosPredefinidos.findIndex(c => c.descricao === data.descricao);
-            if (idx !== -1) custosIndiretosPredefinidos[idx] = data;
-        });
-
-        const ciAddSnap = await getDocs(collection(db, "custos-indiretos-adicionais"));
-        custosIndiretosAdicionais = [];
-        ciAddSnap.forEach(d => custosIndiretosAdicionais.push({id: d.id, ...d.data()}));
-
-        // D. Atualizar UI
-        atualizarTabelaMateriaisInsumos();
-        preencherCamposMaoDeObra();
-        carregarCustosIndiretosPredefinidosUI();
-        atualizarTabelaCustosIndiretos();
+        // 4. Atualiza UI Local
         atualizarTabelaProdutosCadastrados();
         atualizarTabelaPrecificacoesGeradas();
         
@@ -133,11 +111,13 @@ async function carregarDados() {
     }
 }
 
+// Necessário importar getDoc localmente se não estiver no topo
+import { getDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+
 // ==========================================================================
 // 4. LÓGICA DE NAVEGAÇÃO E HELPERS
 // ==========================================================================
 
-// Função utilitária para atrasar a execução (Debounce)
 function debounce(func, wait) {
     let timeout;
     return function(...args) {
@@ -156,31 +136,25 @@ function setupEventListeners() {
         });
     });
 
-    // Materiais
+    // --- EVENTOS DELEGADOS AO MÓDULO DE INSUMOS ---
     bindClick('#cadastrar-material-insumo-btn', cadastrarMaterialInsumo);
     document.querySelectorAll('input[name="tipo-material"]').forEach(radio => {
         radio.addEventListener('change', function() { toggleCamposMaterial(this.value); });
     });
-
-    // Mão de Obra
     bindClick('#btn-salvar-mao-de-obra', salvarMaoDeObra);
     bindClick('#btn-editar-mao-de-obra', editarMaoDeObraUI);
-
-    // Custos Indiretos
     bindClick('#adicionarCustoIndiretoBtn', adicionarNovoCustoIndireto);
 
-    // Produtos
+    // --- EVENTOS LOCAIS (PRODUTOS) ---
     bindClick('#cadastrar-produto-btn', cadastrarProduto);
     const inputMat = document.getElementById('pesquisa-material');
     if(inputMat) inputMat.addEventListener('input', buscarMateriaisAutocomplete);
 
-    // Cálculo - AQUI APLICAMOS O DEBOUNCE E LISTENERS DE TECLADO
+    // --- EVENTOS LOCAIS (CÁLCULO) ---
     const inputProd = document.getElementById('produto-pesquisa');
     if(inputProd) {
-        // Usa debounce com 300ms de espera para o input
         inputProd.addEventListener('input', debounce(buscarProdutosAutocomplete, 300));
         
-        // Listener para limpar o badge se o usuário apagar o texto
         inputProd.addEventListener('input', (e) => {
             if (e.target.value === '') {
                  const avisoEl = document.getElementById('aviso-preco-existente');
@@ -188,7 +162,6 @@ function setupEventListeners() {
             }
         });
         
-        // Navegação por Teclado na Busca (ArrowUp, ArrowDown, Enter)
         inputProd.addEventListener('keydown', (e) => {
             const div = document.getElementById('produto-resultados');
             if (div.classList.contains('hidden')) return;
@@ -197,19 +170,19 @@ function setupEventListeners() {
             if (items.length === 0) return;
             
             if (e.key === 'ArrowDown') {
-                e.preventDefault(); // Evita cursor mover no input
+                e.preventDefault();
                 searchIndex++;
-                if (searchIndex >= items.length) searchIndex = 0; // Loop volta ao topo
+                if (searchIndex >= items.length) searchIndex = 0;
                 updateSelection(items);
             } else if (e.key === 'ArrowUp') {
                 e.preventDefault();
                 searchIndex--;
-                if (searchIndex < 0) searchIndex = items.length - 1; // Loop vai pro final
+                if (searchIndex < 0) searchIndex = items.length - 1;
                 updateSelection(items);
             } else if (e.key === 'Enter') {
                 e.preventDefault();
                 if (searchIndex > -1 && items[searchIndex]) {
-                    items[searchIndex].click(); // Dispara o evento de clique
+                    items[searchIndex].click();
                 }
             } else if (e.key === 'Escape') {
                 div.classList.add('hidden');
@@ -218,13 +191,10 @@ function setupEventListeners() {
         });
     }
     
-    // Fechar autocomplete ao clicar fora
     document.addEventListener('click', (e) => {
         const resultsDiv = document.getElementById('produto-resultados');
         const searchInput = document.getElementById('produto-pesquisa');
-        
         if (resultsDiv && searchInput) {
-            // Se o clique não foi no input E não foi dentro da lista de resultados
             if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
                 resultsDiv.classList.add('hidden');
                 searchIndex = -1;
@@ -233,8 +203,6 @@ function setupEventListeners() {
     });
     
     bindClick('#btn-gerar-nota', gerarNotaPrecificacao);
-    
-    // Listeners de recálculo
     addChangeListeners(['horas-produto', 'margem-lucro-final'], calcularCustos);
     addChangeListeners(['incluir-taxa-credito-sim', 'incluir-taxa-credito-nao'], calcularTotalComTaxas);
     bindClick('#btn-salvar-taxa-credito', salvarTaxaCredito);
@@ -272,65 +240,33 @@ function converterMoeda(str) {
 }
 
 // ==========================================================================
-// 5. MÓDULO: MATERIAIS
+// 5. MÓDULO: PRODUTOS
 // ==========================================================================
-function toggleCamposMaterial(tipo) {
-    const campos = ['comprimento', 'litro', 'quilo', 'area'];
-    campos.forEach(c => {
-        const el = document.getElementById(`campos-${c}`);
-        if(el) el.style.display = 'none';
-    });
-    
-    const target = document.getElementById(`campos-${tipo}`);
-    if(target) target.style.display = 'block';
-}
 
-function calcularCustoUnitario(tipo, valorTotal, comprimentoCm, volumeMl, pesoG, larguraCm, alturaCm) {
-    let custo = 0;
-    if (valorTotal <= 0) return 0;
-
-    switch (tipo) {
-        case "comprimento": custo = valorTotal / (comprimentoCm / 100); break; // R$/metro
-        case "litro": custo = valorTotal / (volumeMl / 1000); break; // R$/litro
-        case "quilo": custo = valorTotal / (pesoG / 1000); break; // R$/kg
-        case "unidade": custo = valorTotal; break; // R$/unidade
-        case "area": custo = valorTotal / ((larguraCm / 100) * (alturaCm / 100)); break; // R$/m²
-    }
-    return custo;
-}
-
-// --- FUNÇÃO DE EFEITO DOMINÓ (ATUALIZAÇÃO EM CASCATA) ---
+// Função acionada via Callback quando um material é editado no outro módulo
 async function atualizarCustosProdutosPorMaterial(material) {
     console.log(`Atualizando produtos que usam: ${material.nome}`);
     
-    // Filtra produtos que contêm este material
     const produtosAfetados = produtos.filter(p => p.materiais.some(m => m.materialId === material.id));
 
     for (const prod of produtosAfetados) {
-        // Atualiza o custo unitário e recalcula o total de cada item
         prod.materiais.forEach(item => {
             if (item.materialId === material.id) {
-                // Atualiza a referência do custo unitário do material
                 item.material.custoUnitario = material.custoUnitario;
-                // Recalcula o custo total deste item específico (função auxiliar abaixo)
                 item.custoTotal = calcularCustoTotalItem(item); 
             }
         });
         
-        // Recalcula o custo total do produto (soma dos itens)
         prod.custoTotal = prod.materiais.reduce((acc, item) => acc + item.custoTotal, 0);
 
-        // Salva no Banco
         await updateDoc(doc(db, "produtos", prod.id), {
             materiais: prod.materiais,
             custoTotal: prod.custoTotal
         });
     }
     
-    // Atualiza tabela visualmente se houver mudanças
     if (produtosAfetados.length > 0) {
         atualizarTabelaProdutosCadastrados();
-        // Se houver um produto selecionado na calculadora que foi afetado, recalcula a tela de precificação
         const produtoSelecionadoNome = document.getElementById('produto-pesquisa').value;
         if (produtoSelecionadoNome) {
             const produtoSelecionado = produtos.find(p => p.nome === produtoSelecionadoNome);
@@ -341,301 +277,6 @@ async function atualizarCustosProdutosPorMaterial(material) {
     }
 }
 
-async function cadastrarMaterialInsumo() {
-    const nome = document.getElementById('nome-material').value;
-    const tipo = document.querySelector('input[name="tipo-material"]:checked').value;
-    const valorTotal = parseFloat(document.getElementById('valor-total-material').value) || 0;
-
-    const comprimentoCm = parseFloat(document.getElementById('comprimento-cm').value) || 0;
-    const volumeMl = parseFloat(document.getElementById('volume-ml').value) || 0;
-    const pesoG = parseFloat(document.getElementById('peso-g').value) || 0;
-    const larguraCm = parseFloat(document.getElementById('largura-cm').value) || 0;
-    const alturaCm = parseFloat(document.getElementById('altura-cm').value) || 0;
-
-    if(!nome || valorTotal <= 0) {
-        alert("Preencha o nome e o valor total corretamente.");
-        return;
-    }
-
-    const custoUnitario = calcularCustoUnitario(tipo, valorTotal, comprimentoCm, volumeMl, pesoG, larguraCm, alturaCm);
-
-    const materialData = {
-        nome, tipo, valorTotal, 
-        comprimentoCm, volumeMl, pesoG, larguraCm, alturaCm,
-        custoUnitario
-    };
-
-    try {
-        if(materialEmEdicao) {
-            await updateDoc(doc(db, "materiais-insumos", materialEmEdicao.id), materialData);
-            
-            // Atualiza array local
-            const idx = materiais.findIndex(m => m.id === materialEmEdicao.id);
-            if(idx !== -1) materiais[idx] = { id: materialEmEdicao.id, ...materialData };
-            
-            // DISPARA EFEITO DOMINÓ
-            await atualizarCustosProdutosPorMaterial(materiais[idx]);
-            
-            alert("Material atualizado com sucesso!");
-            materialEmEdicao = null;
-            document.querySelector('#cadastrar-material-insumo-btn').textContent = "Cadastrar";
-        } else {
-            const ref = await addDoc(collection(db, "materiais-insumos"), materialData);
-            materialData.id = ref.id;
-            materiais.push(materialData);
-            alert("Material cadastrado!");
-        }
-
-        document.getElementById('form-materiais-insumos').reset();
-        toggleCamposMaterial('comprimento'); 
-        atualizarTabelaMateriaisInsumos();
-
-    } catch (e) {
-        console.error(e);
-        alert("Erro ao salvar material.");
-    }
-}
-
-function atualizarTabelaMateriaisInsumos() {
-    const tbody = document.querySelector('#tabela-materiais-insumos tbody');
-    if(!tbody) return;
-    tbody.innerHTML = '';
-
-    materiais.forEach(m => {
-        const row = tbody.insertRow();
-        
-        let detalhes = "-";
-        if (m.tipo === 'comprimento') detalhes = `${m.comprimentoCm} cm`;
-        else if (m.tipo === 'litro') detalhes = `${m.volumeMl} ml`;
-        else if (m.tipo === 'quilo') detalhes = `${m.pesoG} g`;
-        else if (m.tipo === 'area') detalhes = `${m.larguraCm}x${m.alturaCm} cm`;
-
-        row.innerHTML = `
-            <td>${m.nome}</td>
-            <td>${m.tipo}</td>
-            <td>${detalhes}</td>
-            <td>${formatarMoeda(m.valorTotal)}</td>
-            <td>${formatarMoeda(m.custoUnitario)} / ${getUnidadeSigla(m.tipo)}</td>
-            <td>
-                <button class="btn-editar-mat" onclick="editarMaterialInsumo('${m.id}')">Editar</button>
-                <button class="btn-remover-mat" onclick="removerMaterialInsumo('${m.id}')">Remover</button>
-            </td>
-        `;
-    });
-}
-
-function getUnidadeSigla(tipo) {
-    const map = { comprimento: 'm', litro: 'L', quilo: 'kg', area: 'm²', unidade: 'un' };
-    return map[tipo] || '';
-}
-
-function buscarMateriaisCadastrados() {
-    const termo = document.getElementById('busca-material').value.toLowerCase();
-    const rows = document.querySelectorAll('#tabela-materiais-insumos tbody tr');
-    rows.forEach(row => {
-        const text = row.innerText.toLowerCase();
-        row.style.display = text.includes(termo) ? '' : 'none';
-    });
-}
-
-function editarMaterialInsumo(id) {
-    const m = materiais.find(x => x.id === id);
-    if(!m) return;
-    materialEmEdicao = m;
-    
-    document.getElementById('nome-material').value = m.nome;
-    document.getElementById('valor-total-material').value = m.valorTotal;
-    
-    const radio = document.querySelector(`input[name="tipo-material"][value="${m.tipo}"]`);
-    if(radio) {
-        radio.checked = true;
-        toggleCamposMaterial(m.tipo);
-    }
-
-    if(m.tipo === 'comprimento') document.getElementById('comprimento-cm').value = m.comprimentoCm;
-    if(m.tipo === 'litro') document.getElementById('volume-ml').value = m.volumeMl;
-    if(m.tipo === 'quilo') document.getElementById('peso-g').value = m.pesoG;
-    if(m.tipo === 'area') {
-        document.getElementById('largura-cm').value = m.larguraCm;
-        document.getElementById('altura-cm').value = m.alturaCm;
-    }
-    
-    document.querySelector('#cadastrar-material-insumo-btn').textContent = "Salvar Alterações";
-    document.getElementById('materiais-insumos').scrollIntoView({behavior: "smooth"});
-}
-
-async function removerMaterialInsumo(id) {
-    const emUso = produtos.some(p => p.materiais.some(m => m.materialId === id));
-    if(emUso) {
-        alert("Não é possível remover: Este material está sendo usado em um ou mais produtos cadastrados.");
-        return;
-    }
-
-    if(confirm("Deseja realmente excluir este material?")) {
-        await deleteDoc(doc(db, "materiais-insumos", id));
-        materiais = materiais.filter(m => m.id !== id);
-        atualizarTabelaMateriaisInsumos();
-    }
-}
-
-// ==========================================================================
-// 6. MÓDULO: MÃO DE OBRA
-// ==========================================================================
-async function salvarMaoDeObra() {
-    const salario = parseFloat(document.getElementById('salario-receber').value);
-    const horas = parseFloat(document.getElementById('horas-trabalhadas').value);
-    const incluirFerias = document.getElementById('incluir-ferias-13o-sim').checked;
-
-    if(!salario || !horas) return alert("Preencha salário e horas.");
-
-    const valorHora = salario / horas;
-    // Cálculo simplificado de encargos (Férias + 1/3 + 13º)
-    const custoEncargos = incluirFerias ? ((salario + (salario/3)) / 12) / horas : 0; 
-
-    maoDeObra = { salario, horas, valorHora, incluirFerias13o: incluirFerias, custoFerias13o: custoEncargos };
-
-    await setDoc(doc(db, "configuracoes", "maoDeObra"), maoDeObra);
-    
-    preencherCamposMaoDeObra();
-    toggleEdicaoMaoDeObra(false);
-    
-    // Atualiza tabela visual de custos indiretos (pois dependem da hora)
-    atualizarTabelaCustosIndiretos();
-    
-    alert("Mão de Obra Salva!");
-}
-
-function preencherCamposMaoDeObra() {
-    document.getElementById('salario-receber').value = maoDeObra.salario;
-    document.getElementById('horas-trabalhadas').value = maoDeObra.horas;
-    document.getElementById('valor-hora').value = maoDeObra.valorHora.toFixed(2);
-    document.getElementById('custo-ferias-13o').value = maoDeObra.custoFerias13o.toFixed(2);
-    
-    if(maoDeObra.incluirFerias13o) document.getElementById('incluir-ferias-13o-sim').checked = true;
-    else document.getElementById('incluir-ferias-13o-nao').checked = true;
-    
-    toggleEdicaoMaoDeObra(false);
-}
-
-function editarMaoDeObraUI() {
-    toggleEdicaoMaoDeObra(true);
-}
-
-function toggleEdicaoMaoDeObra(editando) {
-    document.getElementById('salario-receber').readOnly = !editando;
-    document.getElementById('horas-trabalhadas').readOnly = !editando;
-    document.getElementById('btn-salvar-mao-de-obra').style.display = editando ? 'inline-block' : 'none';
-    document.getElementById('btn-editar-mao-de-obra').style.display = editando ? 'none' : 'inline-block';
-}
-
-// ==========================================================================
-// 7. MÓDULO: CUSTOS INDIRETOS
-// ==========================================================================
-function carregarCustosIndiretosPredefinidosUI() {
-    const lista = document.getElementById('lista-custos-indiretos');
-    if(!lista) return;
-    lista.innerHTML = '';
-
-    // Renderiza Predefinidos
-    custosIndiretosPredefinidosBase.forEach((base, idx) => {
-        const atual = custosIndiretosPredefinidos.find(c => c.descricao === base.descricao) || base;
-        const li = document.createElement('li');
-        li.innerHTML = `
-            <div class="custo-item-nome">${base.descricao}</div>
-            <input type="number" id="ci-pref-${idx}" value="${(atual.valorMensal || 0).toFixed(2)}" step="0.01">
-            <button onclick="salvarCustoIndiretoPredefinido('${base.descricao}', ${idx})">Salvar</button>
-        `;
-        lista.appendChild(li);
-    });
-
-    // Renderiza Adicionais
-    custosIndiretosAdicionais.forEach(add => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-            <div class="custo-item-nome">${add.descricao}</div>
-            <input type="number" value="${add.valorMensal.toFixed(2)}" readonly>
-            <button onclick="removerCustoIndiretoAdicional('${add.id}')">Remover</button>
-        `;
-        lista.appendChild(li);
-    });
-}
-
-async function salvarCustoIndiretoPredefinido(descricao, idx) {
-    const val = parseFloat(document.getElementById(`ci-pref-${idx}`).value) || 0;
-    const item = { descricao, valorMensal: val, valorPorHora: val / maoDeObra.horas };
-    
-    const arrIdx = custosIndiretosPredefinidos.findIndex(c => c.descricao === descricao);
-    if(arrIdx !== -1) custosIndiretosPredefinidos[arrIdx] = item;
-    else custosIndiretosPredefinidos.push(item);
-    
-    await setDoc(doc(db, "custos-indiretos-predefinidos", descricao), item);
-    atualizarTabelaCustosIndiretos();
-    alert("Custo salvo!");
-}
-
-function adicionarNovoCustoIndireto() {
-    const lista = document.getElementById('lista-custos-indiretos');
-    const li = document.createElement('li');
-    li.innerHTML = `
-        <input type="text" placeholder="Nome do Custo" class="novo-ci-nome">
-        <input type="number" placeholder="Valor Mensal" class="novo-ci-valor">
-        <button class="btn-salvar-novo-ci">Salvar</button>
-    `;
-    lista.appendChild(li);
-    
-    li.querySelector('.btn-salvar-novo-ci').onclick = async () => {
-        const nome = li.querySelector('.novo-ci-nome').value;
-        const valor = parseFloat(li.querySelector('.novo-ci-valor').value);
-        
-        if(nome && valor >= 0) {
-            const novo = { descricao: nome, valorMensal: valor, valorPorHora: valor / maoDeObra.horas };
-            const ref = await addDoc(collection(db, "custos-indiretos-adicionais"), novo);
-            novo.id = ref.id;
-            custosIndiretosAdicionais.push(novo);
-            carregarCustosIndiretosPredefinidosUI(); 
-            atualizarTabelaCustosIndiretos();
-        }
-    };
-}
-
-async function removerCustoIndiretoAdicional(id) {
-    if(confirm("Remover este custo adicional?")) {
-        await deleteDoc(doc(db, "custos-indiretos-adicionais", id));
-        custosIndiretosAdicionais = custosIndiretosAdicionais.filter(c => c.id !== id);
-        carregarCustosIndiretosPredefinidosUI();
-        atualizarTabelaCustosIndiretos();
-    }
-}
-
-function atualizarTabelaCustosIndiretos() {
-    const tbody = document.querySelector('#tabela-custos-indiretos tbody');
-    if(!tbody) return;
-    tbody.innerHTML = '';
-    
-    const todos = [...custosIndiretosPredefinidos, ...custosIndiretosAdicionais];
-    todos.filter(c => c.valorMensal > 0).forEach(c => {
-        const row = tbody.insertRow();
-        const vHora = c.valorMensal / maoDeObra.horas;
-        row.innerHTML = `
-            <td>${c.descricao}</td>
-            <td>${formatarMoeda(c.valorMensal)}</td>
-            <td>${formatarMoeda(vHora)}</td>
-            <td>-</td>
-        `;
-    });
-}
-
-function buscarCustosIndiretosCadastrados() {
-    const termo = document.getElementById('busca-custo-indireto').value.toLowerCase();
-    const rows = document.querySelectorAll('#tabela-custos-indiretos tbody tr');
-    rows.forEach(r => {
-        r.style.display = r.innerText.toLowerCase().includes(termo) ? '' : 'none';
-    });
-}
-
-// ==========================================================================
-// 8. MÓDULO: PRODUTOS
-// ==========================================================================
 function buscarMateriaisAutocomplete() {
     const termo = this.value.toLowerCase();
     const div = document.getElementById('resultados-pesquisa');
@@ -643,6 +284,7 @@ function buscarMateriaisAutocomplete() {
     
     if(!termo) { div.style.display = 'none'; return; }
     
+    // Usa a variável 'materiais' importada do módulo vizinho
     const results = materiais.filter(m => m.nome.toLowerCase().includes(termo));
     results.forEach(m => {
         const item = document.createElement('div');
@@ -678,7 +320,6 @@ function adicionarMaterialNaTabelaProduto(mat, dadosSalvos = null) {
         valDimensao = dadosSalvos ? dadosSalvos.peso : mat.pesoG;
         inputDimensao = `<input type="number" class="dim-input" value="${valDimensao}" style="width:60px"> g`;
     } else {
-        // Unidade
         const qtdUn = dadosSalvos ? dadosSalvos.quantidadeMaterial : 1;
         inputDimensao = `<input type="number" class="dim-input" value="${qtdUn}" style="width:60px"> un`;
     }
@@ -705,7 +346,6 @@ function adicionarMaterialNaTabelaProduto(mat, dadosSalvos = null) {
 function recalcularLinhaProduto(row, mat) {
     const qtd = parseFloat(row.querySelector('.qtd-input').value) || 0;
     
-    // Constrói objeto temporário para usar a função auxiliar de cálculo
     const itemTemp = {
         tipo: mat.tipo,
         material: { custoUnitario: mat.custoUnitario },
@@ -740,12 +380,12 @@ async function cadastrarProduto() {
     const rows = document.querySelectorAll('#tabela-materiais-produto tbody tr');
     rows.forEach(row => {
         const matId = row.cells[0].dataset.id;
+        // Busca no array importado
         const matOriginal = materiais.find(m => m.id === matId);
         const tipo = row.cells[1].innerText;
         const qtd = parseFloat(row.querySelector('.qtd-input').value);
         const custoItem = parseFloat(row.dataset.total);
 
-        // Resgata dimensões usadas
         let comp=0, larg=0, alt=0, vol=0, peso=0, qtdMat=0;
         
         if(tipo === 'comprimento') comp = parseFloat(row.querySelector('.dim-input').value);
@@ -849,20 +489,18 @@ async function removerProduto(id) {
 }
 
 // ==========================================================================
-// 9. MÓDULO: CÁLCULO DE PREÇO (MODIFICADO V1.0.4 + LÓGICA NOVO PRODUTO)
+// 6. MÓDULO: CÁLCULO DE PREÇO
 // ==========================================================================
 
-// Função com suporte a Spinner e lógica para teclado
 function buscarProdutosAutocomplete() {
     const termo = this.value.toLowerCase();
     const div = document.getElementById('produto-resultados');
     const spinner = document.getElementById('search-spinner');
     
-    // Ativa Spinner visualmente
     if(spinner) spinner.classList.remove('hidden');
 
     div.innerHTML = '';
-    searchIndex = -1; // Reseta seleção ao digitar
+    searchIndex = -1;
 
     if (!termo) { 
         div.classList.add('hidden');
@@ -883,16 +521,13 @@ function buscarProdutosAutocomplete() {
     results.forEach((p, index) => {
         const item = document.createElement('div');
         item.textContent = p.nome;
-        // Importante: Guarda o índice para referência do teclado
         item.dataset.index = index; 
         
         item.onclick = () => {
             selecionarProdutoParaCalculo(p);
             div.classList.add('hidden');
-            // searchIndex = -1; (Removido aqui para evitar conflito visual imediato, limpo no inicio)
         };
         
-        // Suporte mouse hover híbrido com teclado
         item.onmouseenter = () => {
             searchIndex = index;
             updateSelection(div.querySelectorAll('div'));
@@ -901,26 +536,21 @@ function buscarProdutosAutocomplete() {
         div.appendChild(item);
     });
 
-    // Desativa spinner
     if(spinner) setTimeout(() => spinner.classList.add('hidden'), 300); 
 }
 
-// Função Auxiliar para atualizar seleção visual
 function updateSelection(items) {
     items.forEach(item => item.classList.remove('selected'));
     if (searchIndex > -1 && items[searchIndex]) {
         items[searchIndex].classList.add('selected');
-        // Garante que o item esteja visível se a lista tiver scroll
         items[searchIndex].scrollIntoView({ block: 'nearest' });
     }
 }
 
-// Função Auxiliar para verificar precificação existente (Visual Feedback)
 function verificarPrecoExistente(nomeProduto) {
     const avisoEl = document.getElementById('aviso-preco-existente');
     if (!avisoEl) return;
 
-    // Busca no array de precificações já carregado na memória
     const existente = precificacoesGeradas.find(p => p.produto === nomeProduto);
 
     if (existente) {
@@ -946,8 +576,6 @@ function selecionarProdutoParaCalculo(prod) {
     document.getElementById('detalhes-produto').style.display = 'block';
     
     calcularCustos();
-    
-    // NOVA CHAMADA: Feedback Visual
     verificarPrecoExistente(prod.nome);
 }
 
@@ -956,6 +584,7 @@ function calcularCustos() {
     const custoMat = converterMoeda(document.getElementById('custo-produto').textContent);
     const horas = parseFloat(document.getElementById('horas-produto').value) || 1;
     
+    // Usa mão de obra IMPORTADA do módulo vizinho
     const custoMO = horas * maoDeObra.valorHora;
     const custoEncargos = horas * maoDeObra.custoFerias13o;
     
@@ -963,7 +592,7 @@ function calcularCustos() {
     document.getElementById('custo-ferias-13o-detalhe').textContent = formatarMoeda(custoEncargos);
     document.getElementById('total-mao-de-obra').textContent = formatarMoeda(custoMO + custoEncargos);
 
-    // 2. Custos Indiretos
+    // 2. Custos Indiretos (IMPORTADOS)
     const todosCI = [...custosIndiretosPredefinidos, ...custosIndiretosAdicionais];
     const valorHoraCI = todosCI.reduce((acc, c) => acc + (c.valorMensal / maoDeObra.horas), 0);
     const totalCI = valorHoraCI * horas;
@@ -1020,10 +649,9 @@ function calcularTotalComTaxas() {
 }
 
 // ==========================================================================
-// 10. MÓDULO: GERAR E VISUALIZAR NOTA (LÓGICA NOVA DE PRODUTO + NUMERAÇÃO)
+// 7. NOTA DE PRECIFICAÇÃO
 // ==========================================================================
 
-// Função Auxiliar de Numeração (Preenchimento de Buracos)
 function obterProximoNumeroDisponivel() {
     const numerosExistentes = precificacoesGeradas
         .map(p => p.numero)
@@ -1034,20 +662,18 @@ function obterProximoNumeroDisponivel() {
         if (num === esperado) {
             esperado++;
         } else if (num > esperado) {
-            return esperado; // Achamos um buraco
+            return esperado; 
         }
     }
     return esperado;
 }
 
 async function gerarNotaPrecificacao() {
-    // REMOVIDO CLIENTE, FOCO NO PRODUTO
     const prodNome = document.getElementById('produto-pesquisa').value;
     const totalFinal = converterMoeda(document.getElementById('total-final-com-taxas').textContent);
 
     if(!prodNome || totalFinal <= 0) return alert("Selecione um produto e calcule o preço antes de salvar.");
 
-    // VERIFICAÇÃO DE EXISTÊNCIA (Lógica por Produto)
     const precificacaoExistente = precificacoesGeradas.find(p => p.produto === prodNome);
     
     let idParaSalvar = null;
@@ -1055,7 +681,6 @@ async function gerarNotaPrecificacao() {
     let isUpdate = false;
 
     if (precificacaoExistente) {
-        // Fluxo de Atualização
         const confirmar = confirm(`O produto "${prodNome}" já possui precificação (Nº ${precificacaoExistente.numero}).\nDeseja atualizar os valores mantendo este número?`);
         if (!confirmar) return; 
         
@@ -1063,12 +688,10 @@ async function gerarNotaPrecificacao() {
         numeroParaSalvar = precificacaoExistente.numero;
         isUpdate = true;
     } else {
-        // Fluxo de Criação (Novo Número)
         numeroParaSalvar = obterProximoNumeroDisponivel();
         isUpdate = false;
     }
 
-    // Objeto da Nota (Sem cliente, sem ano, numero simplificado)
     const nota = {
         numero: numeroParaSalvar,
         produto: prodNome,
@@ -1086,7 +709,6 @@ async function gerarNotaPrecificacao() {
     try {
         if (isUpdate) {
             await setDoc(doc(db, "precificacoes-geradas", idParaSalvar), nota);
-            // Atualiza memória local
             const index = precificacoesGeradas.findIndex(p => p.id === idParaSalvar);
             if (index !== -1) precificacoesGeradas[index] = { id: idParaSalvar, ...nota };
             alert(`Precificação do produto "${prodNome}" atualizada!`);
@@ -1098,8 +720,6 @@ async function gerarNotaPrecificacao() {
         }
         
         atualizarTabelaPrecificacoesGeradas();
-        
-        // Atualiza o badge visual imediatamente após salvar
         verificarPrecoExistente(prodNome);
 
     } catch(e) { 
@@ -1119,7 +739,6 @@ function atualizarTabelaPrecificacoesGeradas() {
     if(!tbody) return;
     tbody.innerHTML = '';
     
-    // Ordenar puramente pelo número
     const ordenadas = [...precificacoesGeradas].sort((a,b) => b.numero - a.numero);
 
     ordenadas.forEach(p => {
@@ -1136,7 +755,6 @@ function atualizarTabelaPrecificacoesGeradas() {
 }
 
 function buscarPrecificacoesGeradas() {
-    // Filtro agora busca pelo nome do produto
     const termo = document.getElementById('busca-precificacao').value.toLowerCase();
     const rows = document.querySelectorAll('#tabela-precificacoes-geradas tbody tr');
     rows.forEach(r => {
@@ -1200,14 +818,13 @@ async function removerPrecificacao(id) {
 }
 
 // ==========================================================================
-// 11. FUNÇÕES AUXILIARES DE CÁLCULO
+// 8. FUNÇÕES AUXILIARES DE CÁLCULO
 // ==========================================================================
 
 function calcularCustoTotalItem(item) {
     let custoTotal = 0;
     let quantidade = item.quantidade || 1;
 
-    // Se o item tem propriedades diretas (legado ou novo formato)
     const custoUnit = item.material ? item.material.custoUnitario : 0;
 
     if (item.tipo === "comprimento") {
