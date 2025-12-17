@@ -1,86 +1,91 @@
 // assets/js/precificacao.js
 
-// 1. IMPORTAÇÕES
+// 1. IMPORTAÇÕES DE INFRAESTRUTURA
 import { db, auth } from './firebase-config.js';
 import { 
-    collection, doc, setDoc, getDocs, updateDoc, deleteDoc, addDoc 
+    collection, doc, addDoc, getDocs, updateDoc, deleteDoc, setDoc, getDoc 
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
-// IMPORTAÇÃO DO NOVO MÓDULO (Lógica de Insumos, MO e Custos Indiretos)
+// 2. IMPORTAÇÕES DO MÓDULO DE INSUMOS (A Ponte com o novo arquivo)
 import { 
-    materiais, maoDeObra, custosIndiretosPredefinidos, custosIndiretosAdicionais,
-    carregarDadosInsumos,
-    cadastrarMaterialInsumo, editarMaterialInsumo, removerMaterialInsumo, buscarMateriaisCadastrados, toggleCamposMaterial,
-    salvarMaoDeObra, editarMaoDeObraUI,
-    adicionarNovoCustoIndireto, salvarCustoIndiretoPredefinido, removerCustoIndiretoAdicional, buscarCustosIndiretosCadastrados,
-    setOnMaterialUpdateCallback, getUnidadeSigla
+    // Dados (Estado Compartilhado)
+    materiais, 
+    maoDeObra, 
+    custosIndiretosPredefinidos, 
+    custosIndiretosAdicionais,
+    
+    // Funções de Carregamento e CRUD
+    carregarDadosInsumos, // <--- A função unificada solicitada
+    cadastrarMaterialInsumo,
+    salvarMaoDeObra,
+    editarMaoDeObraUI,
+    adicionarNovoCustoIndireto,
+    
+    // Funções de Busca e UI (Globais)
+    buscarMateriaisCadastrados,
+    buscarCustosIndiretosCadastrados,
+    
+    // Configuração e Helpers
+    setOnMaterialUpdateCallback,
+    getUnidadeSigla
 } from './precificacao-insumos.js';
 
-// 2. VARIÁVEIS DE ESTADO LOCAIS (Apenas Produtos e Histórico)
+// 3. VARIÁVEIS DE ESTADO LOCAIS (Produtos e Histórico)
 let produtos = [];
 let precificacoesGeradas = [];
 let taxaCredito = { percentual: 6, incluir: false };
-let margemLucroPadrao = 50;
-
-// Variáveis de Controle
 let produtoEmEdicao = null;
 let moduleInitialized = false;
 let searchIndex = -1; // Controle da navegação por teclado na busca
+let margemLucroPadrao = 50;
 
 // ==========================================================================
-// 3. INICIALIZAÇÃO E CARREGAMENTO
+// 4. INICIALIZAÇÃO E CARREGAMENTO
 // ==========================================================================
 export async function initPrecificacao() {
     console.log("Inicializando Módulo Precificação (Modularizado)...");
     
-    // A. EXPOR FUNÇÕES AO ESCOPO GLOBAL (WINDOW)
-    // Isso garante que os botões do HTML (onclick=...) continuem funcionando
-    // mesmo que a lógica esteja importada do outro arquivo.
+    // EXPOR FUNÇÕES AO ESCOPO GLOBAL (WINDOW)
+    // Necessário para botões com onclick="" no HTML funcionarem
     
-    // Funções de Insumos (Delegadas para o novo módulo)
-    window.buscarMateriaisCadastrados = buscarMateriaisCadastrados;
-    window.editarMaterialInsumo = editarMaterialInsumo;
-    window.removerMaterialInsumo = removerMaterialInsumo;
-    window.buscarCustosIndiretosCadastrados = buscarCustosIndiretosCadastrados;
-    window.salvarCustoIndiretoPredefinido = salvarCustoIndiretoPredefinido;
-    window.removerCustoIndiretoAdicional = removerCustoIndiretoAdicional;
-    
-    // Funções Locais (Produtos e Cálculo)
+    // Funções de Produtos (Locais)
     window.buscarProdutosCadastrados = buscarProdutosCadastrados;
     window.editarProduto = editarProduto;
     window.removerProduto = removerProduto;
+    
+    // Funções de Histórico (Locais)
     window.buscarPrecificacoesGeradas = buscarPrecificacoesGeradas;
     window.visualizarPrecificacao = visualizarPrecificacao;
     window.removerPrecificacao = removerPrecificacao;
-    
-    // B. CONFIGURAR COMUNICAÇÃO ENTRE MÓDULOS
-    // Registra a função local de "Efeito Dominó" para ser chamada pelo módulo de insumos
+
+    // Configura o Callback: Quando um material for atualizado no outro arquivo,
+    // esta função local será chamada para recalcular os produtos.
     setOnMaterialUpdateCallback(atualizarCustosProdutosPorMaterial);
 
-    await carregarDados();
+    await carregarDadosCompletos();
     
     if (!moduleInitialized) {
         setupEventListeners();
         moduleInitialized = true;
     }
     
-    // Exibe a primeira aba por padrão (mesmo que seja do outro módulo, a navegação é controlada aqui ou no HTML)
-    mostrarSubMenu('materiais-insumos');
+    // Exibe a primeira aba por padrão ou mantém a navegação
+    // Opcional: mostrarSubMenu('calculo-precificacao');
 }
 
-async function carregarDados() {
+async function carregarDadosCompletos() {
     const user = auth.currentUser;
     if (!user) return;
 
     try {
-        // 1. Carrega dados base do módulo vizinho
+        // A. Carrega Insumos (Materiais, MO, Custos) do Módulo Externo
         await carregarDadosInsumos();
 
-        // 2. Carrega configurações locais
-        const taxaDoc = await getDoc(doc(db, "configuracoes", "taxaCredito")); // Função getDoc precisa ser importada? Sim, ver imports
+        // B. Carrega Configurações Locais
+        const taxaDoc = await getDoc(doc(db, "configuracoes", "taxaCredito"));
         if (taxaDoc.exists()) taxaCredito = { ...taxaCredito, ...taxaDoc.data() };
 
-        // 3. Carrega Coleções Locais
+        // C. Carrega Coleções Locais (Produtos e Histórico)
         const prodSnap = await getDocs(collection(db, "produtos"));
         produtos = [];
         prodSnap.forEach(d => produtos.push({id: d.id, ...d.data()}));
@@ -89,11 +94,11 @@ async function carregarDados() {
         precificacoesGeradas = [];
         precSnap.forEach(d => precificacoesGeradas.push({id: d.id, ...d.data()}));
 
-        // 4. Atualiza UI Local
+        // D. Atualizar UI
         atualizarTabelaProdutosCadastrados();
         atualizarTabelaPrecificacoesGeradas();
         
-        // Restaurar inputs de cálculo
+        // Restaurar inputs de cálculo na tela
         const margemInput = document.getElementById('margem-lucro-final');
         if(margemInput) margemInput.value = margemLucroPadrao;
         
@@ -111,11 +116,8 @@ async function carregarDados() {
     }
 }
 
-// Necessário importar getDoc localmente se não estiver no topo
-import { getDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
-
 // ==========================================================================
-// 4. LÓGICA DE NAVEGAÇÃO E HELPERS
+// 5. EVENT LISTENERS E NAVEGAÇÃO
 // ==========================================================================
 
 function debounce(func, wait) {
@@ -128,7 +130,7 @@ function debounce(func, wait) {
 }
 
 function setupEventListeners() {
-    // Navegação
+    // Navegação entre Abas
     document.querySelectorAll('#module-precificacao nav ul li a.nav-link').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
@@ -136,21 +138,25 @@ function setupEventListeners() {
         });
     });
 
-    // --- EVENTOS DELEGADOS AO MÓDULO DE INSUMOS ---
+    // --- Listeners para o Módulo de Insumos (Delegados) ---
     bindClick('#cadastrar-material-insumo-btn', cadastrarMaterialInsumo);
+    
+    // Toggle UI dos tipos de materiais (Lógica de UI mantida aqui para interatividade imediata)
     document.querySelectorAll('input[name="tipo-material"]').forEach(radio => {
         radio.addEventListener('change', function() { toggleCamposMaterial(this.value); });
     });
+
     bindClick('#btn-salvar-mao-de-obra', salvarMaoDeObra);
     bindClick('#btn-editar-mao-de-obra', editarMaoDeObraUI);
     bindClick('#adicionarCustoIndiretoBtn', adicionarNovoCustoIndireto);
 
-    // --- EVENTOS LOCAIS (PRODUTOS) ---
+    // --- Listeners Locais (Produtos e Cálculo) ---
     bindClick('#cadastrar-produto-btn', cadastrarProduto);
+    
     const inputMat = document.getElementById('pesquisa-material');
     if(inputMat) inputMat.addEventListener('input', buscarMateriaisAutocomplete);
 
-    // --- EVENTOS LOCAIS (CÁLCULO) ---
+    // Cálculo - Debounce e Teclado
     const inputProd = document.getElementById('produto-pesquisa');
     if(inputProd) {
         inputProd.addEventListener('input', debounce(buscarProdutosAutocomplete, 300));
@@ -191,9 +197,11 @@ function setupEventListeners() {
         });
     }
     
+    // Fechar autocomplete ao clicar fora
     document.addEventListener('click', (e) => {
         const resultsDiv = document.getElementById('produto-resultados');
         const searchInput = document.getElementById('produto-pesquisa');
+        
         if (resultsDiv && searchInput) {
             if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
                 resultsDiv.classList.add('hidden');
@@ -203,6 +211,7 @@ function setupEventListeners() {
     });
     
     bindClick('#btn-gerar-nota', gerarNotaPrecificacao);
+    
     addChangeListeners(['horas-produto', 'margem-lucro-final'], calcularCustos);
     addChangeListeners(['incluir-taxa-credito-sim', 'incluir-taxa-credito-nao'], calcularTotalComTaxas);
     bindClick('#btn-salvar-taxa-credito', salvarTaxaCredito);
@@ -229,6 +238,19 @@ function mostrarSubMenu(id) {
     if(target) target.style.display = 'block';
 }
 
+// Helper de UI para a aba de Materiais
+function toggleCamposMaterial(tipo) {
+    const campos = ['comprimento', 'litro', 'quilo', 'area'];
+    campos.forEach(c => {
+        const el = document.getElementById(`campos-${c}`);
+        if(el) el.style.display = 'none';
+    });
+    
+    const target = document.getElementById(`campos-${tipo}`);
+    if(target) target.style.display = 'block';
+}
+
+// Helpers de Formatação Locais
 function formatarMoeda(valor) {
     if (typeof valor !== 'number' || isNaN(valor)) return 'R$ 0,00';
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -240,33 +262,41 @@ function converterMoeda(str) {
 }
 
 // ==========================================================================
-// 5. MÓDULO: PRODUTOS
+// 6. LÓGICA DE PRODUTOS (CRUD e Montagem)
 // ==========================================================================
 
-// Função acionada via Callback quando um material é editado no outro módulo
+// --- EFEITO DOMINÓ (Callback vinda do precificacao-insumos.js) ---
 async function atualizarCustosProdutosPorMaterial(material) {
     console.log(`Atualizando produtos que usam: ${material.nome}`);
     
+    // Filtra produtos que contêm este material
     const produtosAfetados = produtos.filter(p => p.materiais.some(m => m.materialId === material.id));
 
     for (const prod of produtosAfetados) {
+        // Atualiza o custo unitário e recalcula o total de cada item
         prod.materiais.forEach(item => {
             if (item.materialId === material.id) {
+                // Atualiza a referência do custo unitário do material
                 item.material.custoUnitario = material.custoUnitario;
+                // Recalcula o custo total deste item específico
                 item.custoTotal = calcularCustoTotalItem(item); 
             }
         });
         
+        // Recalcula o custo total do produto (soma dos itens)
         prod.custoTotal = prod.materiais.reduce((acc, item) => acc + item.custoTotal, 0);
 
+        // Salva no Banco
         await updateDoc(doc(db, "produtos", prod.id), {
             materiais: prod.materiais,
             custoTotal: prod.custoTotal
         });
     }
     
+    // Atualiza tabela visualmente se houver mudanças
     if (produtosAfetados.length > 0) {
         atualizarTabelaProdutosCadastrados();
+        // Se houver um produto selecionado na calculadora que foi afetado, recalcula
         const produtoSelecionadoNome = document.getElementById('produto-pesquisa').value;
         if (produtoSelecionadoNome) {
             const produtoSelecionado = produtos.find(p => p.nome === produtoSelecionadoNome);
@@ -284,7 +314,7 @@ function buscarMateriaisAutocomplete() {
     
     if(!termo) { div.style.display = 'none'; return; }
     
-    // Usa a variável 'materiais' importada do módulo vizinho
+    // Usa a variável 'materiais' importada do módulo de insumos
     const results = materiais.filter(m => m.nome.toLowerCase().includes(termo));
     results.forEach(m => {
         const item = document.createElement('div');
@@ -320,6 +350,7 @@ function adicionarMaterialNaTabelaProduto(mat, dadosSalvos = null) {
         valDimensao = dadosSalvos ? dadosSalvos.peso : mat.pesoG;
         inputDimensao = `<input type="number" class="dim-input" value="${valDimensao}" style="width:60px"> g`;
     } else {
+        // Unidade
         const qtdUn = dadosSalvos ? dadosSalvos.quantidadeMaterial : 1;
         inputDimensao = `<input type="number" class="dim-input" value="${qtdUn}" style="width:60px"> un`;
     }
@@ -346,6 +377,7 @@ function adicionarMaterialNaTabelaProduto(mat, dadosSalvos = null) {
 function recalcularLinhaProduto(row, mat) {
     const qtd = parseFloat(row.querySelector('.qtd-input').value) || 0;
     
+    // Constrói objeto temporário para usar a função auxiliar de cálculo
     const itemTemp = {
         tipo: mat.tipo,
         material: { custoUnitario: mat.custoUnitario },
@@ -380,12 +412,13 @@ async function cadastrarProduto() {
     const rows = document.querySelectorAll('#tabela-materiais-produto tbody tr');
     rows.forEach(row => {
         const matId = row.cells[0].dataset.id;
-        // Busca no array importado
+        // Usa a lista 'materiais' importada
         const matOriginal = materiais.find(m => m.id === matId);
         const tipo = row.cells[1].innerText;
         const qtd = parseFloat(row.querySelector('.qtd-input').value);
         const custoItem = parseFloat(row.dataset.total);
 
+        // Resgata dimensões usadas
         let comp=0, larg=0, alt=0, vol=0, peso=0, qtdMat=0;
         
         if(tipo === 'comprimento') comp = parseFloat(row.querySelector('.dim-input').value);
@@ -471,6 +504,7 @@ function editarProduto(id) {
     tbody.innerHTML = '';
     
     prod.materiais.forEach(item => {
+        // Busca o material na lista importada
         const matReal = materiais.find(m => m.id === item.materialId);
         if(matReal) {
             adicionarMaterialNaTabelaProduto(matReal, item);
@@ -489,7 +523,7 @@ async function removerProduto(id) {
 }
 
 // ==========================================================================
-// 6. MÓDULO: CÁLCULO DE PREÇO
+// 7. MÓDULO: CÁLCULO DE PREÇO E HISTÓRICO
 // ==========================================================================
 
 function buscarProdutosAutocomplete() {
@@ -500,7 +534,7 @@ function buscarProdutosAutocomplete() {
     if(spinner) spinner.classList.remove('hidden');
 
     div.innerHTML = '';
-    searchIndex = -1;
+    searchIndex = -1; 
 
     if (!termo) { 
         div.classList.add('hidden');
@@ -584,7 +618,7 @@ function calcularCustos() {
     const custoMat = converterMoeda(document.getElementById('custo-produto').textContent);
     const horas = parseFloat(document.getElementById('horas-produto').value) || 1;
     
-    // Usa mão de obra IMPORTADA do módulo vizinho
+    // Usa 'maoDeObra' importada
     const custoMO = horas * maoDeObra.valorHora;
     const custoEncargos = horas * maoDeObra.custoFerias13o;
     
@@ -592,7 +626,7 @@ function calcularCustos() {
     document.getElementById('custo-ferias-13o-detalhe').textContent = formatarMoeda(custoEncargos);
     document.getElementById('total-mao-de-obra').textContent = formatarMoeda(custoMO + custoEncargos);
 
-    // 2. Custos Indiretos (IMPORTADOS)
+    // 2. Custos Indiretos (Usa listas importadas)
     const todosCI = [...custosIndiretosPredefinidos, ...custosIndiretosAdicionais];
     const valorHoraCI = todosCI.reduce((acc, c) => acc + (c.valorMensal / maoDeObra.horas), 0);
     const totalCI = valorHoraCI * horas;
@@ -647,10 +681,6 @@ function calcularTotalComTaxas() {
         document.getElementById('total-final-com-taxas').textContent = formatarMoeda(totalSemTaxa);
     }
 }
-
-// ==========================================================================
-// 7. NOTA DE PRECIFICAÇÃO
-// ==========================================================================
 
 function obterProximoNumeroDisponivel() {
     const numerosExistentes = precificacoesGeradas
