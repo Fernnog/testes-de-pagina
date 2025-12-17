@@ -297,7 +297,8 @@
                         <li><a href="#" data-submenu="mao-de-obra" class="nav-link">Mão de Obra</a></li>
                         <li><a href="#" data-submenu="custos-indiretos" class="nav-link">Custos Indiretos</a></li>
                         <li><a href="#" data-submenu="cadastrar-produtos" class="nav-link">Produtos</a></li>
-                        <li><a href="#" data-submenu="calculo-precificacao" class="nav-link">Calculadora</a></li>
+                        <!-- ALTERAÇÃO 1: Mudar de "Calculadora" para "Precificação" -->
+                        <li><a href="#" data-submenu="calculo-precificacao" class="nav-link">Precificação</a></li>
                         <li><a href="#" data-submenu="precificacoes-geradas" class="nav-link">Histórico</a></li>
                     </ul>
                  </nav>
@@ -458,10 +459,7 @@
             <!-- ABA: CÁLCULO (ALTERADO PARA VERSÃO 1.0.4 - WRAPPER E SPINNER) -->
             <div id="calculo-precificacao" class="subpagina" style="display:none;">
                 <h2 class="section-title-lined">Calculadora de Preço</h2>
-                <div class="form-group">
-                    <label>Cliente (Opcional):</label>
-                    <input type="text" id="nome-cliente">
-                </div>
+                <!-- ALTERAÇÃO 2: Removido campo "Cliente (Opcional)" -->
 
                 <div class="calculation-container">
                     <div class="section" style="position: relative;">
@@ -544,11 +542,12 @@
             <div id="precificacoes-geradas" class="subpagina" style="display:none;">
                 <h2 class="section-title-lined">Histórico de Precificações</h2>
                 <div class="form-group">
-                    <input type="text" id="busca-precificacao" placeholder="Filtrar por cliente..." onkeyup="buscarPrecificacoesGeradas()">
+                    <input type="text" id="busca-precificacao" placeholder="Filtrar..." onkeyup="buscarPrecificacoesGeradas()">
                 </div>
                 <div class="table-responsive">
                     <table id="tabela-precificacoes-geradas" class="tabela-gerada">
-                        <thead><tr><th>Nº/Ano</th><th>Cliente</th><th>Ações</th></tr></thead>
+                        <!-- ALTERAÇÃO 3: Ajuste de Cabeçalho (Nº simples e Produto) -->
+                        <thead><tr><th>Nº</th><th>Produto</th><th>Ações</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
