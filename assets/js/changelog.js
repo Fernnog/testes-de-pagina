@@ -6,6 +6,17 @@
  */
 const changeLogData = [
     {
+        version: "1.0.8",
+        date: "10/12/2025",
+        changes: [
+            "💎 Refinamento Visual (UI): Substituição global de Emojis por Ícones Vetoriais (SVG) delicados, elevando a percepção profissional do Portal.",
+            "🎨 Coesão do Design System: Padronização do botão 'Salvar Precificação' para a cor primária (Teal), alinhando-o aos demais botões de ação.",
+            "🧠 Semântica Financeira: O 'Subtotal de Custos' agora é exibido inteiramente em vermelho (Rótulo e Valor), facilitando a distinção imediata entre Saídas (Custos) e Entradas (Lucro).",
+            "🧹 Limpeza de Interface: Remoção de redundâncias no painel de inputs e reagrupamento estratégico dos detalhes (Materiais e Custos Indiretos) no cartão de resultado.",
+            "📝 Clareza Textual: Renomeação do módulo para 'Cálculo da Precificação', tornando a função da tela mais objetiva."
+        ]
+    },
+    {
         version: "1.0.7",
         date: "09/12/2025",
         changes: [
