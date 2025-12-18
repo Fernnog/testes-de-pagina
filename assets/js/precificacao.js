@@ -580,10 +580,7 @@ function selecionarProdutoParaCalculo(prod) {
     const elHidden = document.getElementById('custo-produto');
     if(elHidden) elHidden.textContent = formatarMoeda(prod.custoTotal);
     
-    // ATUALIZAÇÃO DASHBOARD: Exibe valor formatado na info box
-    const displayMat = document.getElementById('custo-produto-display');
-    if(displayMat) displayMat.textContent = formatarMoeda(prod.custoTotal);
-    
+    // ATUALIZAÇÃO: Exibe os materiais na nova área de detalhes
     const ul = document.getElementById('lista-materiais-produto');
     if(ul) {
         ul.innerHTML = '';
@@ -600,7 +597,7 @@ function selecionarProdutoParaCalculo(prod) {
 
 function calcularCustos() {
     // 1. Custos Diretos (Materiais)
-    // Lê do span oculto ou do display, converte para número
+    // Lê do span oculto
     const custoMatDisplay = document.getElementById('custo-produto').textContent;
     const custoMat = converterMoeda(custoMatDisplay);
     
