@@ -958,7 +958,7 @@ input[type="checkbox"] {
     width: 100%;
     padding: 15px;
     font-size: 1.1rem;
-    background-color: var(--cor-secundaria); /* Rosa para chamar atenção */
+    background-color: var(--cor-principal); 
     box-shadow: 0 4px 10px rgba(223, 182, 176, 0.4);
     color: #fff;
     border: none;
@@ -966,7 +966,7 @@ input[type="checkbox"] {
     cursor: pointer;
     transition: background 0.3s;
 }
-.action-area .btn-primary-large:hover { background-color: #c89790; }
+.action-area .btn-primary-large:hover { background-color: #5a8289; }
 
 /* Controles de Taxa */
 .tax-controls {
