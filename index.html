@@ -73,7 +73,13 @@
             <div class="welcome-text">
                 <h1>Painel Administrativo</h1>
                 <div class="user-info-card">
-                    <span class="user-icon">👤</span>
+                    <span class="user-icon">
+                        <!-- Ícone SVG User -->
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </span>
                     <span id="user-email-display">...</span>
                 </div>
             </div>
@@ -82,7 +88,16 @@
         <div class="hub-cards-container">
             <!-- Card Orçamentos -->
             <div class="hub-card" id="btn-go-orcamentos">
-                <div class="card-icon">📋</div>
+                <div class="card-icon">
+                    <!-- Ícone SVG Clipboard (Gestão de Pedidos) -->
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                        <path d="M9 14h6"></path>
+                        <path d="M9 10h6"></path>
+                        <path d="M9 18h6"></path>
+                    </svg>
+                </div>
                 <h3>Gestão de Pedidos</h3>
                 <p>Gerencie clientes, orçamentos e fila de produção.</p>
                 <div class="card-footer"><span class="card-action">Acessar &rarr;</span></div>
@@ -90,7 +105,13 @@
 
             <!-- Card Precificação -->
             <div class="hub-card" id="btn-go-precificacao">
-                <div class="card-icon">💰</div>
+                <div class="card-icon">
+                    <!-- Ícone SVG Tag/Price (Precificação) -->
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                        <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                    </svg>
+                </div>
                 <h3>Precificação</h3>
                 <p>Calcule custos de materiais e defina preços de venda.</p>
                 <div class="card-footer"><span class="card-action">Acessar &rarr;</span></div>
@@ -299,7 +320,6 @@
                         <li><a href="#" data-submenu="mao-de-obra" class="nav-link">Mão de Obra</a></li>
                         <li><a href="#" data-submenu="custos-indiretos" class="nav-link">Custos Indiretos</a></li>
                         <li><a href="#" data-submenu="cadastrar-produtos" class="nav-link">Produtos</a></li>
-                        <!-- ATUALIZADO: Menu renomeado de "Calculadora" para "Precificação" -->
                         <li><a href="#" data-submenu="calculo-precificacao" class="nav-link">Precificação</a></li>
                         <li><a href="#" data-submenu="precificacoes-geradas" class="nav-link">Histórico</a></li>
                     </ul>
@@ -480,23 +500,14 @@
                             </div>
 
                             <div class="form-row-compact">
-                                <div class="form-group half">
+                                <div class="form-group" style="width: 100%;">
                                     <label>Horas Gastas:</label>
                                     <input type="number" id="horas-produto" value="1" min="0.1" step="0.1">
                                 </div>
-                                <div class="form-group half info-box">
-                                    <label>Custo Materiais:</label>
-                                    <span id="custo-produto-display">R$ 0,00</span>
-                                    <!-- Campo oculto para cálculo -->
-                                    <span id="custo-produto" style="display:none;">0</span> 
-                                </div>
                             </div>
                             
-                            <!-- Detalhes colapsáveis (Opcional, para não poluir) -->
-                            <details>
-                                <summary>Ver Materiais Inclusos</summary>
-                                <ul id="lista-materiais-produto" class="small-list"></ul>
-                            </details>
+                            <!-- Campo oculto para cálculo (Mantido para lógica JS) -->
+                            <span id="custo-produto" style="display:none;">0</span> 
                         </div>
 
                         <!-- Painel B: Definição Financeira -->
@@ -533,7 +544,15 @@
                         </div>
                         
                         <div class="action-area">
-                            <button type="button" id="btn-gerar-nota" class="btn-primary-large">💾 Salvar Precificação</button>
+                            <button type="button" id="btn-gerar-nota" class="btn-primary-large">
+                                <!-- SVG Salvar -->
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px; vertical-align:text-bottom;">
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                    <polyline points="7 3 7 8 15 8"></polyline>
+                                </svg>
+                                Salvar Precificação
+                            </button>
                         </div>
                     </div>
 
@@ -548,7 +567,14 @@
                             <div class="result-body">
                                 <!-- Bloco de Custos (O que sai) -->
                                 <div class="result-section costs">
-                                    <h5>🔴 Custos (Para Pagar Contas)</h5>
+                                    <!-- Ícone Vermelho -->
+                                    <h5>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e53935" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;">
+                                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                                            <polyline points="19 12 12 19 5 12"></polyline>
+                                        </svg>
+                                        Custos (Para Pagar Contas)
+                                    </h5>
                                     <div class="result-row">
                                         <span>Custos Diretos (Materiais):</span>
                                         <span id="res-custo-mat">R$ 0,00</span>
@@ -559,13 +585,21 @@
                                     </div>
                                     <div class="result-row subtotal-row">
                                         <span>Subtotal Custos:</span>
-                                        <span id="subtotal">R$ 0,00</span>
+                                        <!-- Classe highlight-red adicionada -->
+                                        <span id="subtotal" class="highlight-red">R$ 0,00</span>
                                     </div>
                                 </div>
 
                                 <!-- Bloco de Mão de Obra (Salário da Artesã) -->
                                 <div class="result-section labor">
-                                    <h5>🔵 Mão de Obra (Seu Salário)</h5>
+                                    <!-- Ícone Azul -->
+                                    <h5>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2196F3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <polyline points="12 6 12 12 16 14"></polyline>
+                                        </svg>
+                                        Mão de Obra (Seu Salário)
+                                    </h5>
                                     <div class="result-row highlight-blue">
                                         <span>Valor pelo tempo trabalhado:</span>
                                         <span id="total-mao-de-obra">R$ 0,00</span>
@@ -577,7 +611,13 @@
 
                                 <!-- Bloco de Lucro (Crescimento da Empresa) -->
                                 <div class="result-section profit">
-                                    <h5>🟢 Lucro (Para a Empresa)</h5>
+                                    <!-- Ícone Verde -->
+                                    <h5>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        Lucro (Para a Empresa)
+                                    </h5>
                                     <div class="result-row highlight-green">
                                         <span>Margem Líquida:</span>
                                         <span id="margem-lucro-valor">R$ 0,00</span>
@@ -599,11 +639,18 @@
                             </div>
                         </div>
                         
-                        <!-- Detalhes de custos indiretos (Oculto/Expansível) -->
-                        <details class="details-ci">
-                            <summary>Ver detalhe Custos Indiretos</summary>
-                            <ul id="lista-custos-indiretos-detalhes"></ul>
-                        </details>
+                        <!-- Detalhes de custos (Materiais + Indiretos) movidos para cá -->
+                        <div class="details-container">
+                            <details class="details-ci">
+                                <summary>Ver Materiais Inclusos</summary>
+                                <ul id="lista-materiais-produto" class="small-list"></ul>
+                            </details>
+
+                            <details class="details-ci">
+                                <summary>Ver detalhe Custos Indiretos</summary>
+                                <ul id="lista-custos-indiretos-detalhes"></ul>
+                            </details>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -616,7 +663,6 @@
                 </div>
                 <div class="table-responsive">
                     <table id="tabela-precificacoes-geradas" class="tabela-gerada">
-                        <!-- ATUALIZADO: Cabeçalhos ajustados (Removido Ano, Alterado Cliente->Produto) -->
                         <thead><tr><th>Nº</th><th>Produto</th><th>Ações</th></tr></thead>
                         <tbody></tbody>
                     </table>
