@@ -6,7 +6,7 @@ import {
     collection, doc, addDoc, getDocs, updateDoc, deleteDoc, setDoc, getDoc 
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
-// 2. IMPORTAÇÕES DO MÓDULO DE INSUMOS (A Ponte com o novo arquivo)
+// 2. IMPORTAÇÕES DO MÓDULO DE INSUMOS
 import { 
     // Dados (Estado Compartilhado)
     materiais, 
@@ -15,7 +15,7 @@ import {
     custosIndiretosAdicionais,
     
     // Funções de Carregamento e CRUD
-    carregarDadosInsumos, // <--- A função unificada solicitada
+    carregarDadosInsumos,
     cadastrarMaterialInsumo,
     salvarMaoDeObra,
     editarMaoDeObraUI,
@@ -46,20 +46,15 @@ export async function initPrecificacao() {
     console.log("Inicializando Módulo Precificação (Modularizado)...");
     
     // EXPOR FUNÇÕES AO ESCOPO GLOBAL (WINDOW)
-    // Necessário para botões com onclick="" no HTML funcionarem
-    
-    // Funções de Produtos (Locais)
     window.buscarProdutosCadastrados = buscarProdutosCadastrados;
     window.editarProduto = editarProduto;
     window.removerProduto = removerProduto;
     
-    // Funções de Histórico (Locais)
     window.buscarPrecificacoesGeradas = buscarPrecificacoesGeradas;
     window.visualizarPrecificacao = visualizarPrecificacao;
     window.removerPrecificacao = removerPrecificacao;
 
-    // Configura o Callback: Quando um material for atualizado no outro arquivo,
-    // esta função local será chamada para recalcular os produtos.
+    // Configura o Callback de atualização de insumos
     setOnMaterialUpdateCallback(atualizarCustosProdutosPorMaterial);
 
     await carregarDadosCompletos();
@@ -68,9 +63,6 @@ export async function initPrecificacao() {
         setupEventListeners();
         moduleInitialized = true;
     }
-    
-    // Exibe a primeira aba por padrão ou mantém a navegação
-    // Opcional: mostrarSubMenu('calculo-precificacao');
 }
 
 async function carregarDadosCompletos() {
@@ -106,9 +98,11 @@ async function carregarDadosCompletos() {
         if(taxaInput) taxaInput.value = taxaCredito.percentual;
         
         if(taxaCredito.incluir) {
-            document.getElementById('incluir-taxa-credito-sim').checked = true;
+            const radioSim = document.getElementById('incluir-taxa-credito-sim');
+            if(radioSim) radioSim.checked = true;
         } else {
-            document.getElementById('incluir-taxa-credito-nao').checked = true;
+            const radioNao = document.getElementById('incluir-taxa-credito-nao');
+            if(radioNao) radioNao.checked = true;
         }
 
     } catch (e) {
@@ -141,7 +135,6 @@ function setupEventListeners() {
     // --- Listeners para o Módulo de Insumos (Delegados) ---
     bindClick('#cadastrar-material-insumo-btn', cadastrarMaterialInsumo);
     
-    // Toggle UI dos tipos de materiais (Lógica de UI mantida aqui para interatividade imediata)
     document.querySelectorAll('input[name="tipo-material"]').forEach(radio => {
         radio.addEventListener('change', function() { toggleCamposMaterial(this.value); });
     });
@@ -238,7 +231,6 @@ function mostrarSubMenu(id) {
     if(target) target.style.display = 'block';
 }
 
-// Helper de UI para a aba de Materiais
 function toggleCamposMaterial(tipo) {
     const campos = ['comprimento', 'litro', 'quilo', 'area'];
     campos.forEach(c => {
@@ -250,7 +242,6 @@ function toggleCamposMaterial(tipo) {
     if(target) target.style.display = 'block';
 }
 
-// Helpers de Formatação Locais
 function formatarMoeda(valor) {
     if (typeof valor !== 'number' || isNaN(valor)) return 'R$ 0,00';
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -258,45 +249,37 @@ function formatarMoeda(valor) {
 
 function converterMoeda(str) {
     if (typeof str === 'number') return str;
-    return parseFloat(str.replace('R$','').replace(/\./g,'').replace(',','.')) || 0;
+    if (!str) return 0;
+    return parseFloat(str.replace('R$','').replace(/\s/g,'').replace(/\./g,'').replace(',','.')) || 0;
 }
 
 // ==========================================================================
 // 6. LÓGICA DE PRODUTOS (CRUD e Montagem)
 // ==========================================================================
 
-// --- EFEITO DOMINÓ (Callback vinda do precificacao-insumos.js) ---
 async function atualizarCustosProdutosPorMaterial(material) {
     console.log(`Atualizando produtos que usam: ${material.nome}`);
     
-    // Filtra produtos que contêm este material
     const produtosAfetados = produtos.filter(p => p.materiais.some(m => m.materialId === material.id));
 
     for (const prod of produtosAfetados) {
-        // Atualiza o custo unitário e recalcula o total de cada item
         prod.materiais.forEach(item => {
             if (item.materialId === material.id) {
-                // Atualiza a referência do custo unitário do material
                 item.material.custoUnitario = material.custoUnitario;
-                // Recalcula o custo total deste item específico
                 item.custoTotal = calcularCustoTotalItem(item); 
             }
         });
         
-        // Recalcula o custo total do produto (soma dos itens)
         prod.custoTotal = prod.materiais.reduce((acc, item) => acc + item.custoTotal, 0);
 
-        // Salva no Banco
         await updateDoc(doc(db, "produtos", prod.id), {
             materiais: prod.materiais,
             custoTotal: prod.custoTotal
         });
     }
     
-    // Atualiza tabela visualmente se houver mudanças
     if (produtosAfetados.length > 0) {
         atualizarTabelaProdutosCadastrados();
-        // Se houver um produto selecionado na calculadora que foi afetado, recalcula
         const produtoSelecionadoNome = document.getElementById('produto-pesquisa').value;
         if (produtoSelecionadoNome) {
             const produtoSelecionado = produtos.find(p => p.nome === produtoSelecionadoNome);
@@ -314,7 +297,6 @@ function buscarMateriaisAutocomplete() {
     
     if(!termo) { div.style.display = 'none'; return; }
     
-    // Usa a variável 'materiais' importada do módulo de insumos
     const results = materiais.filter(m => m.nome.toLowerCase().includes(termo));
     results.forEach(m => {
         const item = document.createElement('div');
@@ -350,7 +332,6 @@ function adicionarMaterialNaTabelaProduto(mat, dadosSalvos = null) {
         valDimensao = dadosSalvos ? dadosSalvos.peso : mat.pesoG;
         inputDimensao = `<input type="number" class="dim-input" value="${valDimensao}" style="width:60px"> g`;
     } else {
-        // Unidade
         const qtdUn = dadosSalvos ? dadosSalvos.quantidadeMaterial : 1;
         inputDimensao = `<input type="number" class="dim-input" value="${qtdUn}" style="width:60px"> un`;
     }
@@ -377,7 +358,6 @@ function adicionarMaterialNaTabelaProduto(mat, dadosSalvos = null) {
 function recalcularLinhaProduto(row, mat) {
     const qtd = parseFloat(row.querySelector('.qtd-input').value) || 0;
     
-    // Constrói objeto temporário para usar a função auxiliar de cálculo
     const itemTemp = {
         tipo: mat.tipo,
         material: { custoUnitario: mat.custoUnitario },
@@ -412,13 +392,11 @@ async function cadastrarProduto() {
     const rows = document.querySelectorAll('#tabela-materiais-produto tbody tr');
     rows.forEach(row => {
         const matId = row.cells[0].dataset.id;
-        // Usa a lista 'materiais' importada
         const matOriginal = materiais.find(m => m.id === matId);
         const tipo = row.cells[1].innerText;
         const qtd = parseFloat(row.querySelector('.qtd-input').value);
         const custoItem = parseFloat(row.dataset.total);
 
-        // Resgata dimensões usadas
         let comp=0, larg=0, alt=0, vol=0, peso=0, qtdMat=0;
         
         if(tipo === 'comprimento') comp = parseFloat(row.querySelector('.dim-input').value);
@@ -504,7 +482,6 @@ function editarProduto(id) {
     tbody.innerHTML = '';
     
     prod.materiais.forEach(item => {
-        // Busca o material na lista importada
         const matReal = materiais.find(m => m.id === item.materialId);
         if(matReal) {
             adicionarMaterialNaTabelaProduto(matReal, item);
@@ -523,7 +500,7 @@ async function removerProduto(id) {
 }
 
 // ==========================================================================
-// 7. MÓDULO: CÁLCULO DE PREÇO E HISTÓRICO
+// 7. MÓDULO: CÁLCULO DE PREÇO E HISTÓRICO (DASHBOARD REDESIGN)
 // ==========================================================================
 
 function buscarProdutosAutocomplete() {
@@ -598,62 +575,98 @@ function verificarPrecoExistente(nomeProduto) {
 
 function selecionarProdutoParaCalculo(prod) {
     document.getElementById('produto-pesquisa').value = prod.nome;
-    document.getElementById('custo-produto').textContent = formatarMoeda(prod.custoTotal);
+    
+    // Atualiza campo oculto (lógica de cálculo)
+    const elHidden = document.getElementById('custo-produto');
+    if(elHidden) elHidden.textContent = formatarMoeda(prod.custoTotal);
+    
+    // ATUALIZAÇÃO DASHBOARD: Exibe valor formatado na info box
+    const displayMat = document.getElementById('custo-produto-display');
+    if(displayMat) displayMat.textContent = formatarMoeda(prod.custoTotal);
     
     const ul = document.getElementById('lista-materiais-produto');
-    ul.innerHTML = '';
-    prod.materiais.forEach(m => {
-        const li = document.createElement('li');
-        li.textContent = `${m.material.nome}: ${formatarMoeda(m.custoTotal)}`;
-        ul.appendChild(li);
-    });
-    document.getElementById('detalhes-produto').style.display = 'block';
+    if(ul) {
+        ul.innerHTML = '';
+        prod.materiais.forEach(m => {
+            const li = document.createElement('li');
+            li.textContent = `${m.material.nome}: ${formatarMoeda(m.custoTotal)}`;
+            ul.appendChild(li);
+        });
+    }
     
     calcularCustos();
     verificarPrecoExistente(prod.nome);
 }
 
 function calcularCustos() {
-    // 1. Custos Diretos
-    const custoMat = converterMoeda(document.getElementById('custo-produto').textContent);
+    // 1. Custos Diretos (Materiais)
+    // Lê do span oculto ou do display, converte para número
+    const custoMatDisplay = document.getElementById('custo-produto').textContent;
+    const custoMat = converterMoeda(custoMatDisplay);
+    
+    // Atualiza display no Card de Resultado (Dashboard)
+    const resCustoMat = document.getElementById('res-custo-mat');
+    if(resCustoMat) resCustoMat.textContent = formatarMoeda(custoMat);
+
     const horas = parseFloat(document.getElementById('horas-produto').value) || 1;
     
-    // Usa 'maoDeObra' importada
+    // 2. Mão de Obra e Encargos
     const custoMO = horas * maoDeObra.valorHora;
     const custoEncargos = horas * maoDeObra.custoFerias13o;
+    const totalMO = custoMO + custoEncargos;
     
-    document.getElementById('custo-mao-de-obra-detalhe').textContent = formatarMoeda(custoMO);
-    document.getElementById('custo-ferias-13o-detalhe').textContent = formatarMoeda(custoEncargos);
-    document.getElementById('total-mao-de-obra').textContent = formatarMoeda(custoMO + custoEncargos);
+    // Atualiza DASHBOARD: Card de Mão de Obra (Valor Unificado)
+    const elTotalMO = document.getElementById('total-mao-de-obra');
+    if(elTotalMO) elTotalMO.textContent = formatarMoeda(totalMO);
 
-    // 2. Custos Indiretos (Usa listas importadas)
+    // Compatibilidade: Campos ocultos para salvar no banco
+    const elOldMO = document.getElementById('custo-mao-de-obra-detalhe');
+    if(elOldMO) elOldMO.textContent = formatarMoeda(custoMO);
+    const elOldEncargos = document.getElementById('custo-ferias-13o-detalhe');
+    if(elOldEncargos) elOldEncargos.textContent = formatarMoeda(custoEncargos);
+    
+    // 3. Custos Indiretos
     const todosCI = [...custosIndiretosPredefinidos, ...custosIndiretosAdicionais];
     const valorHoraCI = todosCI.reduce((acc, c) => acc + (c.valorMensal / maoDeObra.horas), 0);
     const totalCI = valorHoraCI * horas;
     
-    document.getElementById('custo-indireto').textContent = formatarMoeda(totalCI);
+    // Atualiza DASHBOARD: Card de Custos Indiretos
+    const elTotalCI = document.getElementById('custo-indireto');
+    if(elTotalCI) elTotalCI.textContent = formatarMoeda(totalCI);
     
     const ulCI = document.getElementById('lista-custos-indiretos-detalhes');
-    ulCI.innerHTML = '';
-    todosCI.filter(c => c.valorMensal > 0).forEach(c => {
-        const li = document.createElement('li');
-        const v = (c.valorMensal / maoDeObra.horas) * horas;
-        li.textContent = `${c.descricao}: ${formatarMoeda(v)}`;
-        ulCI.appendChild(li);
-    });
-    document.getElementById('detalhes-custos-indiretos').style.display = 'block';
+    if(ulCI) {
+        ulCI.innerHTML = '';
+        todosCI.filter(c => c.valorMensal > 0).forEach(c => {
+            const li = document.createElement('li');
+            const v = (c.valorMensal / maoDeObra.horas) * horas;
+            li.textContent = `${c.descricao}: ${formatarMoeda(v)}`;
+            ulCI.appendChild(li);
+        });
+    }
 
-    // 3. Subtotal
-    const subtotal = custoMat + custoMO + custoEncargos + totalCI;
-    document.getElementById('subtotal').textContent = formatarMoeda(subtotal);
+    // 4. Subtotal (DASHBOARD: Custos Operacionais = Material + Indiretos)
+    // Nota: Mão de Obra é mostrada separadamente no card, mas entra no cálculo do Markup
+    const subtotalCustos = custoMat + totalCI;
+    const elSubtotal = document.getElementById('subtotal');
+    if(elSubtotal) elSubtotal.textContent = formatarMoeda(subtotalCustos);
 
-    // 4. Margem
+    // Base para Markup (Custo Total Real = Material + MO + Indiretos)
+    const baseCalculo = custoMat + totalMO + totalCI;
+
+    // 5. Margem de Lucro
     const margemPerc = parseFloat(document.getElementById('margem-lucro-final').value) || 0;
-    const lucro = subtotal * (margemPerc / 100);
-    const totalSemTaxa = subtotal + lucro;
+    
+    const lucro = baseCalculo * (margemPerc / 100);
+    const totalSemTaxa = baseCalculo + lucro;
 
-    document.getElementById('margem-lucro-valor').textContent = formatarMoeda(lucro);
-    document.getElementById('total-final').textContent = formatarMoeda(totalSemTaxa);
+    // Atualiza DASHBOARD: Lucro
+    const elLucro = document.getElementById('margem-lucro-valor');
+    if(elLucro) elLucro.textContent = formatarMoeda(lucro);
+    
+    // Atualiza DASHBOARD: Total sem Taxas
+    const elTotalSemTaxa = document.getElementById('total-final');
+    if(elTotalSemTaxa) elTotalSemTaxa.textContent = formatarMoeda(totalSemTaxa);
     
     calcularTotalComTaxas();
 }
@@ -673,12 +686,21 @@ function calcularTotalComTaxas() {
     const incluir = document.getElementById('incluir-taxa-credito-sim').checked;
     
     if(incluir) {
+        // Cálculo de taxa "por dentro" ou "por fora"? 
+        // O código original usava "por fora" (soma simples). Mantendo lógica original.
         const taxaVal = totalSemTaxa * (taxaCredito.percentual / 100);
-        document.getElementById('taxa-credito-valor').textContent = formatarMoeda(taxaVal);
-        document.getElementById('total-final-com-taxas').textContent = formatarMoeda(totalSemTaxa + taxaVal);
+        
+        const elTaxa = document.getElementById('taxa-credito-valor');
+        if(elTaxa) elTaxa.textContent = formatarMoeda(taxaVal);
+        
+        const elFinal = document.getElementById('total-final-com-taxas');
+        if(elFinal) elFinal.textContent = formatarMoeda(totalSemTaxa + taxaVal);
     } else {
-        document.getElementById('taxa-credito-valor').textContent = formatarMoeda(0);
-        document.getElementById('total-final-com-taxas').textContent = formatarMoeda(totalSemTaxa);
+        const elTaxa = document.getElementById('taxa-credito-valor');
+        if(elTaxa) elTaxa.textContent = formatarMoeda(0);
+        
+        const elFinal = document.getElementById('total-final-com-taxas');
+        if(elFinal) elFinal.textContent = formatarMoeda(totalSemTaxa);
     }
 }
 
@@ -729,6 +751,7 @@ async function gerarNotaPrecificacao() {
         margem: document.getElementById('margem-lucro-final').value,
         total: totalFinal,
         custoMateriais: converterMoeda(document.getElementById('custo-produto').textContent),
+        // Lê os valores calculados (agora disponíveis nos novos elementos ou ocultos)
         totalMaoDeObra: converterMoeda(document.getElementById('total-mao-de-obra').textContent),
         custoIndiretoTotal: converterMoeda(document.getElementById('custo-indireto').textContent),
         detalhesMateriais: getListaTexto('lista-materiais-produto'),
@@ -760,7 +783,10 @@ async function gerarNotaPrecificacao() {
 
 function getListaTexto(ulId) {
     const arr = [];
-    document.querySelectorAll(`#${ulId} li`).forEach(li => arr.push(li.textContent));
+    const lista = document.querySelectorAll(`#${ulId} li`);
+    if(lista) {
+        lista.forEach(li => arr.push(li.textContent));
+    }
     return arr;
 }
 
