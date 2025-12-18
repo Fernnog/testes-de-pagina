@@ -1,12 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
-/* Paleta de cores e variáveis */
+/* =========================================
+   1. VARIÁVEIS E CONFIGURAÇÕES GERAIS
+   ========================================= */
 :root {
     --cor-principal: #7aa2a9;
     --cor-secundaria: #dfb6b0;
     --cor-autenticacao-1: #687f82;      /* Botões */
     --cor-autenticacao-2: #ecd5d1;      /* Fundo da seção de autenticação E user-info */
     --cor-fundo: #f0f2f5;             /* Fundo geral da página */
+    --sombra-card: 0 4px 12px rgba(0,0,0,0.08);
 }
 
 body {
@@ -21,10 +24,11 @@ body {
     min-height: 100vh;
 }
 
-/* ====  ESTILOS PARA A TELA DE AUTENTICAÇÃO  ==== */
-
+/* =========================================
+   2. ESTILOS PARA A TELA DE AUTENTICAÇÃO
+   ========================================= */
 .auth-container {
-    background-color: var(--cor-autenticacao-2); /*  Fundo #e5c4bf */
+    background-color: var(--cor-autenticacao-2);
     padding: 30px;
     border-radius: 15px;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
@@ -38,7 +42,7 @@ body {
 }
 
 .auth-form h2 {
-    color: var(--cor-autenticacao-1); /* Cor mais suave para o título */
+    color: var(--cor-autenticacao-1);
     margin-bottom: 20px;
 }
 
@@ -62,7 +66,7 @@ body {
     border-radius: 20px;
     font-size: 16px;
     margin-bottom: 10px;
-    background-color: #fff;  /* Fundo branco - pode mudar para #e5c4bf */
+    background-color: #fff;
     color: #333;
 }
 
@@ -72,9 +76,8 @@ body {
     margin-bottom: 15px;
 }
 
-/* Botões na tela de autenticação */
 .auth-buttons button, .auth-form button[type="button"]:not(.forgot-password) {
-    background-color: var(--cor-autenticacao-1); /* Cor de fundo dos botões */
+    background-color: var(--cor-autenticacao-1);
     color: white;
     padding: 10px 20px;
     border: none;
@@ -85,21 +88,17 @@ body {
 }
 
 .auth-buttons button:hover, .auth-form button[type="button"]:not(.forgot-password):hover {
-    background-color: #4a5c5e; /* Cor mais escura no hover */
+    background-color: #4a5c5e;
 }
 
 .auth-form .forgot-password {
     background: none;
     border: none;
-    color: var(--cor-autenticacao-1); /* Cor do link "Esqueci minha senha" */
+    color: var(--cor-autenticacao-1);
     cursor: pointer;
     text-decoration: underline;
     font-size: 0.9em;
     margin-top: 10px;
-}
-
-.auth-form .forgot-password:hover {
-    color: #4a5c5e; /* Cor mais escura no hover */
 }
 
 .auth-message {
@@ -108,8 +107,9 @@ body {
     font-size: 0.9em;
 }
 
-/* ====  ESTILOS PARA A TOP-BAR (autenticado)  ==== */
-
+/* =========================================
+   3. ESTILOS GERAIS DO SISTEMA (TOP BAR, NAV)
+   ========================================= */
 body.authenticated .top-bar .user-info {
     color: #333; 
     background-color: var(--cor-autenticacao-2); 
@@ -130,11 +130,7 @@ body.authenticated #logoutBtn.logout-button {
     margin-top: 10px;
 }
 
-body.authenticated #logoutBtn.logout-button:hover {
-    background-color: #4a5c5e; 
-}
-
- .top-bar-content {
+.top-bar-content {
     background-color: #e3f2fd; 
     padding: 8px 15px; 
     border-radius: 20px; 
@@ -144,19 +140,10 @@ body.authenticated #logoutBtn.logout-button:hover {
     gap: 15px;             
 }
 
-/* ====  ESTILOS PARA O SLOGAN  ==== */
-
 .slogan {
     margin-top: 20px; 
     color: #555;    
 }
-
-.auth-form .logo-container{
-    margin-top: 0px;
-    margin-bottom: 10px;
-}
-
-/* ====  RESTANTE DOS ESTILOS  ==== */
 
 #app-container {
     width: 90%;
@@ -171,12 +158,6 @@ body.authenticated #logoutBtn.logout-button:hover {
 hr.titulo {
     border: 2px solid #7aa2a9;
     margin-bottom: 10px;
-}
-
-hr.menu {
-    border: 1px solid #7aa2a9;
-    margin-top: 10px;
-    margin-bottom: 20px;
 }
 
 header {
@@ -234,10 +215,7 @@ nav ul li:hover > a {
     background-color: #e8d7d4;
 }
 
-.subpagina {
-    margin-top: 20px;
-}
-
+.subpagina { margin-top: 20px; }
 .subpagina h2, .subpagina h3 {
     color: #7aa2a9;
     text-align: center;
@@ -245,19 +223,16 @@ nav ul li:hover > a {
     font-size: 1.5em;
 }
 
-#titulo-ferias-13o {
-   margin-top: 30px;
-}
-
+/* =========================================
+   4. FORMULÁRIOS E INPUTS GERAIS
+   ========================================= */
 .subpagina form {
     width: 95%;
     margin: auto;
     margin-bottom: 30px;
 }
 
-.form-group {
-    margin-bottom: 15px;
-}
+.form-group { margin-bottom: 15px; }
 
 label {
     display: block;
@@ -278,9 +253,13 @@ textarea {
     font-size: 16px;
     background-color: #dfb6b0;
     color: #fff;
+    box-sizing: border-box;
 }
 
-button,  #logoutBtn.logout-button{
+/* Reset para inputs de cor branca quando necessário */
+input.bg-white { background-color: #fff; color: #333; }
+
+button, #logoutBtn.logout-button {
     background-color: #7aa2a9;
     color: white;
     padding: 10px 20px;
@@ -295,6 +274,9 @@ button:hover, #logoutBtn.logout-button:hover {
     background-color: #5a8289;
 }
 
+/* =========================================
+   5. TABELAS
+   ========================================= */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -311,502 +293,58 @@ th {
     background-color: #cae6e7;
     color: #333;
 }
-
-td {
-    background-color: #fff;
-}
+td { background-color: #fff; }
 
 .tabela-gerada {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
 }
-
 .tabela-gerada th, .tabela-gerada td {
     text-align: left;
     padding: 8px;
     border: 1px solid #ccc;
 }
+.tabela-gerada th { background-color: #cae6e7; color: #333; }
+.tabela-gerada td { background-color: #f8f8f8; }
 
-.tabela-gerada th {
-    background-color: #cae6e7;
-    color: #333;
-}
+/* =========================================
+   6. AUTOCOMPLETE & UI HELPERS
+   ========================================= */
+.hidden { display: none !important; }
 
-.tabela-gerada td {
-    background-color: #f8f8f8;
-}
-
-@media (max-width: 768px) {
-    .container {
-        width: 98%;
-    }
-
-    .form-group {
-        width: 100%;
-        margin-right: 0;
-    }
-
-    table {
-        display: block;
-        overflow-x: auto;
-    }
-}
-
-#resultados-pesquisa {
+/* Dropdown de Produtos */
+#produto-resultados, #resultados-pesquisa {
     position: absolute;
     width: 92.5%;
     background-color: #fff;
     border: 1px solid #ccc;
-    z-index: 10;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
 }
 
-#resultados-pesquisa div {
-    padding: 8px;
+#produto-resultados div, #resultados-pesquisa div {
+    padding: 10px;
     cursor: pointer;
-    border-bottom: 1px solid #ccc;
-}
-
-#resultados-pesquisa div:hover {
-    background-color: #f0f0f0;
-}
-
-#tabela-materiais-produto {
-    margin-bottom: 20px;
-}
-
-#tabela-materiais-produto th,
-#tabela-materiais-produto td {
-    padding: 8px;
-    border: 1px solid #ccc;
-    text-align: left;
-}
-
-#tabela-materiais-produto th:nth-child(4),
-#tabela-materiais-produto td:nth-child(4) {
-    width: auto;
-}
-
-#tabela-materiais-produto th:nth-child(5),
-#tabela-materiais-produto td:nth-child(5) {
-    width: 100px;
-}
-
-.dimensoes-input {
-    width: 60px !important;
-    margin-right: 5px !important;
-}
-.dimensoes-span{
-    font-weight: bold;
-    margin-left: 5px;
-}
-.quantidade-input {
-  width: 60px !important;
-  background-color: #cae6e7;
-  color: #333;
-  font-weight: bold;
-}
-
-
-.unidade-medida {
-    margin-left: 5px;
-    font-size: 0.9em;
-    color: #555;
-}
-
-#valor-hora, #custo-ferias-13o {
-    background-color: #cae6e7;
+    border-bottom: 1px solid #eee;
     color: #333;
-    font-weight: bold;
-}
-
-.linha-separadora {
-    border: none;
-    border-top: 1px solid #7aa2a9;
-    margin: 20px 0;
-    width: 50%;
-    margin-left: auto;
-    margin-right: auto;
-
-}
-
-#lista-custos-indiretos {
-    list-style: none;
-    padding: 0;
-}
-
-#lista-custos-indiretos li {
-    margin-bottom: 10px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 20px;
-    background-color: #f8f8f8;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-#lista-custos-indiretos li:hover {
-    background-color: #e8d7d4;
-}
-
-#lista-custos-indiretos li .custo-item-nome {
-    flex-grow: 1;
-    margin-right: 10px;
-}
-
-#lista-custos-indiretos li input[type="number"] {
-    width: 100px;
-    margin-right: 10px;
-    background-color: #dfb6b0;
-    color: #fff;
-}
-
-#lista-custos-indiretos li button {
-    margin-left: 5px;
-}
-
-.calculation-container {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    width: 80%;
-    margin: 0 auto;
-}
-
-.section {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-  width: 100%;
-}
-
-.bracket {
-    font-size: 4em;
-    margin-right: 15px;
-    color: #7aa2a9;
-}
-
-.section label, .section span:not(.bracket) {
-  margin-right: 10px;
-    font-weight: bold;
-}
-
-#produto-selecionado, #horas-produto,  #margem-lucro-final{
-    padding: 8px;
-    border-radius: 20px;
-    border: 1px solid #ccc;
-    margin-right: 10px;
-     background-color: #dfb6b0;
-    color: #fff;
-}
-
-
-.subtotal-line {
-  width: 100%;
-  border-top: 2px solid #7aa2a9;
-  margin: 15px 0;
-}
-
-.total-line {
-  width: 100%;
-  border-top: 2px solid #7aa2a9;
-  margin: 15px 0;
-}
-
-.subtotal, .total{
-  font-weight: bold;
-  font-size: 1.1em;
-  width: 100%;
-  justify-content: flex-end;
-  display: flex;
-}
-
-#produto-pesquisa{
-    width: calc(100% - 22px);
-}
-
-#detalhes-produto,
-#detalhes-custos-indiretos {
-    margin-bottom: 20px;
-    width: 100%;
-}
-
-#lista-materiais-produto,
-#lista-custos-indiretos-detalhes {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    width: 100%;
-}
-
-#lista-materiais-produto li,
-#lista-custos-indiretos-detalhes li {
-    padding: 5px 0;
-    border-bottom: 1px solid #eee;
-}
-
-#lista-materiais-produto li:last-child,
-#lista-custos-indiretos-detalhes li:last-child {
-    border-bottom: none;
-}
-
-#detalhes-mao-de-obra {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-bottom: 15px;
-  margin-left: 50px;
-}
-
-.custo-detalhe {
-  display: flex;
-  justify-content: space-between;
-  width: 280px;
-  margin-bottom: 5px;
-}
-
-.custo-detalhe span:first-child {
-  margin-right: 10px;
-}
-
-.area-inputs {
-    display: flex;
-    align-items: center;
-}
-
-.area-inputs input {
-    margin-right: 5px;
-    width: 70px;
-}
-.area-inputs span {
-  font-size: 1.2em;
-  font-weight: bold;
-  margin-right: 5px;
-}
-
-.aviso-separador {
-  border: none;
-  border-top: 1px dashed #7aa2a9;
-  margin: 10px 0;
-  width: 80%;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.aviso-unidades {
-  text-align: center;
-  font-size: 0.9em;
-  color: #555;
-  margin-bottom: 20px;
-  width: 80%;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-}
-
-.top-bar .user-info {
-    font-size: 0.9em;
-    color: #666;
-    padding: 5px 10px;
-    margin: 0;     
-}
-
-.tabela-precificacao-detalhada {
-    width: 95%;
-    border-collapse: collapse;
-    margin: 20px auto;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    border-radius: 8px;
-    overflow: hidden;
-    font-family: 'Roboto', Arial, sans-serif;
-    border-spacing: 0;
-}
-
-.tabela-precificacao-detalhada th,
-.tabela-precificacao-detalhada td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: left;
-    font-size: 0.95em;
-}
-
-.tabela-precificacao-detalhada th {
-    background-color: #7aa2a9;
-    color: white;
-    font-weight: bold;
-    text-align: center;
-    text-transform: uppercase;
-    padding-top: 12px;
-    padding-bottom: 12px;
-}
-
-.tabela-precificacao-detalhada td:first-child {
-    font-weight: bold;
-    color: #555;
-    width: 40%;
-}
-
-.tabela-precificacao-detalhada td:nth-child(2) {
-    width: 60%;
-}
-
-.tabela-precificacao-detalhada tbody tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-.tabela-precificacao-detalhada tbody tr:hover {
-    background-color: #f2f2f2;
-}
-
-/* ========================================================= */
-/*  NOVO CSS PARA O AUTOCOMPLETE (CORREÇÃO DE BUG)          */
-/* ========================================================= */
-
-/* Utilitário para ocultar elementos de forma definitiva */
-.hidden {
-    display: none !important;
-}
-
-/* Estilo do Dropdown de Produtos */
-#produto-resultados {
-    position: absolute;
-    top: 100%; /* Aparece logo abaixo do input */
-    left: 0;
-    width: 100%; /* Mesma largura do container pai */
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 0 0 8px 8px; /* Arredonda apenas bordas inferiores */
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Sombra suave para destacar */
-    max-height: 200px; /* Limita altura */
-    overflow-y: auto; /* Rolagem se houver muitos itens */
-    z-index: 1000; /* Garante que fique acima de outros elementos */
-}
-
-/* Itens individuais da lista */
-#produto-resultados div {
-    padding: 10px;
-    cursor: pointer;
-    border-bottom: 1px solid #eee;
-    color: #333; /* Garante legibilidade */
     transition: background 0.2s;
 }
 
-/* Efeito ao passar o mouse */
-#produto-resultados div:hover {
-    background-color: #e3f2fd; /* Azul bem claro para destaque */
-    color: #333;
-}
-
-/* ========================================================= */
-/*  CORREÇÃO VISUAL: Radio Buttons e Checkboxes (v1.0.3)    */
-/* ========================================================= */
-
-/* 1. Alinhamento Flex para Label (Texto + Bolinha) */
-.form-group label {
-    display: flex;
-    align-items: center;
-    gap: 8px; /* Espaço respiro entre o input e o texto */
-    margin-bottom: 8px;
-    font-weight: normal; /* Remove negrito das opções para hierarquia visual */
-    cursor: pointer;
-    width: auto; /* Garante que o label não force largura total desnecessária */
-}
-
-/* 2. Mantém o título do grupo (primeiro label) em destaque */
-.form-group > label:first-child:not(:has(input)) {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-/* 3. Override Crítico: Reseta os estilos globais agressivos do main.css */
-/* O main.css define 'input { width: 100% }' para o módulo, o que quebra inputs pequenos. */
-input[type="radio"],
-input[type="checkbox"] {
-    width: 18px !important; /* Tamanho fixo e confortável para toque */
-    height: 18px !important;
-    margin: 0 !important;
-    flex-shrink: 0; /* Impede que o input amasse em telas pequenas */
-    display: inline-block;
-    vertical-align: middle;
-    background-color: #fff; /* Garante contraste se o fundo for colorido */
-    cursor: pointer;
-}
-
-/* 4. Layout em Grid para as opções de Tipo de Material */
-/* Target específico para o grupo de radios de materiais para melhor uso do espaço */
-/* Mantém o container como flex para as opções ficarem lado a lado */
-#form-materiais-insumos .form-group:nth-child(2) {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px; /* Espaçamento entre as opções */
-    align-items: center;
-}
-
-/* NOVO: Força o Título "Tipo de Material:" a quebrar a linha */
-/* Isso garante que ele fique sozinho na primeira linha */
-#form-materiais-insumos .form-group:nth-child(2) > label:first-child {
-    flex-basis: 100%; /* Ocupa 100% da largura do container */
-    width: 100%;
-    margin-bottom: 10px; /* Dá um respiro antes das opções começarem */
-}
-
-/* ========================================================= */
-/*  POWER UX V1.0.4: Spinner e Navegação por Teclado        */
-/* ========================================================= */
-
-/* Wrapper para o input de busca + spinner */
-.input-wrapper input {
-    width: 100% !important; /* Força largura total dentro do wrapper */
-    margin: 0 !important;   /* Remove margem padrão para alinhar com wrapper */
-    box-sizing: border-box;
-    padding-right: 35px;    /* Espaço para o spinner não sobrepor texto longo */
-}
-
-/* Spinner de Carregamento */
-.spinner {
-    position: absolute;
-    right: 15px; /* Distância da borda direita do input */
-    top: 50%;
-    transform: translateY(-50%); /* Centraliza verticalmente */
-    width: 16px;
-    height: 16px;
-    border: 2px solid #f3f3f3; /* Cor fundo do anel */
-    border-top: 2px solid #7aa2a9; /* Cor principal girando */
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    pointer-events: none; /* Garante que o clique passe através dele */
-    z-index: 1002;
-}
-
-/* Animação de rotação */
-@keyframes spin {
-    0% { transform: translateY(-50%) rotate(0deg); }
-    100% { transform: translateY(-50%) rotate(360deg); }
-}
-
-/* Item selecionado via Setas do Teclado ou Hover */
+#produto-resultados div:hover, 
 #produto-resultados div.selected {
-    background-color: #7aa2a9; /* Cor principal da marca */
+    background-color: #7aa2a9;
     color: white;
     font-weight: bold;
 }
 
-/* ========================================================= */
-/*  FEEDBACK VISUAL: PREÇO JÁ EXISTENTE (v1.0.5)            */
-/* ========================================================= */
-
-/* Estilo para a etiqueta de aviso de precificação existente */
+/* Badge de Aviso */
 .badge-aviso {
     display: inline-block;
-    background-color: #ff9800; /* Laranja alerta */
+    background-color: #ff9800;
     color: white;
     font-size: 0.8rem;
     font-weight: bold;
@@ -816,26 +354,293 @@ input[type="checkbox"] {
     vertical-align: middle;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     animation: fadeInBadge 0.3s ease-in-out;
-    white-space: nowrap; /* Evita quebra de linha dentro do badge */
+    white-space: nowrap;
+}
+@keyframes fadeInBadge { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Spinner */
+.input-wrapper { position: relative; width: 100%; }
+.spinner {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #7aa2a9;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    pointer-events: none;
+    z-index: 1002;
+}
+@keyframes spin { 0% { transform: translateY(-50%) rotate(0deg); } 100% { transform: translateY(-50%) rotate(360deg); } }
+
+/* Correção Radio/Checkbox */
+input[type="radio"], input[type="checkbox"] {
+    width: 18px !important;
+    height: 18px !important;
+    margin: 0 5px 0 0 !important;
+    flex-shrink: 0;
+    display: inline-block;
+    vertical-align: middle;
+    background-color: #fff;
+    cursor: pointer;
 }
 
-/* Garante que o hidden oculte com prioridade máxima */
-.hidden {
-    display: none !important;
+/* =========================================================
+   7. NOVO PAINEL DE PRECIFICAÇÃO (DASHBOARD)
+   ========================================================= */
+
+/* Layout Principal em Flex (Lado a Lado) */
+.pricing-dashboard {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-start;
+    margin-top: 20px;
 }
 
-/* Animação suave de aparecimento */
-@keyframes fadeInBadge {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
+.pricing-inputs-area {
+    flex: 1;
+    min-width: 300px;
 }
 
-/* Ajuste responsivo: Em telas muito pequenas, quebra a linha para não espremer */
-@media (max-width: 480px) {
-    .badge-aviso {
-        display: block;
-        margin-left: 0;
-        margin-top: 5px;
-        width: fit-content;
-    }
+.pricing-results-area {
+    flex: 0 0 380px; /* Largura fixa para o cartão de resultado no desktop */
+    min-width: 300px;
+}
+
+/* --- Painéis de Input (Cartões de Entrada) --- */
+.input-card {
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: var(--sombra-card);
+    margin-bottom: 20px;
+    border: 1px solid #eee;
+}
+
+.input-card h3 {
+    margin-top: 0;
+    font-size: 1.1rem;
+    color: var(--cor-principal);
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+/* Campos Lado a Lado */
+.form-row-compact {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+.form-row-compact .half { flex: 1; }
+
+.info-box {
+    background: #f8f9fa;
+    padding: 10px 15px;
+    border-radius: 12px;
+    text-align: right;
+    border: 1px solid #eee;
+}
+.info-box label { font-size: 0.85rem; color: #777; margin-bottom: 2px; }
+.info-box span {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #555;
+}
+
+/* Controles de Input com Sufixo (ex: 50%) */
+.input-with-suffix {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+.input-with-suffix input {
+    padding-right: 30px;
+    text-align: center;
+    font-weight: bold;
+}
+.input-with-suffix span {
+    position: absolute;
+    right: 15px;
+    color: #fff;
+    font-weight: bold;
+    pointer-events: none;
+}
+
+.help-text { font-size: 0.8rem; color: #888; margin-top: 5px; font-style: italic; }
+
+/* Controles de Taxa */
+.tax-group { margin-top: 15px; }
+.tax-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 15px;
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.switch-label {
+    display: flex;
+    align-items: center;
+    font-weight: normal;
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: #555;
+}
+
+.tax-input-wrapper { display: flex; align-items: center; gap: 5px; margin-left: auto; }
+.tax-input-wrapper input { width: 70px !important; text-align: center; padding: 5px; }
+.tax-input-wrapper span { color: #555; font-weight: bold; }
+.tax-input-wrapper button { padding: 5px 12px; font-size: 0.8rem; margin: 0; min-width: auto; }
+
+.action-area { margin-top: 10px; }
+.btn-primary-large {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    background-color: var(--cor-principal);
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(122, 162, 169, 0.4);
+    transition: transform 0.2s, background 0.3s;
+}
+.btn-primary-large:hover { transform: translateY(-2px); background-color: #6a9198; }
+
+/* Lista pequena de detalhes */
+.small-list {
+    font-size: 0.85rem;
+    color: #666;
+    padding-left: 20px;
+    margin-top: 5px;
+}
+details { margin-top: 10px; cursor: pointer; color: #7aa2a9; font-size: 0.9rem; }
+
+/* --- CARTÃO DE RESULTADO (OUTPUT) --- */
+.result-card {
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+    position: sticky;
+    top: 20px;
+}
+
+.result-header {
+    background: #fff;
+    padding: 25px 20px;
+    text-align: center;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.result-header h4 {
+    margin: 0;
+    font-weight: 500;
+    color: #666;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.big-price {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--cor-principal);
+    margin-top: 10px;
+    line-height: 1;
+}
+
+.result-body { padding: 25px; }
+
+.result-section {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px dashed #eee;
+}
+.result-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+.result-section h5 {
+    margin: 0 0 10px 0;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: #999;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.result-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1rem;
+    margin-bottom: 6px;
+    color: #555;
+    align-items: center;
+}
+
+/* Estilos de Destaque para Valores */
+.highlight-blue {
+    color: #2196F3;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+.highlight-green {
+    color: #4CAF50;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.subtotal-row {
+    font-size: 0.9rem;
+    color: #aaa;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+.total-row-small {
+    font-weight: 500;
+    color: #333;
+    margin-top: 8px;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 5px;
+}
+
+/* Detalhes de custos indiretos */
+.details-ci {
+    margin-top: 15px;
+    text-align: center;
+    font-size: 0.85rem;
+}
+.details-ci ul { text-align: left; margin-top: 5px; }
+
+/* =========================================
+   8. MEDIA QUERIES (RESPONSIVIDADE)
+   ========================================= */
+@media (max-width: 768px) {
+    /* Ajustes Gerais Mobile */
+    .container { width: 98%; }
+    .form-group { width: 100%; margin-right: 0; }
+    table { display: block; overflow-x: auto; }
+    
+    /* Dashboard Mobile: Empilha um sobre o outro */
+    .pricing-dashboard { flex-direction: column; }
+    .pricing-inputs-area, .pricing-results-area { width: 100%; flex: auto; min-width: 0; }
+    
+    /* Input ocupa largura total */
+    .form-row-compact { flex-direction: column; gap: 10px; }
+    
+    /* Ajuste de Botões e Inputs */
+    .tax-controls { justify-content: space-between; }
+    .tax-input-wrapper { width: 100%; margin-top: 10px; justify-content: flex-end; }
+    
+    /* Cartão de Resultado perde sticky no mobile */
+    .result-card { position: static; }
+    .big-price { font-size: 2.5rem; }
 }
