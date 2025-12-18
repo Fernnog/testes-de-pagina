@@ -923,6 +923,33 @@ input[type="checkbox"] {
     font-size: 1.05rem;
 }
 
+/* Nova Classe: Destaque Vermelho para Custos */
+.highlight-red {
+    color: #e53935; /* Vermelho suave, mas alerta */
+    font-weight: bold;
+    font-size: 1.05rem;
+}
+
+/* Container para os detalhes reposicionados */
+.details-container {
+    margin-top: 15px;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+}
+
+/* Ajuste nos detalhes expansíveis para alinhamento */
+.details-ci {
+    margin-bottom: 5px; 
+    font-size: 0.85rem; 
+    color: #7aa2a9; 
+    cursor: pointer; 
+    text-align: right; 
+}
+    
+.details-ci ul {
+    text-align: left; /* Garante que a lista interna seja legível */
+}
+
 .subtotal-row { font-size: 0.85rem; color: #aaa; }
 .total-row-small { font-weight: bold; color: #333; margin-top: 5px;}
 
@@ -956,7 +983,6 @@ input[type="checkbox"] {
 /* Help Text */
 .help-text { font-size: 0.8rem; color: #999; margin: 5px 0 0 0; }
 .small-list { font-size: 0.85rem; color: #666; padding-left: 20px; }
-.details-ci { margin-top: 10px; font-size: 0.85rem; color: #7aa2a9; cursor: pointer; text-align: right; }
 
 /* Mídia Query para Responsividade (Mobile) */
 @media (max-width: 768px) {
