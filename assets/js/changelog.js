@@ -6,6 +6,17 @@
  */
 const changeLogData = [
     {
+        version: "1.0.7",
+        date: "09/12/2025",
+        changes: [
+            "🎨 Redesign Total da Precificação: A antiga calculadora evoluiu para um 'Painel de Controle Financeiro' (Dashboard).",
+            "📊 Cartão de Resultado Inteligente: Nova visualização que 'explode' o preço final, separando claramente o que é Custo, o que é seu Salário (Mão de Obra) e o que é Lucro da Empresa.",
+            "🧠 Clareza Financeira: Destaque visual com cores específicas para diferenciar o dinheiro da artesã (Azul) do dinheiro de crescimento do negócio (Verde).",
+            "📱 Layout Responsivo Otimizado: Estrutura de colunas que se adapta perfeitamente: lado a lado no computador e empilhado verticalmente no celular.",
+            "🔧 Organização de Inputs: Controles de Margem e Taxas agrupados logicamente para facilitar o preenchimento."
+        ]
+    },
+    {
         version: "1.0.6",
         date: "08/12/2025",
         changes: [
