@@ -804,7 +804,27 @@ input[type="checkbox"] {
 }
 
 /* ========================================================= */
-/*  NOVO LAYOUT DASHBOARD DE PRECIFICAÇÃO    */
+/*  NOVO ESTILO: BOTÃO ZERAR (Prioridade 2)                 */
+/* ========================================================= */
+
+.btn-zerar {
+    background-color: #e57373; /* Vermelho suave */
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin-left: 5px;
+    transition: background-color 0.2s;
+}
+
+.btn-zerar:hover {
+    background-color: #d32f2f; /* Vermelho mais intenso */
+}
+
+/* ========================================================= */
+/*  NOVO LAYOUT DASHBOARD DE PRECIFICAÇÃO (Prioridade 1)    */
 /* ========================================================= */
 
 .pricing-dashboard {
@@ -983,24 +1003,6 @@ input[type="checkbox"] {
 /* Help Text */
 .help-text { font-size: 0.8rem; color: #999; margin: 5px 0 0 0; }
 .small-list { font-size: 0.85rem; color: #666; padding-left: 20px; }
-
-/* Botão Zerar na Tabela de Custos (NOVO) */
-.btn-zerar-custo {
-    background-color: #e57373; /* Vermelho suave */
-    color: white;
-    padding: 5px 12px;
-    font-size: 0.85rem;
-    border-radius: 15px;
-    border: none;
-    cursor: pointer;
-    transition: background 0.2s;
-    margin: 0; /* Remove margem padrão de botões */
-    min-width: auto; /* Sobrescreve largura mínima global */
-}
-
-.btn-zerar-custo:hover {
-    background-color: #d32f2f; /* Vermelho mais forte */
-}
 
 /* Mídia Query para Responsividade (Mobile) */
 @media (max-width: 768px) {
