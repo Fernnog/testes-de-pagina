@@ -146,11 +146,11 @@ function setupEventListeners() {
     // [ATUALIZADO] Listeners para cálculo em tempo real da Mão de Obra
     const inputSalario = document.getElementById('salario-receber');
     const inputHoras = document.getElementById('horas-trabalhadas');
+    // Adiciona listener também nos radios de encargos para recalcular ao trocar Sim/Não
+    const radiosEncargos = document.querySelectorAll('input[name="incluir-ferias-13o"]');
+    
     if(inputSalario) inputSalario.addEventListener('input', calcularMaoDeObraTempoReal);
     if(inputHoras) inputHoras.addEventListener('input', calcularMaoDeObraTempoReal);
-
-    // [NOVO] Listeners para os Radio Buttons de Encargos
-    const radiosEncargos = document.querySelectorAll('input[name="incluir-ferias-13o"]');
     radiosEncargos.forEach(r => r.addEventListener('change', calcularMaoDeObraTempoReal));
 
     // --- Listeners Locais (Produtos e Cálculo) ---
@@ -911,9 +911,8 @@ function calcularMaoDeObraTempoReal() {
     const salario = parseFloat(document.getElementById('salario-receber').value) || 0;
     const horas = parseFloat(document.getElementById('horas-trabalhadas').value) || 220;
     
-    // Verifica status dos radio buttons de encargos
-    const radioSim = document.getElementById('incluir-ferias-13o-sim');
-    const incluirEncargos = radioSim ? radioSim.checked : false;
+    // Verifica se o checkbox de incluir encargos está marcado
+    const incluirEncargos = document.getElementById('incluir-ferias-13o-sim')?.checked;
 
     if (horas > 0) {
         // 1. Atualiza Valor Hora Normal
@@ -922,14 +921,15 @@ function calcularMaoDeObraTempoReal() {
         if(elValorHora) elValorHora.value = valorHora.toFixed(2);
 
         // 2. Atualiza Valor Encargos em Tempo Real
-        // Fórmula: Provisão de Férias (Salário + 1/3) + Provisão de 13º Salário
         const elCustoExtra = document.getElementById('custo-ferias-13o');
         if(elCustoExtra) {
             if (incluirEncargos) {
-                const provisaoFerias = (salario + (salario / 3)) / 12;
-                const provisao13o = salario / 12;
-                const custoEncargos = (provisaoFerias + provisao13o) / horas;
-                elCustoExtra.value = custoEncargos.toFixed(2);
+                // FÓRMULA ATUALIZADA: ((Salário (13º) + Salário/3 (1/3 Férias)) / 12) / Horas
+                const totalAnualExtras = salario + (salario / 3);
+                const custoMensalDiluido = totalAnualExtras / 12;
+                const custoPorHora = custoMensalDiluido / horas;
+
+                elCustoExtra.value = custoPorHora.toFixed(2);
             } else {
                 elCustoExtra.value = "0.00";
             }
