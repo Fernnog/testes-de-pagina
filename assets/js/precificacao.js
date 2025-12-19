@@ -143,6 +143,12 @@ function setupEventListeners() {
     bindClick('#btn-editar-mao-de-obra', editarMaoDeObraUI);
     bindClick('#adicionarCustoIndiretoBtn', adicionarNovoCustoIndireto);
 
+    // [NOVO] Listeners para cálculo em tempo real da Mão de Obra
+    const inputSalario = document.getElementById('salario-receber');
+    const inputHoras = document.getElementById('horas-trabalhadas');
+    if(inputSalario) inputSalario.addEventListener('input', calcularMaoDeObraTempoReal);
+    if(inputHoras) inputHoras.addEventListener('input', calcularMaoDeObraTempoReal);
+
     // --- Listeners Locais (Produtos e Cálculo) ---
     bindClick('#cadastrar-produto-btn', cadastrarProduto);
     
@@ -894,4 +900,16 @@ function calcularCustoTotalItem(item) {
     }
     
     return custoTotal;
+}
+
+// [NOVO] Função para calcular Mão de Obra em Tempo Real
+function calcularMaoDeObraTempoReal() {
+    const salario = parseFloat(document.getElementById('salario-receber').value) || 0;
+    const horas = parseFloat(document.getElementById('horas-trabalhadas').value) || 220;
+    
+    if (horas > 0) {
+        const valorHora = salario / horas;
+        const elValorHora = document.getElementById('valor-hora');
+        if(elValorHora) elValorHora.value = valorHora.toFixed(2);
+    }
 }
