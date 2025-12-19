@@ -11,18 +11,25 @@ import {
 export let materiais = [];
 export let maoDeObra = { salario: 0, horas: 220, valorHora: 0, incluirFerias13o: false, custoFerias13o: 0 };
 export let custosIndiretosPredefinidos = [];
+
+// LISTA ATUALIZADA CONFORME SOLICITAÇÃO
 export let custosIndiretosPredefinidosBase = [
     { descricao: "Energia elétrica", valorMensal: 0 },
     { descricao: "Água", valorMensal: 0 },
     { descricao: "Gás", valorMensal: 0 },
     { descricao: "Aluguel do espaço", valorMensal: 0 },
-    { descricao: "Depreciação equipamentos", valorMensal: 0 },
-    { descricao: "Internet/Telefone", valorMensal: 0 },
-    { descricao: "MEI/Impostos", valorMensal: 0 },
-    { descricao: "Marketing", valorMensal: 0 },
-    { descricao: "Embalagens", valorMensal: 0 },
-    { descricao: "Transporte", valorMensal: 0 }
+    { descricao: "Depreciação de máquinas e equipamentos", valorMensal: 0 },
+    { descricao: "Manutenção predial e de equipamentos", valorMensal: 0 },
+    { descricao: "Despesas com segurança", valorMensal: 0 },
+    { descricao: "Limpeza e conservação", valorMensal: 0 },
+    { descricao: "Material de escritório", valorMensal: 0 },
+    { descricao: "Impostos e taxas indiretos", valorMensal: 0 },
+    { descricao: "Marketing institucional", valorMensal: 0 },
+    { descricao: "Transporte e logística", valorMensal: 0 },
+    { descricao: "Despesas com utilidades", valorMensal: 0 },
+    { descricao: "Demais custos administrativos", valorMensal: 0 }
 ];
+
 export let custosIndiretosAdicionais = [];
 
 // Variáveis Locais de Controle
@@ -310,7 +317,12 @@ function preencherCamposMaoDeObra() {
         if(nao) nao.checked = true;
     }
     
-    toggleEdicaoMaoDeObra(false);
+    // CORREÇÃO: Se não houver salário definido (zero), libera a edição automaticamente
+    if (maoDeObra.salario === 0) {
+        toggleEdicaoMaoDeObra(true);
+    } else {
+        toggleEdicaoMaoDeObra(false);
+    }
 }
 
 export function editarMaoDeObraUI() {
@@ -327,6 +339,21 @@ function toggleEdicaoMaoDeObra(editando) {
     if(horas) horas.readOnly = !editando;
     if(btnSalvar) btnSalvar.style.display = editando ? 'inline-block' : 'none';
     if(btnEditar) btnEditar.style.display = editando ? 'none' : 'inline-block';
+
+    // MELHORIA: Cálculo em tempo real enquanto digita
+    if (editando && salario && horas) {
+        const updateCalculo = () => {
+            const s = parseFloat(salario.value) || 0;
+            const h = parseFloat(horas.value) || 0;
+            const elValorHora = document.getElementById('valor-hora');
+            if(h > 0 && elValorHora) {
+                elValorHora.value = (s / h).toFixed(2);
+            }
+        };
+        // Adiciona o evento de input diretamente
+        salario.oninput = updateCalculo;
+        horas.oninput = updateCalculo;
+    }
 }
 
 // ==========================================
@@ -335,7 +362,7 @@ function toggleEdicaoMaoDeObra(editando) {
 
 export async function carregarCustosIndiretos() {
     try {
-        // Inicializa com a base
+        // Inicializa com a base ATUALIZADA
         custosIndiretosPredefinidos = JSON.parse(JSON.stringify(custosIndiretosPredefinidosBase));
 
         const ciPreSnap = await getDocs(collection(db, "custos-indiretos-predefinidos"));
@@ -442,6 +469,10 @@ export function adicionarNovoCustoIndireto() {
 }
 
 export async function removerCustoIndiretoAdicional(id) {
+    // Nota: A verificação de "Em Uso" idealmente seria feita via callback para o arquivo principal,
+    // mas para simplificar e evitar erros de importação circular agora, permitimos a exclusão direta
+    // ou deixamos a verificação para uma futura refatoração de dependências.
+    
     if(confirm("Remover este custo adicional?")) {
         try {
             await deleteDoc(doc(db, "custos-indiretos-adicionais", id));
