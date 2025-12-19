@@ -54,21 +54,6 @@ export function getUnidadeSigla(tipo) {
     return map[tipo] || '';
 }
 
-/**
- * [PRIORIDADE 3] Refatoração: Lógica matemática centralizada.
- * Calcula o custo por hora referente a encargos (13º + Férias + 1/3).
- */
-export function calcularValorEncargos(salario, horas) {
-    if (!salario || !horas || horas <= 0) return 0;
-    
-    // Cálculo: (13º Salário + Férias + 1/3 de Férias)
-    // Simplificando: Salário (13º) + Salário (Férias) + Salário/3 (1/3 Constitucional)
-    const totalAnualNecessario = salario + salario + (salario / 3);
-    
-    const provisaoMensal = totalAnualNecessario / 12;
-    return provisaoMensal / horas;
-}
-
 function calcularCustoUnitario(tipo, valorTotal, comprimentoCm, volumeMl, pesoG, larguraCm, alturaCm) {
     let custo = 0;
     if (valorTotal <= 0) return 0;
@@ -152,6 +137,7 @@ export function toggleCamposMaterial(tipo) {
 
 export async function cadastrarMaterialInsumo() {
     const nome = document.getElementById('nome-material').value;
+    // Verifica se há input selecionado, senão usa padrão
     const radioChecked = document.querySelector('input[name="tipo-material"]:checked');
     const tipo = radioChecked ? radioChecked.value : 'comprimento';
     
@@ -183,6 +169,7 @@ export async function cadastrarMaterialInsumo() {
             const idx = materiais.findIndex(m => m.id === materialEmEdicao.id);
             if(idx !== -1) materiais[idx] = { id: materialEmEdicao.id, ...materialData };
             
+            // Callback para atualizar produtos no arquivo principal (Efeito Dominó)
             if(onMaterialUpdateCallback) await onMaterialUpdateCallback(materiais[idx]);
             
             alert("Material atualizado com sucesso!");
@@ -292,8 +279,18 @@ export async function salvarMaoDeObra() {
 
     const valorHora = salario / horas;
     
-    // [PRIORIDADE 1 e 3] Uso da função centralizada com cálculo correto (13º + Férias)
-    const custoEncargos = incluirFerias ? calcularValorEncargos(salario, horas) : 0; 
+    // ATUALIZADO (PRIORIDADE 1): Fórmula de Provisão Completa (Férias + 1/3 + 13º Salário)
+    // Provisão Férias Mensal = (Salário + Salário/3) / 12
+    // Provisão 13º Mensal = Salário / 12
+    // Custo Total Mensal de Encargos = Provisão Férias + Provisão 13º
+    // Custo Por Hora = Custo Total Mensal / Horas Trabalhadas
+    
+    let custoEncargos = 0;
+    if (incluirFerias) {
+        const provisaoFerias = (salario + (salario / 3)) / 12;
+        const provisao13o = salario / 12;
+        custoEncargos = (provisaoFerias + provisao13o) / horas;
+    }
 
     maoDeObra = { salario, horas, valorHora, incluirFerias13o: incluirFerias, custoFerias13o: custoEncargos };
 
@@ -328,6 +325,7 @@ function preencherCamposMaoDeObra() {
         if(nao) nao.checked = true;
     }
     
+    // Se não houver salário definido (zero), libera a edição automaticamente
     if (maoDeObra.salario === 0) {
         toggleEdicaoMaoDeObra(true);
     } else {
@@ -350,6 +348,7 @@ function toggleEdicaoMaoDeObra(editando) {
     if(btnSalvar) btnSalvar.style.display = editando ? 'inline-block' : 'none';
     if(btnEditar) btnEditar.style.display = editando ? 'none' : 'inline-block';
 
+    // MELHORIA: Cálculo em tempo real enquanto digita
     if (editando && salario && horas) {
         const updateCalculo = () => {
             const s = parseFloat(salario.value) || 0;
@@ -359,6 +358,7 @@ function toggleEdicaoMaoDeObra(editando) {
                 elValorHora.value = (s / h).toFixed(2);
             }
         };
+        // Adiciona o evento de input diretamente
         salario.oninput = updateCalculo;
         horas.oninput = updateCalculo;
     }
@@ -370,6 +370,7 @@ function toggleEdicaoMaoDeObra(editando) {
 
 export async function carregarCustosIndiretos() {
     try {
+        // Inicializa com a base ATUALIZADA
         custosIndiretosPredefinidos = JSON.parse(JSON.stringify(custosIndiretosPredefinidosBase));
 
         const ciPreSnap = await getDocs(collection(db, "custos-indiretos-predefinidos"));
@@ -395,6 +396,7 @@ export function carregarCustosIndiretosPredefinidosUI() {
     if(!lista) return;
     lista.innerHTML = '';
 
+    // Renderiza Predefinidos
     custosIndiretosPredefinidosBase.forEach((base, idx) => {
         const atual = custosIndiretosPredefinidos.find(c => c.descricao === base.descricao) || base;
         const li = document.createElement('li');
@@ -406,6 +408,7 @@ export function carregarCustosIndiretosPredefinidosUI() {
         lista.appendChild(li);
     });
 
+    // Renderiza Adicionais
     custosIndiretosAdicionais.forEach(add => {
         const li = document.createElement('li');
         li.innerHTML = `
@@ -418,10 +421,15 @@ export function carregarCustosIndiretosPredefinidosUI() {
 }
 
 export async function salvarCustoIndiretoPredefinido(descricao, idx) {
-    const input = document.getElementById(`ci-pref-${idx}`);
-    if(!input) return;
+    let val = 0;
+    
+    // Se idx for -1, estamos chamando via zerarCustoIndireto, então valor é 0.
+    // Caso contrário, busca do input.
+    if (idx !== -1) {
+        const input = document.getElementById(`ci-pref-${idx}`);
+        if(input) val = parseFloat(input.value) || 0;
+    }
 
-    const val = parseFloat(input.value) || 0;
     const item = { descricao, valorMensal: val, valorPorHora: val / maoDeObra.horas };
     
     const arrIdx = custosIndiretosPredefinidos.findIndex(c => c.descricao === descricao);
@@ -431,10 +439,10 @@ export async function salvarCustoIndiretoPredefinido(descricao, idx) {
     try {
         await setDoc(doc(db, "custos-indiretos-predefinidos", descricao), item);
         atualizarTabelaCustosIndiretos();
-        alert("Custo salvo!");
+        if (idx !== -1) alert("Custo salvo!");
     } catch(e) {
         console.error(e);
-        alert("Erro ao salvar custo.");
+        if (idx !== -1) alert("Erro ao salvar custo.");
     }
 }
 
@@ -474,6 +482,7 @@ export function adicionarNovoCustoIndireto() {
 }
 
 export async function removerCustoIndiretoAdicional(id) {
+    // Verificação simplificada para Prioridade 1
     if(confirm("Remover este custo adicional?")) {
         try {
             await deleteDoc(doc(db, "custos-indiretos-adicionais", id));
@@ -487,40 +496,30 @@ export async function removerCustoIndiretoAdicional(id) {
     }
 }
 
-/**
- * [PRIORIDADE 1] Implementação do botão Zerar.
- * Zera o valor mensal e por hora do custo indireto, removendo-o da tabela visual.
- */
-export async function zerarCustoIndireto(identificador, tipo) {
-    if(!confirm("Deseja zerar este custo? Ele sairá desta lista.")) return;
+// ATUALIZADO (PRIORIDADE 1): Nova Função para o Botão "Zerar"
+export async function zerarCustoIndireto(descricao, idOpcional) {
+    if(!confirm(`Deseja zerar o custo de "${descricao}"? Ele sairá desta lista de cálculo.`)) return;
 
-    try {
-        if (tipo === 'predefinido') {
-            // Para predefinidos, atualizamos o valor para 0 (mantendo o registro)
-            const item = custosIndiretosPredefinidos.find(c => c.descricao === identificador);
-            if(item) {
-                item.valorMensal = 0;
-                item.valorPorHora = 0;
-                await setDoc(doc(db, "custos-indiretos-predefinidos", identificador), item);
-            }
-        } else {
-            // Para adicionais, também zeramos para manter o ID se necessário,
-            // ou poderíamos deletar. Aqui zeramos para consistência.
-            await updateDoc(doc(db, "custos-indiretos-adicionais", identificador), {
-                valorMensal: 0,
-                valorPorHora: 0
-            });
-            // Atualiza localmente
-            const idx = custosIndiretosAdicionais.findIndex(c => c.id === identificador);
-            if(idx !== -1) custosIndiretosAdicionais[idx].valorMensal = 0;
-        }
+    // Se tiver ID válido e não for string 'undefined', é um custo adicional (deve ser excluído)
+    if (idOpcional && idOpcional !== 'undefined' && idOpcional !== undefined) {
+        // Remove sem confirmar novamente, pois já confirmamos acima
+        try {
+            await deleteDoc(doc(db, "custos-indiretos-adicionais", idOpcional));
+            custosIndiretosAdicionais = custosIndiretosAdicionais.filter(c => c.id !== idOpcional);
+            carregarCustosIndiretosPredefinidosUI();
+            atualizarTabelaCustosIndiretos();
+        } catch(e) { console.error(e); }
+    } else {
+        // É um custo predefinido, apenas atualizamos o valor para 0
+        const item = { descricao, valorMensal: 0, valorPorHora: 0 };
+        const arrIdx = custosIndiretosPredefinidos.findIndex(c => c.descricao === descricao);
+        if(arrIdx !== -1) custosIndiretosPredefinidos[arrIdx] = item;
         
-        // Atualiza a interface (inputs superiores e tabela inferior)
-        carregarCustosIndiretosPredefinidosUI(); 
-        atualizarTabelaCustosIndiretos();
-    } catch(e) {
-        console.error("Erro ao zerar custo:", e);
-        alert("Erro ao atualizar custo.");
+        try {
+            await setDoc(doc(db, "custos-indiretos-predefinidos", descricao), item);
+            carregarCustosIndiretosPredefinidosUI(); // Atualiza os inputs lá em cima
+            atualizarTabelaCustosIndiretos(); // Remove da tabela aqui embaixo (pois valor será 0)
+        } catch(e) { console.error(e); }
     }
 }
 
@@ -531,24 +530,21 @@ export function atualizarTabelaCustosIndiretos() {
     
     const todos = [...custosIndiretosPredefinidos, ...custosIndiretosAdicionais];
     
-    // [PRIORIDADE 1] Renderização da tabela com o novo botão Zerar
+    // ATUALIZADO (PRIORIDADE 1): Filtra valor > 0 e adiciona coluna do botão Zerar
     todos.filter(c => c.valorMensal > 0).forEach(c => {
         const row = tbody.insertRow();
         const horasDivisor = maoDeObra.horas || 220;
         const vHora = c.valorMensal / horasDivisor;
         
-        // Identifica se é adicional (tem ID) ou predefinido (usa descrição como ID lógico)
-        const tipoCusto = c.id ? 'adicional' : 'predefinido';
-        const idIdentificador = c.id || c.descricao;
-
+        // Prepara o ID para a função (se não existir ID, passa undefined string para facilitar a lógica no onclick)
+        const idParam = c.id ? `'${c.id}'` : 'undefined';
+        
         row.innerHTML = `
             <td>${c.descricao}</td>
             <td>${formatarMoeda(c.valorMensal)}</td>
             <td>${formatarMoeda(vHora)}</td>
-            <td style="text-align: center;">
-                <button class="btn-zerar-custo" onclick="zerarCustoIndireto('${idIdentificador}', '${tipoCusto}')">
-                    Zerar
-                </button>
+            <td>
+                <button class="btn-zerar" onclick="zerarCustoIndireto('${c.descricao}', ${idParam})">Zerar</button>
             </td>
         `;
     });
@@ -567,6 +563,7 @@ export function buscarCustosIndiretosCadastrados() {
 
 // ==========================================
 // EXPOR FUNÇÕES AO ESCOPO GLOBAL (WINDOW)
+// Necessário para eventos onclick no HTML
 // ==========================================
 
 window.editarMaterialInsumo = editarMaterialInsumo;
@@ -578,4 +575,6 @@ window.editarMaoDeObraUI = editarMaoDeObraUI;
 window.salvarCustoIndiretoPredefinido = salvarCustoIndiretoPredefinido;
 window.removerCustoIndiretoAdicional = removerCustoIndiretoAdicional;
 window.buscarCustosIndiretosCadastrados = buscarCustosIndiretosCadastrados;
-window.zerarCustoIndireto = zerarCustoIndireto; // [PRIORIDADE 1]
+
+// ATUALIZADO (PRIORIDADE 1): Expor a nova função de zerar
+window.zerarCustoIndireto = zerarCustoIndireto;
