@@ -295,6 +295,23 @@ button:hover, #logoutBtn.logout-button:hover {
     background-color: #5a8289;
 }
 
+/* NOVO ESTILO: BOTÃO ZERAR */
+.btn-zerar {
+    background-color: #e57373; /* Vermelho suave */
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin-left: 5px;
+    transition: background-color 0.2s;
+}
+
+.btn-zerar:hover {
+    background-color: #d32f2f; /* Vermelho mais intenso */
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -801,26 +818,6 @@ input[type="checkbox"] {
 @keyframes fadeInBadge {
     from { opacity: 0; transform: translateY(-5px); }
     to { opacity: 1; transform: translateY(0); }
-}
-
-/* ========================================================= */
-/*  NOVO ESTILO: BOTÃO ZERAR (Prioridade 2)                 */
-/* ========================================================= */
-
-.btn-zerar {
-    background-color: #e57373; /* Vermelho suave */
-    color: white;
-    padding: 5px 10px;
-    border: none;
-    border-radius: 15px;
-    font-size: 0.85rem;
-    cursor: pointer;
-    margin-left: 5px;
-    transition: background-color 0.2s;
-}
-
-.btn-zerar:hover {
-    background-color: #d32f2f; /* Vermelho mais intenso */
 }
 
 /* ========================================================= */
