@@ -6,6 +6,16 @@
  */
 const changeLogData = [
     {
+        version: "1.0.9",
+        date: "11/12/2025",
+        changes: [
+            "🧮 Precisão Contábil: A fórmula de Encargos Trabalhistas foi recalibrada. O custo por hora agora reflete estritamente a provisão de 13º Salário + 1/3 de Férias diluídos nas horas trabalhadas, eliminando duplicações.",
+            "⚡ Cálculo em Tempo Real: A simulação de Mão de Obra agora responde instantaneamente à digitação e seleção de opções, sem necessidade de salvar para visualizar a prévia.",
+            "🔘 Controle de Custos: Implementado o botão 'Zerar' na tabela de Custos Indiretos. Agora é possível remover um custo do cálculo atual com um clique, mantendo a agilidade na precificação.",
+            "🎨 UI Semântica: Estilização de alerta (vermelho suave) para ações de remoção/zeramento, prevenindo cliques acidentais."
+        ]
+    },
+    {
         version: "1.0.8",
         date: "10/12/2025",
         changes: [
