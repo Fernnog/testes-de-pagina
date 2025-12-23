@@ -264,7 +264,7 @@ button:hover {
     margin: 0 auto 20px auto;
 }
 
-/* ==== 8. FILTROS E RELATÓRIOS ==== */
+/* ==== 8. FILTROS E RELATÓRIOS (ATUALIZADO PARA DASHBOARD) ==== */
 .filtro-data {
     margin-bottom: 20px;
     text-align: center;
@@ -272,8 +272,44 @@ button:hover {
 
 .filtro-data label,
 .filtro-data input,
-.filtro-data button {
+.filtro-data button,
+.filtro-data select {
     margin: 0 5px;
+}
+
+/* Estilos dos Cards KPI do Relatório */
+.dashboard-resumo {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+.card-kpi {
+    flex: 1;
+    min-width: 140px;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    text-align: center;
+    background: white;
+    /* Borda lateral colorida definida inline ou via classes auxiliares */
+}
+
+.card-kpi span {
+    font-size: 0.85rem;
+    color: #555;
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.card-kpi strong {
+    font-size: 1.4rem;
+    color: #333;
+    display: block;
 }
 
 /* ==== 9. PÁGINA DE VISUALIZAÇÃO DO ORÇAMENTO ==== */
@@ -388,12 +424,10 @@ nav ul li a[onclick="limparPagina()"]:hover {
     }
 }
 
-/* ==== 11. REGRAS DE IMPRESSÃO (NOVO) ==== */
-/* Estas regras garantem que a impressão funcione tanto via Ctrl+P na tela 
-   quanto em uma janela popup que herde este CSS */
+/* ==== 11. REGRAS DE IMPRESSÃO ==== */
 @media print {
     /* Ocultar elementos de navegação e interface do sistema */
-    body > *:not(#appContent), /* Oculta tudo que não for o conteúdo principal se imprimir direto */
+    body > *:not(#appContent), 
     .btn-back-hub,
     nav,
     button,
@@ -470,5 +504,15 @@ nav ul li a[onclick="limparPagina()"]:hover {
 
     hr {
         border-color: #000 !important;
+    }
+
+    /* Estilo de Impressão para Checklist (Checkboxes) - NOVO */
+    .checkbox-print {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #333;
+        display: inline-block;
+        background: transparent;
+        vertical-align: middle;
     }
 }
