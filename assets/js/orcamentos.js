@@ -22,19 +22,23 @@ let moduleInitialized = false;
 export async function initOrcamentos() {
     console.log("Inicializando Módulo Orçamentos...");
     
-    // Tornar funções acessíveis globalmente (necessário para onclick em HTML gerado via JS)
+    // Tornar funções acessíveis globalmente
     window.excluirProduto = excluirProduto;
     window.excluirProdutoEdicao = excluirProdutoEdicao;
     window.formatarEntradaMoeda = formatarEntradaMoeda;
     window.atualizarTotaisEdicao = atualizarTotaisEdicao;
     window.atualizarRestanteEdicao = atualizarRestanteEdicao;
-    // Nova função global para impressão
     window.visualizarImpressao = visualizarImpressao;
+    
+    // NOVAS FUNÇÕES GLOBAIS (Prioridades 2 e 3)
+    window.imprimirChecklist = imprimirChecklist;
+    window.gerarRelatorioFinanceiro = gerarRelatorioFinanceiro;
 
     await carregarDados();
     
     if (!moduleInitialized) {
         setupEventListeners();
+        inicializarFiltrosRelatorio(); // Popula o select de anos
         moduleInitialized = true;
     }
     
@@ -121,7 +125,8 @@ function setupEventListeners() {
     // Filtros e Relatórios
     bindClick('#orcamentos-gerados button', filtrarOrcamentos);
     bindClick('#lista-pedidos button', filtrarPedidos);
-    bindClick('#relatorio button', filtrarPedidosRelatorio);
+    // Nota: O botão de gerar relatório chama diretamente window.gerarRelatorioFinanceiro() via onclick no HTML
+
     const btnXLSX = document.querySelector('#relatorio button[onclick="gerarRelatorioXLSX()"]');
     if(btnXLSX) btnXLSX.onclick = gerarRelatorioXLSX;
 
@@ -137,6 +142,21 @@ function setupEventListeners() {
     });
 }
 
+function inicializarFiltrosRelatorio() {
+    const selectAno = document.getElementById("relatorio-ano");
+    if(selectAno) {
+        selectAno.innerHTML = ""; // Limpa opções anteriores
+        const anoAtual = new Date().getFullYear();
+        // Cria opções para o ano atual e os 2 anteriores
+        for(let i = anoAtual; i >= anoAtual - 2; i--) {
+            const opt = document.createElement("option");
+            opt.value = i;
+            opt.text = i;
+            selectAno.appendChild(opt);
+        }
+    }
+}
+
 function bindClick(selector, handler) {
     const el = document.querySelector(selector);
     if(el) el.addEventListener('click', handler);
@@ -149,6 +169,13 @@ function mostrarPagina(idPagina) {
         target.style.display = 'block';
         if(idPagina === 'orcamentos-gerados') mostrarOrcamentosGerados();
         if(idPagina === 'lista-pedidos') mostrarPedidosRealizados();
+        // Se entrar na página de relatório, gera o relatório do mês atual automaticamente
+        if(idPagina === 'relatorio') {
+            const mesAtual = new Date().getMonth();
+            const elMes = document.getElementById('relatorio-mes');
+            if(elMes) elMes.value = mesAtual;
+            gerarRelatorioFinanceiro();
+        }
     }
 }
 
@@ -184,7 +211,9 @@ function gerarNumeroFormatado(numero) {
 }
 
 function limparCamposMoeda() {
-    const campos = ['valorFrete', 'valorOrcamento', 'total', 'entrada', 'restante', 'margemLucroEdicao', 'custoMaoDeObraEdicao'];
+    const campos = ['valorFrete', 'valorOrcamento', 'total', 'entrada', 'restante', 
+                   'margemLucroEdicao', 'custoMaoDeObraEdicao',
+                   'custoTotalPedido', 'maoDeObraPedido', 'lucroPedido']; // Campos novos adicionados
     campos.forEach(id => {
         const el = document.getElementById(id);
         if(el) el.value = 'R$ 0,00';
@@ -328,7 +357,7 @@ function mostrarOrcamentosGerados() {
         const row = tbody.insertRow();
         row.innerHTML = `
             <td>${orc.numero}</td>
-            <td>${orc.dataOrcamento}</td>
+            <td>${orc.dataOrcamento ? orc.dataOrcamento.split('-').reverse().join('/') : '-'}</td>
             <td>${orc.cliente}</td>
             <td>${formatarMoeda(orc.total)}</td>
             <td>${orc.pedidoGerado ? orc.numeroPedido : 'Não'}</td>
@@ -337,7 +366,6 @@ function mostrarOrcamentosGerados() {
         
         const cellAcoes = row.cells[5];
         
-        // Botão Imprimir (Nova Funcionalidade Prioridade 1)
         const btnImprimir = document.createElement('button');
         btnImprimir.textContent = "Imprimir";
         btnImprimir.style.marginRight = "5px";
@@ -363,16 +391,13 @@ function mostrarOrcamentosGerados() {
     });
 }
 
-// NOVA FUNÇÃO: Visualizar Impressão (Prioridade 1)
 function visualizarImpressao(orcamento) {
     const janela = window.open('', '_blank');
     
-    // Formatação de datas e pagamento
     const dtOrc = orcamento.dataOrcamento ? orcamento.dataOrcamento.split('-').reverse().join('/') : '';
     const dtVal = orcamento.dataValidade ? orcamento.dataValidade.split('-').reverse().join('/') : '';
     const pagamento = Array.isArray(orcamento.pagamento) ? orcamento.pagamento.join(', ') : orcamento.pagamento;
 
-    // Construção do HTML de Impressão
     const html = `
         <html>
         <head>
@@ -515,9 +540,10 @@ async function gerarPedido(orcamentoId) {
         restante: orc.total,
         produtos: orc.produtos,
         tipo: 'pedido',
-        // Campos financeiros iniciais
+        // Inicializar novos campos financeiros com 0
         custoMaoDeObra: 0,
-        margemLucro: 0
+        margemLucro: 0,
+        custosTotais: 0
     };
 
     await salvarDados(pedido, 'pedido');
@@ -541,15 +567,76 @@ function mostrarPedidosRealizados() {
 
     pedidos.forEach(p => {
         const row = tbody.insertRow();
+        // Botão Checklist adicionado aqui (Prioridade 3)
         row.innerHTML = `
             <td>${p.numero}</td>
-            <td>${p.dataPedido}</td>
+            <td>${p.dataPedido ? p.dataPedido.split('-').reverse().join('/') : '-'}</td>
             <td>${p.cliente}</td>
             <td>${formatarMoeda(p.total)}</td>
-            <td><button class="btn-editar-pedido">Editar</button></td>
+            <td>
+                <button class="btn-editar-pedido" onclick="editarPedido('${p.id}')">Editar</button>
+                <button class="btn-checklist" style="background:#687f82; margin-left:5px;" onclick="imprimirChecklist('${p.id}')">Checklist</button>
+            </td>
         `;
-        row.querySelector('.btn-editar-pedido').onclick = () => editarPedido(p.id);
     });
+}
+
+// Prioridade 3: Função para imprimir Checklist de Produção
+function imprimirChecklist(id) {
+    const p = pedidos.find(o => o.id === id);
+    if (!p) return;
+
+    const janela = window.open('', '_blank');
+    const html = `
+        <html>
+        <head>
+            <title>Checklist - ${p.numero}</title>
+            <style>
+                body { font-family: 'Arial', sans-serif; padding: 20px; color: #000; }
+                h1 { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; }
+                .info { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 14px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                th, td { border: 1px solid #000; padding: 8px; text-align: left; }
+                .box { width: 20px; height: 20px; border: 2px solid #000; display: inline-block; }
+            </style>
+        </head>
+        <body>
+            <h1>Ordem de Produção - ${p.numero}</h1>
+            <div class="info">
+                <div><strong>Cliente:</strong> ${p.cliente}</div>
+                <div><strong>Entrega:</strong> ${p.dataEntrega ? p.dataEntrega.split('-').reverse().join('/') : '-'}</div>
+            </div>
+            <div class="info">
+                <div><strong>Tema:</strong> ${p.tema}</div>
+                <div><strong>Cores:</strong> ${p.cores}</div>
+            </div>
+            
+            <h3>Itens para Conferência</h3>
+            <table>
+                <thead><tr><th style="width:50px">OK</th><th>Qtd</th><th>Descrição</th><th>Obs. Item</th></tr></thead>
+                <tbody>
+                    ${p.produtos.map(prod => `
+                        <tr>
+                            <td style="text-align:center;"><div class="box"></div></td>
+                            <td>${prod.quantidade}</td>
+                            <td>${prod.descricao}</td>
+                            <td></td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            
+            <div style="margin-top: 30px; border: 1px solid #000; padding: 10px; min-height: 100px;">
+                <strong>Observações Gerais:</strong><br>${p.observacoes}
+            </div>
+            <div style="text-align: center; margin-top: 30px;">
+                <button onclick="window.print()">Imprimir</button>
+            </div>
+        </body>
+        </html>
+    `;
+    janela.document.write(html);
+    janela.document.close();
 }
 
 function editarPedido(id) {
@@ -573,7 +660,19 @@ function editarPedido(id) {
     document.getElementById("restanteEdicao").value = formatarMoeda(pedido.restante || 0);
     document.getElementById("observacoesEdicao").value = pedido.observacoes;
 
-    // Prioridade 1: Preencher novos campos financeiros
+    // Prioridade 1: Preencher novos campos financeiros do Demonstrativo
+    // Estes campos foram adicionados ao HTML
+    if (document.getElementById("custoTotalPedido")) {
+        document.getElementById("custoTotalPedido").value = formatarMoeda(pedido.custosTotais || 0);
+    }
+    if (document.getElementById("maoDeObraPedido")) {
+        document.getElementById("maoDeObraPedido").value = formatarMoeda(pedido.custoMaoDeObra || 0);
+    }
+    if (document.getElementById("lucroPedido")) {
+        document.getElementById("lucroPedido").value = formatarMoeda(pedido.margemLucro || 0);
+    }
+
+    // Campos de compatibilidade antiga (mantidos por precaução se existirem)
     if (document.getElementById("custoMaoDeObraEdicao")) {
         document.getElementById("custoMaoDeObraEdicao").value = formatarMoeda(pedido.custoMaoDeObra || 0);
     }
@@ -601,9 +700,13 @@ async function atualizarPedido() {
     if (!pedidoEditando) return;
     const index = pedidos.findIndex(p => p.id === pedidoEditando);
     
-    // Prioridade 1: Ler novos campos financeiros
-    const custoMO = document.getElementById("custoMaoDeObraEdicao") ? converterMoedaParaNumero(document.getElementById("custoMaoDeObraEdicao").value) : 0;
-    const margem = document.getElementById("margemLucroEdicao") ? converterMoedaParaNumero(document.getElementById("margemLucroEdicao").value) : 0;
+    // Prioridade 1: Ler novos campos financeiros do formulário
+    // Se o elemento não existir (versão antiga do HTML), assume 0
+    const custosTotais = document.getElementById("custoTotalPedido") ? converterMoedaParaNumero(document.getElementById("custoTotalPedido").value) : 0;
+    const custoMO = document.getElementById("maoDeObraPedido") ? converterMoedaParaNumero(document.getElementById("maoDeObraPedido").value) : 
+                    (document.getElementById("custoMaoDeObraEdicao") ? converterMoedaParaNumero(document.getElementById("custoMaoDeObraEdicao").value) : 0);
+    const margem = document.getElementById("lucroPedido") ? converterMoedaParaNumero(document.getElementById("lucroPedido").value) :
+                   (document.getElementById("margemLucroEdicao") ? converterMoedaParaNumero(document.getElementById("margemLucroEdicao").value) : 0);
 
     const dados = {
         ...pedidos[index],
@@ -614,6 +717,7 @@ async function atualizarPedido() {
         entrada: converterMoedaParaNumero(document.getElementById("entradaEdicao").value),
         restante: converterMoedaParaNumero(document.getElementById("restanteEdicao").value),
         // Novos campos salvos
+        custosTotais: custosTotais,
         custoMaoDeObra: custoMO,
         margemLucro: margem,
         produtos: []
@@ -676,18 +780,67 @@ function atualizarRestanteEdicao() {
     document.getElementById("restanteEdicao").value = formatarMoeda(total - entrada);
 }
 
-// Filtros e Relatórios (Simplificado)
+// Prioridade 2: Lógica de Relatório Financeiro Mensal
+function gerarRelatorioFinanceiro() {
+    const mes = parseInt(document.getElementById("relatorio-mes").value);
+    const ano = parseInt(document.getElementById("relatorio-ano").value || new Date().getFullYear());
+
+    let totalFat = 0, totalMO = 0, totalLucro = 0, totalCustos = 0;
+    const tbody = document.querySelector("#tabela-relatorio tbody");
+    if(!tbody) return;
+    
+    tbody.innerHTML = "";
+
+    const pedidosFiltrados = pedidos.filter(p => {
+        if(!p.dataPedido) return false;
+        // extrai mês e ano da string ISO (YYYY-MM-DD)
+        const pMes = parseInt(p.dataPedido.split('-')[1]) - 1; 
+        const pAno = parseInt(p.dataPedido.split('-')[0]);
+        return pMes === mes && pAno === ano;
+    });
+
+    pedidosFiltrados.forEach(p => {
+        // Soma dos valores
+        totalFat += (p.total || 0);
+        totalMO += (p.custoMaoDeObra || 0);
+        totalLucro += (p.margemLucro || 0);
+        totalCustos += (p.custosTotais || 0);
+
+        // Linha da tabela
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td>${p.dataPedido.split('-').reverse().join('/')}</td>
+            <td>${p.numero}</td>
+            <td>${p.cliente}</td>
+            <td style="color:#2196F3">${formatarMoeda(p.custoMaoDeObra)}</td>
+            <td style="color:#4CAF50">${formatarMoeda(p.margemLucro)}</td>
+            <td>${formatarMoeda(p.total)}</td>
+        `;
+    });
+
+    // Atualiza KPIs do Dashboard (Cards)
+    if(document.getElementById("kpi-mao-obra")) 
+        document.getElementById("kpi-mao-obra").textContent = formatarMoeda(totalMO);
+    
+    if(document.getElementById("kpi-lucro"))
+        document.getElementById("kpi-lucro").textContent = formatarMoeda(totalLucro);
+    
+    if(document.getElementById("kpi-custos"))
+        document.getElementById("kpi-custos").textContent = formatarMoeda(totalCustos);
+    
+    if(document.getElementById("kpi-total"))
+        document.getElementById("kpi-total").textContent = formatarMoeda(totalFat);
+}
+
+// Filtros e Relatórios (Legado / Redirecionamento)
 function filtrarOrcamentos() {
     mostrarOrcamentosGerados();
 }
 function filtrarPedidos() {
     mostrarPedidosRealizados();
 }
-function filtrarPedidosRelatorio() {
-    alert("Funcionalidade de Relatório pronta para implementação.");
-}
 function gerarRelatorioXLSX() {
-    alert("Exportação XLSX pronta para implementação.");
+    alert("Exportação XLSX pronta para implementação futura.");
 }
 
 // Tornar funções acessíveis globalmente no final também, por segurança
@@ -697,3 +850,5 @@ window.formatarEntradaMoeda = formatarEntradaMoeda;
 window.atualizarTotaisEdicao = atualizarTotaisEdicao;
 window.atualizarRestanteEdicao = atualizarRestanteEdicao;
 window.visualizarImpressao = visualizarImpressao;
+window.imprimirChecklist = imprimirChecklist;
+window.gerarRelatorioFinanceiro = gerarRelatorioFinanceiro;
