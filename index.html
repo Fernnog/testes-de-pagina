@@ -25,7 +25,7 @@
 
     <!-- Módulos JS -->
     <script type="module" src="assets/js/firebase-config.js"></script> <!-- Garantir ordem -->
-    <script type="module" src="assets/js/precificacao-insumos.js"></script> <!-- NOVO ARQUIVO -->
+    <script type="module" src="assets/js/precificacao-insumos.js"></script> 
     <script type="module" src="assets/js/main.js"></script>
     <script type="module" src="assets/js/orcamentos.js"></script>
     <script type="module" src="assets/js/precificacao.js"></script>
@@ -124,7 +124,7 @@
         <div id="version-container"></div>
     </section>
 
-    <!-- 4. MÓDULO: ORÇAMENTOS (COMPLETO) -->
+    <!-- 4. MÓDULO: ORÇAMENTOS E PEDIDOS -->
     <section id="module-orcamentos" style="display: none;">
         <button class="btn-back-hub">⬅ Voltar ao Menu</button>
         
@@ -252,7 +252,7 @@
                     </div>
                     <button type="button" id="btnAddProdutoEdicao">Add Produto</button>
 
-                    <!-- Campos Financeiros -->
+                    <!-- Campos Financeiros (Cliente) -->
                     <div class="form-row valores-pedido" style="margin-top: 20px;">
                         <div class="form-group">
                             <label>Frete (R$):</label>
@@ -264,18 +264,28 @@
                         </div>
                     </div>
 
-                    <div class="form-row valores-pedido">
+                    <!-- NOVO: Campos Financeiros Gerenciais (Prioridade 1) -->
+                    <div class="form-row valores-pedido" style="background-color: #f0f7f7; border: 1px solid #b2d8d8; margin-top: 15px; padding: 15px; border-radius: 10px;">
+                        <h3 style="width: 100%; font-size: 1rem; color: #5a8289; margin: 0 0 10px 0;">Demonstrativo Financeiro (Interno)</h3>
+                        
                         <div class="form-group">
-                            <label style="color: #7aa2a9; font-weight: bold;">Custo Mão de Obra (R$):</label>
-                            <input type="text" id="custoMaoDeObraEdicao" placeholder="R$ 0,00" oninput="formatarEntradaMoeda(this)">
+                            <label title="Soma de Materiais + Custos Indiretos">Custos Totais (R$):</label>
+                            <input type="text" id="custoTotalPedido" placeholder="R$ 0,00" oninput="formatarEntradaMoeda(this)">
                         </div>
+                        
                         <div class="form-group">
-                            <label style="color: #7aa2a9; font-weight: bold;">Margem de Lucro (R$):</label>
-                            <input type="text" id="margemLucroEdicao" placeholder="R$ 0,00" oninput="formatarEntradaMoeda(this)">
+                            <label style="color: #2196F3;">Mão de Obra (R$):</label>
+                            <input type="text" id="maoDeObraPedido" placeholder="R$ 0,00" oninput="formatarEntradaMoeda(this)">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label style="color: #4CAF50;">Margem de Lucro (R$):</label>
+                            <input type="text" id="lucroPedido" placeholder="R$ 0,00" oninput="formatarEntradaMoeda(this)">
                         </div>
                     </div>
 
-                    <div class="form-row valores-pedido">
+                    <!-- Campos de Total e Pagamento -->
+                    <div class="form-row valores-pedido" style="margin-top: 15px;">
                         <div class="form-group">
                             <label>Total Geral (R$):</label>
                             <input type="text" id="totalEdicao" readonly>
@@ -296,10 +306,60 @@
                     <button type="button" id="btnSalvarPedidoEdicao">Salvar Pedido</button>
                 </section>
 
+                 <!-- RELATÓRIOS (Atualizado Prioridade 2) -->
                  <section id="relatorio" class="pagina" style="display: none;">
-                    <h2 class="section-title-lined">Relatórios</h2>
-                    <p>Funcionalidade em desenvolvimento.</p>
-                    <button onclick="gerarRelatorioXLSX()">Exportar Excel</button>
+                    <h2 class="section-title-lined">Relatório Financeiro Mensal</h2>
+                    
+                    <!-- Filtros -->
+                    <div class="filtro-data" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                        <select id="relatorio-mes">
+                            <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+                            <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
+                            <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+                            <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+                        </select>
+                        <select id="relatorio-ano"></select> <!-- Populado via JS -->
+                        <button onclick="gerarRelatorioFinanceiro()">Gerar Relatório</button>
+                    </div>
+
+                    <!-- Dashboard KPIs -->
+                    <div class="dashboard-resumo" style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin-bottom: 30px;">
+                        <div class="card-kpi" style="background: #e3f2fd; border-left: 5px solid #2196F3; flex: 1; min-width: 140px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center;">
+                            <span style="font-size: 0.85rem; color: #555; display: block; margin-bottom: 5px;">Mão de Obra (Salário)</span>
+                            <strong id="kpi-mao-obra" style="font-size: 1.2rem; color: #333;">R$ 0,00</strong>
+                        </div>
+                        <div class="card-kpi" style="background: #e8f5e9; border-left: 5px solid #4CAF50; flex: 1; min-width: 140px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center;">
+                            <span style="font-size: 0.85rem; color: #555; display: block; margin-bottom: 5px;">Lucro da Empresa</span>
+                            <strong id="kpi-lucro" style="font-size: 1.2rem; color: #333;">R$ 0,00</strong>
+                        </div>
+                        <div class="card-kpi" style="background: #ffebee; border-left: 5px solid #e53935; flex: 1; min-width: 140px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center;">
+                            <span style="font-size: 0.85rem; color: #555; display: block; margin-bottom: 5px;">Custos Totais</span>
+                            <strong id="kpi-custos" style="font-size: 1.2rem; color: #333;">R$ 0,00</strong>
+                        </div>
+                        <div class="card-kpi" style="background: #fff3e0; border-left: 5px solid #ff9800; flex: 1; min-width: 140px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center;">
+                            <span style="font-size: 0.85rem; color: #555; display: block; margin-bottom: 5px;">Faturamento Bruto</span>
+                            <strong id="kpi-total" style="font-size: 1.2rem; color: #333;">R$ 0,00</strong>
+                        </div>
+                    </div>
+
+                    <h3 style="text-align: center; color: #7aa2a9;">Lançamentos do Mês</h3>
+                    <div class="table-responsive">
+                        <table id="tabela-relatorio">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Pedido</th>
+                                    <th>Cliente</th>
+                                    <th style="color: #2196F3;">M. Obra</th>
+                                    <th style="color: #4CAF50;">Lucro</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    
+                    <button onclick="gerarRelatorioXLSX()" style="margin-top: 20px;">Exportar Excel</button>
                  </section>
             </div>
         </div>
