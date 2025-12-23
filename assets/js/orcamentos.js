@@ -17,36 +17,52 @@ let pedidos = [];
 let moduleInitialized = false;
 
 // ==========================================================================
-// INICIALIZAÇÃO
+// 1. INICIALIZAÇÃO
 // ==========================================================================
 export async function initOrcamentos() {
     console.log("Inicializando Módulo Orçamentos...");
     
-    // Tornar funções acessíveis globalmente
+    // EXPOR FUNÇÕES PARA O HTML (Correção do erro "Not Defined")
+    // Isso garante que o onclick="..." no HTML encontre estas funções
     window.excluirProduto = excluirProduto;
     window.excluirProdutoEdicao = excluirProdutoEdicao;
     window.formatarEntradaMoeda = formatarEntradaMoeda;
     window.atualizarTotaisEdicao = atualizarTotaisEdicao;
     window.atualizarRestanteEdicao = atualizarRestanteEdicao;
     window.visualizarImpressao = visualizarImpressao;
-    
-    // NOVAS FUNÇÕES GLOBAIS (Prioridades 2 e 3)
-    window.imprimirChecklist = imprimirChecklist;
-    window.gerarRelatorioFinanceiro = gerarRelatorioFinanceiro;
+    window.editarOrcamento = editarOrcamento;
+    window.gerarPedido = gerarPedido;
+    window.editarPedido = editarPedido;
+    window.imprimirChecklist = imprimirChecklist; // Nova
+    window.gerarRelatorioFinanceiro = gerarRelatorioFinanceiro; // Nova
 
+    // Carregar dados do banco
     await carregarDados();
     
+    // Configurar eventos (apenas uma vez)
     if (!moduleInitialized) {
         setupEventListeners();
-        inicializarFiltrosRelatorio(); // Popula o select de anos
+        
+        // Popular Select de Anos no Relatório
+        const selectAno = document.getElementById("relatorio-ano");
+        if(selectAno) {
+            for(let i = anoAtual; i >= anoAtual - 2; i--) {
+                const opt = document.createElement("option");
+                opt.value = i;
+                opt.text = i;
+                selectAno.appendChild(opt);
+            }
+        }
+
         moduleInitialized = true;
     }
     
+    // Mostrar tela inicial
     mostrarPagina('form-orcamento');
 }
 
 // ==========================================================================
-// CARREGAMENTO E SALVAMENTO (FIREBASE)
+// 2. CARREGAMENTO E SALVAMENTO (FIREBASE)
 // ==========================================================================
 
 async function carregarDados() {
@@ -103,7 +119,7 @@ async function salvarDados(dados, tipo) {
 }
 
 // ==========================================================================
-// EVENT LISTENERS E NAVEGAÇÃO
+// 3. EVENT LISTENERS E NAVEGAÇÃO
 // ==========================================================================
 
 function setupEventListeners() {
@@ -125,36 +141,24 @@ function setupEventListeners() {
     // Filtros e Relatórios
     bindClick('#orcamentos-gerados button', filtrarOrcamentos);
     bindClick('#lista-pedidos button', filtrarPedidos);
-    // Nota: O botão de gerar relatório chama diretamente window.gerarRelatorioFinanceiro() via onclick no HTML
+    // Nota: O botão de gerar relatório no HTML chama gerarRelatorioFinanceiro() direto via onclick
 
     const btnXLSX = document.querySelector('#relatorio button[onclick="gerarRelatorioXLSX()"]');
     if(btnXLSX) btnXLSX.onclick = gerarRelatorioXLSX;
 
     // Listeners Dinâmicos (Inputs de Tabela)
-    document.querySelector('#tabelaProdutos').addEventListener('input', (e) => {
-        if(e.target.matches('.produto-quantidade, .produto-valor-unit')) atualizarTotais();
-    });
+    const tabProd = document.querySelector('#tabelaProdutos');
+    if(tabProd) {
+        tabProd.addEventListener('input', (e) => {
+            if(e.target.matches('.produto-quantidade, .produto-valor-unit')) atualizarTotais();
+        });
+    }
     
     const freteInput = document.querySelector('#valorFrete');
     if(freteInput) freteInput.addEventListener('input', () => {
         formatarEntradaMoeda(freteInput);
         atualizarTotais();
     });
-}
-
-function inicializarFiltrosRelatorio() {
-    const selectAno = document.getElementById("relatorio-ano");
-    if(selectAno) {
-        selectAno.innerHTML = ""; // Limpa opções anteriores
-        const anoAtual = new Date().getFullYear();
-        // Cria opções para o ano atual e os 2 anteriores
-        for(let i = anoAtual; i >= anoAtual - 2; i--) {
-            const opt = document.createElement("option");
-            opt.value = i;
-            opt.text = i;
-            selectAno.appendChild(opt);
-        }
-    }
 }
 
 function bindClick(selector, handler) {
@@ -169,18 +173,11 @@ function mostrarPagina(idPagina) {
         target.style.display = 'block';
         if(idPagina === 'orcamentos-gerados') mostrarOrcamentosGerados();
         if(idPagina === 'lista-pedidos') mostrarPedidosRealizados();
-        // Se entrar na página de relatório, gera o relatório do mês atual automaticamente
-        if(idPagina === 'relatorio') {
-            const mesAtual = new Date().getMonth();
-            const elMes = document.getElementById('relatorio-mes');
-            if(elMes) elMes.value = mesAtual;
-            gerarRelatorioFinanceiro();
-        }
     }
 }
 
 // ==========================================================================
-// FUNÇÕES AUXILIARES
+// 4. FUNÇÕES AUXILIARES
 // ==========================================================================
 
 function formatarMoeda(valor) {
@@ -211,9 +208,10 @@ function gerarNumeroFormatado(numero) {
 }
 
 function limparCamposMoeda() {
-    const campos = ['valorFrete', 'valorOrcamento', 'total', 'entrada', 'restante', 
-                   'margemLucroEdicao', 'custoMaoDeObraEdicao',
-                   'custoTotalPedido', 'maoDeObraPedido', 'lucroPedido']; // Campos novos adicionados
+    const campos = [
+        'valorFrete', 'valorOrcamento', 'total', 'entrada', 'restante', 
+        'margemLucroEdicao', 'custoMaoDeObraEdicao', 'custoTotalPedido', 'maoDeObraPedido', 'lucroPedido'
+    ];
     campos.forEach(id => {
         const el = document.getElementById(id);
         if(el) el.value = 'R$ 0,00';
@@ -221,7 +219,7 @@ function limparCamposMoeda() {
 }
 
 // ==========================================================================
-// LÓGICA DE NEGÓCIO (ORÇAMENTOS E PEDIDOS)
+// 5. LÓGICA DE NEGÓCIO (ORÇAMENTOS)
 // ==========================================================================
 
 function adicionarProduto() {
@@ -366,6 +364,7 @@ function mostrarOrcamentosGerados() {
         
         const cellAcoes = row.cells[5];
         
+        // Botão Imprimir
         const btnImprimir = document.createElement('button');
         btnImprimir.textContent = "Imprimir";
         btnImprimir.style.marginRight = "5px";
@@ -386,6 +385,7 @@ function mostrarOrcamentosGerados() {
         } else {
             const span = document.createElement('span');
             span.textContent = " Pedido Gerado";
+            span.style.color = "#7aa2a9";
             cellAcoes.appendChild(span);
         }
     });
@@ -414,9 +414,7 @@ function visualizarImpressao(orcamento) {
                 .totais { text-align: right; margin-top: 30px; }
                 .totais h3 { color: #7aa2a9; }
                 .obs { margin-top: 40px; font-size: 0.9em; color: #555; border-top: 1px solid #eee; padding-top: 10px; }
-                @media print {
-                    button { display: none; }
-                }
+                @media print { button { display: none; } }
             </style>
         </head>
         <body>
@@ -430,7 +428,7 @@ function visualizarImpressao(orcamento) {
                 <strong>Cliente:</strong> ${orcamento.cliente || '-'}<br>
                 <strong>Cidade:</strong> ${orcamento.cidade || '-'}<br>
                 <strong>Telefone:</strong> ${orcamento.telefone || '-'}<br>
-                <strong>Data do Orçamento:</strong> ${dtOrc}<br>
+                <strong>Data:</strong> ${dtOrc}<br>
                 <strong>Validade:</strong> ${dtVal}<br>
                 <strong>Tema:</strong> ${orcamento.tema || '-'}<br>
                 <strong>Cores:</strong> ${orcamento.cores || '-'}
@@ -438,14 +436,7 @@ function visualizarImpressao(orcamento) {
 
             <h3>Produtos</h3>
             <table>
-                <thead>
-                    <tr>
-                        <th>Qtd</th>
-                        <th>Descrição</th>
-                        <th>Valor Unit.</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Qtd</th><th>Descrição</th><th>Valor Unit.</th><th>Total</th></tr></thead>
                 <tbody>
                     ${orcamento.produtos.map(p => `
                         <tr>
@@ -515,7 +506,10 @@ function editarOrcamento(id) {
     document.getElementById("btnAtualizarOrcamento").style.display = "inline-block";
 }
 
-// PEDIDOS
+// ==========================================================================
+// 6. LÓGICA DE NEGÓCIO (PEDIDOS)
+// ==========================================================================
+
 async function gerarPedido(orcamentoId) {
     const orc = orcamentos.find(o => o.id === orcamentoId);
     if (!orc) return;
@@ -540,7 +534,7 @@ async function gerarPedido(orcamentoId) {
         restante: orc.total,
         produtos: orc.produtos,
         tipo: 'pedido',
-        // Inicializar novos campos financeiros com 0
+        // Campos financeiros iniciais (Zerados pois vêm da precificação externa)
         custoMaoDeObra: 0,
         margemLucro: 0,
         custosTotais: 0
@@ -567,7 +561,6 @@ function mostrarPedidosRealizados() {
 
     pedidos.forEach(p => {
         const row = tbody.insertRow();
-        // Botão Checklist adicionado aqui (Prioridade 3)
         row.innerHTML = `
             <td>${p.numero}</td>
             <td>${p.dataPedido ? p.dataPedido.split('-').reverse().join('/') : '-'}</td>
@@ -581,7 +574,149 @@ function mostrarPedidosRealizados() {
     });
 }
 
-// Prioridade 3: Função para imprimir Checklist de Produção
+function editarPedido(id) {
+    const pedido = pedidos.find(p => p.id === id);
+    if (!pedido) return;
+    pedidoEditando = id;
+
+    // Dados Gerais
+    document.getElementById("dataPedidoEdicao").value = pedido.dataPedido;
+    document.getElementById("dataEntregaEdicao").value = pedido.dataEntrega;
+    document.getElementById("clienteEdicao").value = pedido.cliente;
+    document.getElementById("enderecoEdicao").value = pedido.endereco;
+    document.getElementById("temaEdicao").value = pedido.tema;
+    document.getElementById("cidadeEdicao").value = pedido.cidade;
+    document.getElementById("contatoEdicao").value = pedido.telefone;
+    document.getElementById("coresEdicao").value = pedido.cores;
+    document.getElementById("valorFreteEdicao").value = formatarMoeda(pedido.valorFrete);
+    document.getElementById("valorPedidoEdicao").value = formatarMoeda(pedido.valorOrcamento || 0);
+    document.getElementById("totalEdicao").value = formatarMoeda(pedido.total);
+    document.getElementById("entradaEdicao").value = formatarMoeda(pedido.entrada || 0);
+    document.getElementById("restanteEdicao").value = formatarMoeda(pedido.restante || 0);
+    document.getElementById("observacoesEdicao").value = pedido.observacoes;
+
+    // --- NOVOS CAMPOS FINANCEIROS ---
+    if(document.getElementById("custoTotalPedido")) {
+        document.getElementById("custoTotalPedido").value = formatarMoeda(pedido.custosTotais || 0);
+    }
+    if(document.getElementById("maoDeObraPedido")) {
+        document.getElementById("maoDeObraPedido").value = formatarMoeda(pedido.custoMaoDeObra || 0);
+    }
+    if(document.getElementById("lucroPedido")) {
+        document.getElementById("lucroPedido").value = formatarMoeda(pedido.margemLucro || 0);
+    }
+    // Compatibilidade com campos antigos se existirem no HTML
+    if (document.getElementById("custoMaoDeObraEdicao")) {
+        document.getElementById("custoMaoDeObraEdicao").value = formatarMoeda(pedido.custoMaoDeObra || 0);
+    }
+    if (document.getElementById("margemLucroEdicao")) {
+        document.getElementById("margemLucroEdicao").value = formatarMoeda(pedido.margemLucro || 0);
+    }
+    // --------------------------------
+
+    const tbody = document.querySelector("#tabelaProdutosEdicao tbody");
+    tbody.innerHTML = '';
+    pedido.produtos.forEach(p => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td><input type="number" class="produto-quantidade" value="${p.quantidade}" min="1" onchange="atualizarTotaisEdicao()"></td>
+            <td><input type="text" class="produto-descricao" value="${p.descricao}"></td>
+            <td><input type="text" class="produto-valor-unit" value="${formatarMoeda(p.valorUnit)}" oninput="formatarEntradaMoeda(this)" onblur="atualizarTotaisEdicao()"></td>
+            <td>${formatarMoeda(p.valorTotal)}</td>
+            <td><button type="button" onclick="excluirProdutoEdicao(this)">Excluir</button></td>
+        `;
+    });
+
+    mostrarPagina('form-edicao-pedido');
+}
+
+async function atualizarPedido() {
+    if (!pedidoEditando) return;
+    const index = pedidos.findIndex(p => p.id === pedidoEditando);
+    
+    // Ler valores novos
+    const custosTotais = document.getElementById("custoTotalPedido") ? converterMoedaParaNumero(document.getElementById("custoTotalPedido").value) : 0;
+    const custoMO = document.getElementById("maoDeObraPedido") ? converterMoedaParaNumero(document.getElementById("maoDeObraPedido").value) : 0;
+    const margem = document.getElementById("lucroPedido") ? converterMoedaParaNumero(document.getElementById("lucroPedido").value) : 0;
+
+    const dados = {
+        ...pedidos[index],
+        cliente: document.getElementById("clienteEdicao").value,
+        dataEntrega: document.getElementById("dataEntregaEdicao").value,
+        valorFrete: converterMoedaParaNumero(document.getElementById("valorFreteEdicao").value),
+        total: converterMoedaParaNumero(document.getElementById("totalEdicao").value),
+        entrada: converterMoedaParaNumero(document.getElementById("entradaEdicao").value),
+        restante: converterMoedaParaNumero(document.getElementById("restanteEdicao").value),
+        
+        // Salvar campos financeiros
+        custosTotais: custosTotais,
+        custoMaoDeObra: custoMO,
+        margemLucro: margem,
+        
+        produtos: []
+    };
+
+    document.querySelectorAll("#tabelaProdutosEdicao tbody tr").forEach(row => {
+        dados.produtos.push({
+            quantidade: parseFloat(row.querySelector(".produto-quantidade").value),
+            descricao: row.querySelector(".produto-descricao").value,
+            valorUnit: converterMoedaParaNumero(row.querySelector(".produto-valor-unit").value),
+            valorTotal: converterMoedaParaNumero(row.cells[3].textContent)
+        });
+    });
+
+    await salvarDados(dados, 'pedido');
+    pedidos[index] = dados;
+    alert("Pedido Atualizado e Dados Financeiros Salvos!");
+    pedidoEditando = null;
+    mostrarPagina('lista-pedidos');
+}
+
+// Funções de Edição (Dinâmicas)
+function adicionarProdutoEdicao() {
+    const tbody = document.querySelector("#tabelaProdutosEdicao tbody");
+    const row = tbody.insertRow();
+    row.innerHTML = `
+        <td><input type="number" class="produto-quantidade" value="1" min="1" onchange="atualizarTotaisEdicao()"></td>
+        <td><input type="text" class="produto-descricao"></td>
+        <td><input type="text" class="produto-valor-unit" value="R$ 0,00" oninput="formatarEntradaMoeda(this)" onblur="atualizarTotaisEdicao()"></td>
+        <td>R$ 0,00</td>
+        <td><button type="button" onclick="excluirProdutoEdicao(this)">Excluir</button></td>
+    `;
+}
+
+function excluirProdutoEdicao(btn) {
+    btn.closest('tr').remove();
+    atualizarTotaisEdicao();
+}
+
+function atualizarTotaisEdicao() {
+    let total = 0;
+    document.querySelectorAll("#tabelaProdutosEdicao tbody tr").forEach(row => {
+        const qtd = parseFloat(row.querySelector(".produto-quantidade").value) || 0;
+        const unit = converterMoedaParaNumero(row.querySelector(".produto-valor-unit").value);
+        const sub = qtd * unit;
+        row.cells[3].textContent = formatarMoeda(sub);
+        total += sub;
+    });
+    
+    const frete = converterMoedaParaNumero(document.getElementById("valorFreteEdicao").value);
+    const totalFinal = total + frete;
+    document.getElementById("valorPedidoEdicao").value = formatarMoeda(total);
+    document.getElementById("totalEdicao").value = formatarMoeda(totalFinal);
+    atualizarRestanteEdicao();
+}
+
+function atualizarRestanteEdicao() {
+    const total = converterMoedaParaNumero(document.getElementById("totalEdicao").value);
+    const entrada = converterMoedaParaNumero(document.getElementById("entradaEdicao").value);
+    document.getElementById("restanteEdicao").value = formatarMoeda(total - entrada);
+}
+
+// ==========================================================================
+// 7. CHECKLIST E RELATÓRIOS
+// ==========================================================================
+
 function imprimirChecklist(id) {
     const p = pedidos.find(o => o.id === id);
     if (!p) return;
@@ -639,151 +774,10 @@ function imprimirChecklist(id) {
     janela.document.close();
 }
 
-function editarPedido(id) {
-    const pedido = pedidos.find(p => p.id === id);
-    if (!pedido) return;
-    pedidoEditando = id;
-
-    // Preencher campos de edição...
-    document.getElementById("dataPedidoEdicao").value = pedido.dataPedido;
-    document.getElementById("dataEntregaEdicao").value = pedido.dataEntrega;
-    document.getElementById("clienteEdicao").value = pedido.cliente;
-    document.getElementById("enderecoEdicao").value = pedido.endereco;
-    document.getElementById("temaEdicao").value = pedido.tema;
-    document.getElementById("cidadeEdicao").value = pedido.cidade;
-    document.getElementById("contatoEdicao").value = pedido.telefone;
-    document.getElementById("coresEdicao").value = pedido.cores;
-    document.getElementById("valorFreteEdicao").value = formatarMoeda(pedido.valorFrete);
-    document.getElementById("valorPedidoEdicao").value = formatarMoeda(pedido.valorOrcamento || 0);
-    document.getElementById("totalEdicao").value = formatarMoeda(pedido.total);
-    document.getElementById("entradaEdicao").value = formatarMoeda(pedido.entrada || 0);
-    document.getElementById("restanteEdicao").value = formatarMoeda(pedido.restante || 0);
-    document.getElementById("observacoesEdicao").value = pedido.observacoes;
-
-    // Prioridade 1: Preencher novos campos financeiros do Demonstrativo
-    // Estes campos foram adicionados ao HTML
-    if (document.getElementById("custoTotalPedido")) {
-        document.getElementById("custoTotalPedido").value = formatarMoeda(pedido.custosTotais || 0);
-    }
-    if (document.getElementById("maoDeObraPedido")) {
-        document.getElementById("maoDeObraPedido").value = formatarMoeda(pedido.custoMaoDeObra || 0);
-    }
-    if (document.getElementById("lucroPedido")) {
-        document.getElementById("lucroPedido").value = formatarMoeda(pedido.margemLucro || 0);
-    }
-
-    // Campos de compatibilidade antiga (mantidos por precaução se existirem)
-    if (document.getElementById("custoMaoDeObraEdicao")) {
-        document.getElementById("custoMaoDeObraEdicao").value = formatarMoeda(pedido.custoMaoDeObra || 0);
-    }
-    if (document.getElementById("margemLucroEdicao")) {
-        document.getElementById("margemLucroEdicao").value = formatarMoeda(pedido.margemLucro || 0);
-    }
-
-    const tbody = document.querySelector("#tabelaProdutosEdicao tbody");
-    tbody.innerHTML = '';
-    pedido.produtos.forEach(p => {
-        const row = tbody.insertRow();
-        row.innerHTML = `
-            <td><input type="number" class="produto-quantidade" value="${p.quantidade}" min="1" onchange="atualizarTotaisEdicao()"></td>
-            <td><input type="text" class="produto-descricao" value="${p.descricao}"></td>
-            <td><input type="text" class="produto-valor-unit" value="${formatarMoeda(p.valorUnit)}" oninput="formatarEntradaMoeda(this)" onblur="atualizarTotaisEdicao()"></td>
-            <td>${formatarMoeda(p.valorTotal)}</td>
-            <td><button type="button" onclick="excluirProdutoEdicao(this)">Excluir</button></td>
-        `;
-    });
-
-    mostrarPagina('form-edicao-pedido');
-}
-
-async function atualizarPedido() {
-    if (!pedidoEditando) return;
-    const index = pedidos.findIndex(p => p.id === pedidoEditando);
-    
-    // Prioridade 1: Ler novos campos financeiros do formulário
-    // Se o elemento não existir (versão antiga do HTML), assume 0
-    const custosTotais = document.getElementById("custoTotalPedido") ? converterMoedaParaNumero(document.getElementById("custoTotalPedido").value) : 0;
-    const custoMO = document.getElementById("maoDeObraPedido") ? converterMoedaParaNumero(document.getElementById("maoDeObraPedido").value) : 
-                    (document.getElementById("custoMaoDeObraEdicao") ? converterMoedaParaNumero(document.getElementById("custoMaoDeObraEdicao").value) : 0);
-    const margem = document.getElementById("lucroPedido") ? converterMoedaParaNumero(document.getElementById("lucroPedido").value) :
-                   (document.getElementById("margemLucroEdicao") ? converterMoedaParaNumero(document.getElementById("margemLucroEdicao").value) : 0);
-
-    const dados = {
-        ...pedidos[index],
-        cliente: document.getElementById("clienteEdicao").value,
-        dataEntrega: document.getElementById("dataEntregaEdicao").value,
-        valorFrete: converterMoedaParaNumero(document.getElementById("valorFreteEdicao").value),
-        total: converterMoedaParaNumero(document.getElementById("totalEdicao").value),
-        entrada: converterMoedaParaNumero(document.getElementById("entradaEdicao").value),
-        restante: converterMoedaParaNumero(document.getElementById("restanteEdicao").value),
-        // Novos campos salvos
-        custosTotais: custosTotais,
-        custoMaoDeObra: custoMO,
-        margemLucro: margem,
-        produtos: []
-    };
-
-    document.querySelectorAll("#tabelaProdutosEdicao tbody tr").forEach(row => {
-        dados.produtos.push({
-            quantidade: parseFloat(row.querySelector(".produto-quantidade").value),
-            descricao: row.querySelector(".produto-descricao").value,
-            valorUnit: converterMoedaParaNumero(row.querySelector(".produto-valor-unit").value),
-            valorTotal: converterMoedaParaNumero(row.cells[3].textContent)
-        });
-    });
-
-    await salvarDados(dados, 'pedido');
-    pedidos[index] = dados;
-    alert("Pedido Atualizado!");
-    pedidoEditando = null;
-    mostrarPagina('lista-pedidos');
-}
-
-// Funções de Edição (Escopo Global para Tabela Dinâmica)
-function adicionarProdutoEdicao() {
-    const tbody = document.querySelector("#tabelaProdutosEdicao tbody");
-    const row = tbody.insertRow();
-    row.innerHTML = `
-        <td><input type="number" class="produto-quantidade" value="1" min="1" onchange="atualizarTotaisEdicao()"></td>
-        <td><input type="text" class="produto-descricao"></td>
-        <td><input type="text" class="produto-valor-unit" value="R$ 0,00" oninput="formatarEntradaMoeda(this)" onblur="atualizarTotaisEdicao()"></td>
-        <td>R$ 0,00</td>
-        <td><button type="button" onclick="excluirProdutoEdicao(this)">Excluir</button></td>
-    `;
-}
-
-function excluirProdutoEdicao(btn) {
-    btn.closest('tr').remove();
-    atualizarTotaisEdicao();
-}
-
-function atualizarTotaisEdicao() {
-    let total = 0;
-    document.querySelectorAll("#tabelaProdutosEdicao tbody tr").forEach(row => {
-        const qtd = parseFloat(row.querySelector(".produto-quantidade").value) || 0;
-        const unit = converterMoedaParaNumero(row.querySelector(".produto-valor-unit").value);
-        const sub = qtd * unit;
-        row.cells[3].textContent = formatarMoeda(sub);
-        total += sub;
-    });
-    
-    const frete = converterMoedaParaNumero(document.getElementById("valorFreteEdicao").value);
-    const totalFinal = total + frete;
-    document.getElementById("valorPedidoEdicao").value = formatarMoeda(total);
-    document.getElementById("totalEdicao").value = formatarMoeda(totalFinal);
-    atualizarRestanteEdicao();
-}
-
-function atualizarRestanteEdicao() {
-    const total = converterMoedaParaNumero(document.getElementById("totalEdicao").value);
-    const entrada = converterMoedaParaNumero(document.getElementById("entradaEdicao").value);
-    document.getElementById("restanteEdicao").value = formatarMoeda(total - entrada);
-}
-
-// Prioridade 2: Lógica de Relatório Financeiro Mensal
 function gerarRelatorioFinanceiro() {
     const mes = parseInt(document.getElementById("relatorio-mes").value);
-    const ano = parseInt(document.getElementById("relatorio-ano").value || new Date().getFullYear());
+    const anoSelect = document.getElementById("relatorio-ano");
+    const ano = parseInt(anoSelect ? anoSelect.value : new Date().getFullYear());
 
     let totalFat = 0, totalMO = 0, totalLucro = 0, totalCustos = 0;
     const tbody = document.querySelector("#tabela-relatorio tbody");
@@ -793,20 +787,19 @@ function gerarRelatorioFinanceiro() {
 
     const pedidosFiltrados = pedidos.filter(p => {
         if(!p.dataPedido) return false;
-        // extrai mês e ano da string ISO (YYYY-MM-DD)
-        const pMes = parseInt(p.dataPedido.split('-')[1]) - 1; 
-        const pAno = parseInt(p.dataPedido.split('-')[0]);
+        // Assume formato YYYY-MM-DD
+        const parts = p.dataPedido.split('-');
+        const pMes = parseInt(parts[1]) - 1; // Mes 0-indexado
+        const pAno = parseInt(parts[0]);
         return pMes === mes && pAno === ano;
     });
 
     pedidosFiltrados.forEach(p => {
-        // Soma dos valores
         totalFat += (p.total || 0);
         totalMO += (p.custoMaoDeObra || 0);
         totalLucro += (p.margemLucro || 0);
         totalCustos += (p.custosTotais || 0);
 
-        // Linha da tabela
         const row = tbody.insertRow();
         row.innerHTML = `
             <td>${p.dataPedido.split('-').reverse().join('/')}</td>
@@ -818,37 +811,18 @@ function gerarRelatorioFinanceiro() {
         `;
     });
 
-    // Atualiza KPIs do Dashboard (Cards)
-    if(document.getElementById("kpi-mao-obra")) 
-        document.getElementById("kpi-mao-obra").textContent = formatarMoeda(totalMO);
-    
-    if(document.getElementById("kpi-lucro"))
-        document.getElementById("kpi-lucro").textContent = formatarMoeda(totalLucro);
-    
-    if(document.getElementById("kpi-custos"))
-        document.getElementById("kpi-custos").textContent = formatarMoeda(totalCustos);
-    
-    if(document.getElementById("kpi-total"))
-        document.getElementById("kpi-total").textContent = formatarMoeda(totalFat);
+    if(pedidosFiltrados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhum pedido encontrado neste período.</td></tr>';
+    }
+
+    // Atualiza KPIs
+    document.getElementById("kpi-mao-obra").textContent = formatarMoeda(totalMO);
+    document.getElementById("kpi-lucro").textContent = formatarMoeda(totalLucro);
+    document.getElementById("kpi-custos").textContent = formatarMoeda(totalCustos);
+    document.getElementById("kpi-total").textContent = formatarMoeda(totalFat);
 }
 
-// Filtros e Relatórios (Legado / Redirecionamento)
-function filtrarOrcamentos() {
-    mostrarOrcamentosGerados();
-}
-function filtrarPedidos() {
-    mostrarPedidosRealizados();
-}
-function gerarRelatorioXLSX() {
-    alert("Exportação XLSX pronta para implementação futura.");
-}
-
-// Tornar funções acessíveis globalmente no final também, por segurança
-window.excluirProduto = excluirProduto;
-window.excluirProdutoEdicao = excluirProdutoEdicao;
-window.formatarEntradaMoeda = formatarEntradaMoeda;
-window.atualizarTotaisEdicao = atualizarTotaisEdicao;
-window.atualizarRestanteEdicao = atualizarRestanteEdicao;
-window.visualizarImpressao = visualizarImpressao;
-window.imprimirChecklist = imprimirChecklist;
-window.gerarRelatorioFinanceiro = gerarRelatorioFinanceiro;
+// Filtros Simples
+function filtrarOrcamentos() { mostrarOrcamentosGerados(); }
+function filtrarPedidos() { mostrarPedidosRealizados(); }
+function gerarRelatorioXLSX() { alert("Exportação XLSX em breve."); }
