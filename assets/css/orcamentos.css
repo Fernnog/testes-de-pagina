@@ -264,7 +264,7 @@ button:hover {
     margin: 0 auto 20px auto;
 }
 
-/* ==== 8. FILTROS E RELATÓRIOS (ATUALIZADO PARA DASHBOARD) ==== */
+/* ==== 8. FILTROS E RELATÓRIOS (ATUALIZADO V1.1.0) ==== */
 .filtro-data {
     margin-bottom: 20px;
     text-align: center;
@@ -294,7 +294,6 @@ button:hover {
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     text-align: center;
     background: white;
-    /* Borda lateral colorida definida inline ou via classes auxiliares */
 }
 
 .card-kpi span {
@@ -311,6 +310,64 @@ button:hover {
     color: #333;
     display: block;
 }
+
+/* Feedback Emocional (Mensagem Motivacional) */
+.feedback-card {
+    background-color: #e0f2f1;
+    border: 1px solid #80cbc4;
+    color: #00695c;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    margin-bottom: 25px;
+    font-weight: 500;
+    animation: fadeInUp 0.5s ease;
+}
+
+/* KPIs Cores Específicas */
+.kpi-salario { border-left: 5px solid #2196F3; background: #e3f2fd; }
+.kpi-caixa { border-left: 5px solid #4CAF50; background: #e8f5e9; }
+.kpi-gastos { border-left: 5px solid #e53935; background: #ffebee; }
+.kpi-total { border-left: 5px solid #ff9800; background: #fff3e0; }
+.card-destaque-qtd { border-left: 5px solid #7aa2a9; background: #f0f7f7; }
+
+/* Barra Visual Empilhada */
+.distribuicao-financeira-container {
+    margin-bottom: 30px;
+    padding: 0 10px;
+}
+
+.barra-empilhada {
+    display: flex;
+    width: 100%;
+    height: 25px;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #eee;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.barra-segmento {
+    height: 100%;
+    transition: width 1s ease-in-out;
+}
+.segmento-vermelho { background-color: #ef5350; }
+.segmento-azul { background-color: #42a5f5; }
+.segmento-verde { background-color: #66bb6a; }
+
+.legenda-barra {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.legenda-item { display: flex; align-items: center; gap: 4px; }
+.dot-red { width: 8px; height: 8px; background: #ef5350; border-radius: 50%; }
+.dot-blue { width: 8px; height: 8px; background: #42a5f5; border-radius: 50%; }
+.dot-green { width: 8px; height: 8px; background: #66bb6a; border-radius: 50%; }
 
 /* ==== 9. PÁGINA DE VISUALIZAÇÃO DO ORÇAMENTO ==== */
 .header-orcamento {
@@ -424,6 +481,12 @@ nav ul li a[onclick="limparPagina()"]:hover {
     }
 }
 
+/* Ocultar Colunas Específicas em Telas Pequenas (Quick Win - Prioridade 2) */
+@media (max-width: 600px) {
+    .col-oculta-mobile { display: none; }
+    #tabela-relatorio td:nth-child(2) { display: none; } /* Oculta coluna Nº Pedido especificamente na tabela de relatórios */
+}
+
 /* ==== 11. REGRAS DE IMPRESSÃO ==== */
 @media print {
     /* Ocultar elementos de navegação e interface do sistema */
@@ -515,4 +578,10 @@ nav ul li a[onclick="limparPagina()"]:hover {
         background: transparent;
         vertical-align: middle;
     }
+}
+
+/* ANIMAÇÕES */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
