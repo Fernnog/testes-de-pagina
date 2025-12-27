@@ -28,6 +28,7 @@
     <script type="module" src="assets/js/precificacao-insumos.js"></script> 
     <script type="module" src="assets/js/main.js"></script>
     <script type="module" src="assets/js/orcamentos.js"></script>
+    <script type="module" src="assets/js/relatorios.js"></script> <!-- NOVO: Prioridade 3 (Refatoração) -->
     <script type="module" src="assets/js/precificacao.js"></script>
 </head>
 <body>
@@ -264,7 +265,7 @@
                         </div>
                     </div>
 
-                    <!-- NOVO: Campos Financeiros Gerenciais (Prioridade 1) -->
+                    <!-- Campos Financeiros Gerenciais -->
                     <div class="form-row valores-pedido" style="background-color: #f0f7f7; border: 1px solid #b2d8d8; margin-top: 15px; padding: 15px; border-radius: 10px;">
                         <h3 style="width: 100%; font-size: 1rem; color: #5a8289; margin: 0 0 10px 0;">Demonstrativo Financeiro (Interno)</h3>
                         
@@ -306,7 +307,7 @@
                     <button type="button" id="btnSalvarPedidoEdicao">Salvar Pedido</button>
                 </section>
 
-                 <!-- RELATÓRIOS (Atualizado Prioridade 2) -->
+                 <!-- RELATÓRIOS (Atualizado v1.1.0) -->
                  <section id="relatorio" class="pagina" style="display: none;">
                     <h2 class="section-title-lined">Relatório Financeiro Mensal</h2>
                     
@@ -322,36 +323,63 @@
                         <button onclick="gerarRelatorioFinanceiro()">Gerar Relatório</button>
                     </div>
 
-                    <!-- Dashboard KPIs -->
-                    <div class="dashboard-resumo" style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin-bottom: 30px;">
-                        <div class="card-kpi" style="background: #e3f2fd; border-left: 5px solid #2196F3; flex: 1; min-width: 140px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center;">
-                            <span style="font-size: 0.85rem; color: #555; display: block; margin-bottom: 5px;">Mão de Obra (Salário)</span>
-                            <strong id="kpi-mao-obra" style="font-size: 1.2rem; color: #333;">R$ 0,00</strong>
+                    <!-- MENSAGEM MOTIVACIONAL (NOVO v1.1.0) -->
+                    <div id="mensagem-motivacional" class="feedback-card" style="display: none;"></div>
+
+                    <!-- DASHBOARD KPIS (NOVO v1.1.0) -->
+                    <div class="dashboard-resumo" style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px;">
+                        <!-- Contador de Vitórias -->
+                        <div class="card-kpi card-destaque-qtd">
+                            <span>Pedidos Entregues</span>
+                            <strong id="kpi-qtd-pedidos">0</strong>
                         </div>
-                        <div class="card-kpi" style="background: #e8f5e9; border-left: 5px solid #4CAF50; flex: 1; min-width: 140px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center;">
-                            <span style="font-size: 0.85rem; color: #555; display: block; margin-bottom: 5px;">Lucro da Empresa</span>
-                            <strong id="kpi-lucro" style="font-size: 1.2rem; color: #333;">R$ 0,00</strong>
+                        <!-- Salário -->
+                        <div class="card-kpi kpi-salario">
+                            <span>Meu Salário (Mão de Obra)</span>
+                            <strong id="kpi-mao-obra">R$ 0,00</strong>
                         </div>
-                        <div class="card-kpi" style="background: #ffebee; border-left: 5px solid #e53935; flex: 1; min-width: 140px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center;">
-                            <span style="font-size: 0.85rem; color: #555; display: block; margin-bottom: 5px;">Custos Totais</span>
-                            <strong id="kpi-custos" style="font-size: 1.2rem; color: #333;">R$ 0,00</strong>
+                        <!-- Caixa -->
+                        <div class="card-kpi kpi-caixa">
+                            <span>Caixa da Empresa</span>
+                            <strong id="kpi-lucro">R$ 0,00</strong>
                         </div>
-                        <div class="card-kpi" style="background: #fff3e0; border-left: 5px solid #ff9800; flex: 1; min-width: 140px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center;">
-                            <span style="font-size: 0.85rem; color: #555; display: block; margin-bottom: 5px;">Faturamento Bruto</span>
-                            <strong id="kpi-total" style="font-size: 1.2rem; color: #333;">R$ 0,00</strong>
+                        <!-- Gastos -->
+                        <div class="card-kpi kpi-gastos">
+                            <span>Gastos de Produção</span>
+                            <strong id="kpi-custos">R$ 0,00</strong>
+                        </div>
+                        <!-- Total -->
+                        <div class="card-kpi kpi-total">
+                            <span>Total Vendido</span>
+                            <strong id="kpi-total">R$ 0,00</strong>
                         </div>
                     </div>
 
-                    <h3 style="text-align: center; color: #7aa2a9;">Lançamentos do Mês</h3>
+                    <!-- BARRA VISUAL DE DISTRIBUIÇÃO (NOVO v1.1.0) -->
+                    <div class="distribuicao-financeira-container">
+                        <h3 style="font-size: 0.9rem; color: #555; margin-bottom: 5px;">Para onde foi o dinheiro?</h3>
+                        <div class="barra-empilhada">
+                            <div id="barra-custos" class="barra-segmento segmento-vermelho" style="width: 0%"></div>
+                            <div id="barra-salario" class="barra-segmento segmento-azul" style="width: 0%"></div>
+                            <div id="barra-lucro" class="barra-segmento segmento-verde" style="width: 0%"></div>
+                        </div>
+                        <div class="legenda-barra">
+                            <span class="legenda-item"><span class="dot-red"></span> Gastos</span>
+                            <span class="legenda-item"><span class="dot-blue"></span> Salário</span>
+                            <span class="legenda-item"><span class="dot-green"></span> Caixa</span>
+                        </div>
+                    </div>
+
+                    <h3 style="text-align: center; color: #7aa2a9; margin-top: 30px;">Pedidos Entregues</h3>
                     <div class="table-responsive">
                         <table id="tabela-relatorio">
                             <thead>
                                 <tr>
                                     <th>Data</th>
-                                    <th>Pedido</th>
+                                    <th class="col-oculta-mobile">Nº Pedido</th> <!-- Oculta no Mobile -->
                                     <th>Cliente</th>
-                                    <th style="color: #2196F3;">M. Obra</th>
-                                    <th style="color: #4CAF50;">Lucro</th>
+                                    <th style="color: #2196F3;">Salário</th>
+                                    <th style="color: #4CAF50;">Caixa</th>
                                     <th>Total</th>
                                 </tr>
                             </thead>
@@ -365,7 +393,7 @@
         </div>
     </section>
 
-    <!-- 5. MÓDULO: PRECIFICAÇÃO (MODIFICADO) -->
+    <!-- 5. MÓDULO: PRECIFICAÇÃO -->
     <section id="module-precificacao" style="display: none;">
         <button class="btn-back-hub">⬅ Voltar ao Menu</button>
 
@@ -538,12 +566,12 @@
                 </div>
             </div>
 
-            <!-- ABA: CÁLCULO (PRECIFICAÇÃO) - MODIFICADA (DASHBOARD) -->
+            <!-- ABA: CÁLCULO (PRECIFICAÇÃO) -->
             <div id="calculo-precificacao" class="subpagina" style="display:none;">
                 <h2 class="section-title-lined">Cálculo da Precificação</h2>
 
                 <div class="pricing-dashboard">
-                    <!-- COLUNA 1: ENTRADA DE DADOS (Painéis verticais) -->
+                    <!-- COLUNA 1: ENTRADA DE DADOS -->
                     <div class="pricing-inputs-area">
                         
                         <!-- Painel A: Definição do Produto -->
@@ -566,7 +594,7 @@
                                 </div>
                             </div>
                             
-                            <!-- Campo oculto para cálculo (Mantido para lógica JS) -->
+                            <!-- Campo oculto para cálculo -->
                             <span id="custo-produto" style="display:none;">0</span> 
                         </div>
 
@@ -616,7 +644,7 @@
                         </div>
                     </div>
 
-                    <!-- COLUNA 2: CARTÃO DE RESULTADO (O Dashboard) -->
+                    <!-- COLUNA 2: CARTÃO DE RESULTADO -->
                     <div class="pricing-results-area">
                         <div class="result-card">
                             <div class="result-header">
@@ -625,9 +653,8 @@
                             </div>
 
                             <div class="result-body">
-                                <!-- Bloco de Custos (O que sai) -->
+                                <!-- Bloco de Custos -->
                                 <div class="result-section costs">
-                                    <!-- Ícone Vermelho -->
                                     <h5>
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e53935" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;">
                                             <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -645,14 +672,12 @@
                                     </div>
                                     <div class="result-row subtotal-row">
                                         <span class="highlight-red">Subtotal Custos:</span>
-                                        <!-- Classe highlight-red adicionada -->
                                         <span id="subtotal" class="highlight-red">R$ 0,00</span>
                                     </div>
                                 </div>
 
-                                <!-- Bloco de Mão de Obra (Salário da Artesã) -->
+                                <!-- Bloco de Mão de Obra -->
                                 <div class="result-section labor">
-                                    <!-- Ícone Azul -->
                                     <h5>
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2196F3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;">
                                             <circle cx="12" cy="12" r="10"></circle>
@@ -664,14 +689,12 @@
                                         <span>Valor pelo tempo trabalhado:</span>
                                         <span id="total-mao-de-obra">R$ 0,00</span>
                                     </div>
-                                    <!-- Campos ocultos usados no JS antigo, mantidos para compatibilidade -->
                                     <span id="custo-mao-de-obra-detalhe" style="display:none;"></span>
                                     <span id="custo-ferias-13o-detalhe" style="display:none;"></span>
                                 </div>
 
-                                <!-- Bloco de Lucro (Crescimento da Empresa) -->
+                                <!-- Bloco de Lucro -->
                                 <div class="result-section profit">
-                                    <!-- Ícone Verde -->
                                     <h5>
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 5px;">
                                             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
@@ -684,13 +707,12 @@
                                     </div>
                                 </div>
 
-                                <!-- Bloco de Taxas (Terceiros) -->
+                                <!-- Bloco de Taxas -->
                                 <div class="result-section fees">
                                     <div class="result-row">
                                         <span>Taxas (Cartão/Intermediadores):</span>
                                         <span id="taxa-credito-valor">R$ 0,00</span>
                                     </div>
-                                    <!-- Valor "limpo" (Total sem taxas) -->
                                     <div class="result-row total-row-small">
                                         <span>Valor Real (Sem Taxas):</span>
                                         <span id="total-final">R$ 0,00</span>
@@ -699,7 +721,6 @@
                             </div>
                         </div>
                         
-                        <!-- Detalhes de custos (Materiais + Indiretos) movidos para cá -->
                         <div class="details-container">
                             <details class="details-ci">
                                 <summary>Ver Materiais Inclusos</summary>
@@ -715,7 +736,7 @@
                 </div>
             </div>
 
-            <!-- ABA: HISTÓRICO - MODIFICADO -->
+            <!-- ABA: HISTÓRICO -->
             <div id="precificacoes-geradas" class="subpagina" style="display:none;">
                 <h2 class="section-title-lined">Histórico de Precificações</h2>
                 <div class="form-group">
@@ -732,7 +753,7 @@
         </div>
     </section>
 
-    <!-- SERVICE WORKER (Para PWA) -->
+    <!-- SERVICE WORKER -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
