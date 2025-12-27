@@ -23,7 +23,6 @@ export async function initOrcamentos() {
     console.log("Inicializando Módulo Orçamentos...");
     
     // EXPOR FUNÇÕES PARA O HTML (Correção do erro "Not Defined")
-    // Isso garante que o onclick="..." no HTML encontre estas funções
     window.excluirProduto = excluirProduto;
     window.excluirProdutoEdicao = excluirProdutoEdicao;
     window.formatarEntradaMoeda = formatarEntradaMoeda;
@@ -33,8 +32,8 @@ export async function initOrcamentos() {
     window.editarOrcamento = editarOrcamento;
     window.gerarPedido = gerarPedido;
     window.editarPedido = editarPedido;
-    window.imprimirChecklist = imprimirChecklist; // Nova
-    window.gerarRelatorioFinanceiro = gerarRelatorioFinanceiro; // Nova
+    window.imprimirChecklist = imprimirChecklist;
+    window.gerarRelatorioFinanceiro = gerarRelatorioFinanceiro; // Nova lógica vinculada aqui
 
     // Carregar dados do banco
     await carregarDados();
@@ -141,8 +140,7 @@ function setupEventListeners() {
     // Filtros e Relatórios
     bindClick('#orcamentos-gerados button', filtrarOrcamentos);
     bindClick('#lista-pedidos button', filtrarPedidos);
-    // Nota: O botão de gerar relatório no HTML chama gerarRelatorioFinanceiro() direto via onclick
-
+    
     const btnXLSX = document.querySelector('#relatorio button[onclick="gerarRelatorioXLSX()"]');
     if(btnXLSX) btnXLSX.onclick = gerarRelatorioXLSX;
 
@@ -774,6 +772,10 @@ function imprimirChecklist(id) {
     janela.document.close();
 }
 
+/**
+ * REESCRITA COMPLETA DA FUNÇÃO DE RELATÓRIO
+ * Implementa Prioridade 1 (Humanização/Visual) e Prioridade 2 (CSS Mobile)
+ */
 function gerarRelatorioFinanceiro() {
     const mes = parseInt(document.getElementById("relatorio-mes").value);
     const anoSelect = document.getElementById("relatorio-ano");
@@ -787,13 +789,13 @@ function gerarRelatorioFinanceiro() {
 
     const pedidosFiltrados = pedidos.filter(p => {
         if(!p.dataPedido) return false;
-        // Assume formato YYYY-MM-DD
         const parts = p.dataPedido.split('-');
         const pMes = parseInt(parts[1]) - 1; // Mes 0-indexado
         const pAno = parseInt(parts[0]);
         return pMes === mes && pAno === ano;
     });
 
+    // 1. Processamento da Tabela e Somas
     pedidosFiltrados.forEach(p => {
         totalFat += (p.total || 0);
         totalMO += (p.custoMaoDeObra || 0);
@@ -801,25 +803,78 @@ function gerarRelatorioFinanceiro() {
         totalCustos += (p.custosTotais || 0);
 
         const row = tbody.insertRow();
+        
+        // Prio 2: Truncar nome para mobile e adicionar classe de ocultação
+        const nomeCliente = p.cliente.length > 15 ? p.cliente.substring(0, 15) + '...' : p.cliente;
+
         row.innerHTML = `
-            <td>${p.dataPedido.split('-').reverse().join('/')}</td>
-            <td>${p.numero}</td>
-            <td>${p.cliente}</td>
-            <td style="color:#2196F3">${formatarMoeda(p.custoMaoDeObra)}</td>
-            <td style="color:#4CAF50">${formatarMoeda(p.margemLucro)}</td>
+            <td>${p.dataPedido.split('-').reverse().join('/').substring(0, 5)}</td> <!-- Apenas Dia/Mês -->
+            <td class="col-oculta-mobile">${p.numero}</td> <!-- Classe Prio 2 -->
+            <td><span title="${p.cliente}">${nomeCliente}</span></td>
+            <td style="color:#2196F3; font-weight:bold;">${formatarMoeda(p.custoMaoDeObra)}</td>
+            <td style="color:#4CAF50; font-weight:bold;">${formatarMoeda(p.margemLucro)}</td>
             <td>${formatarMoeda(p.total)}</td>
         `;
     });
 
     if(pedidosFiltrados.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhum pedido encontrado neste período.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px; color: #777;">Nenhum pedido entregue neste período.</td></tr>';
     }
 
-    // Atualiza KPIs
-    document.getElementById("kpi-mao-obra").textContent = formatarMoeda(totalMO);
-    document.getElementById("kpi-lucro").textContent = formatarMoeda(totalLucro);
-    document.getElementById("kpi-custos").textContent = formatarMoeda(totalCustos);
-    document.getElementById("kpi-total").textContent = formatarMoeda(totalFat);
+    // 2. Atualização dos KPIs Numéricos (Prio 1)
+    const kpiQtd = document.getElementById("kpi-qtd-pedidos");
+    if(kpiQtd) kpiQtd.textContent = pedidosFiltrados.length; // Novo KPI
+
+    updateElementText("kpi-mao-obra", totalMO);
+    updateElementText("kpi-lucro", totalLucro);
+    updateElementText("kpi-custos", totalCustos);
+    updateElementText("kpi-total", totalFat);
+
+    // 3. Atualização da Barra Visual (Prio 1)
+    if (totalFat > 0) {
+        const pctCustos = (totalCustos / totalFat) * 100;
+        const pctMO = (totalMO / totalFat) * 100;
+        const pctLucro = (totalLucro / totalFat) * 100;
+
+        setBarWidth("barra-custos", pctCustos);
+        setBarWidth("barra-salario", pctMO);
+        setBarWidth("barra-lucro", pctLucro);
+    } else {
+        setBarWidth("barra-custos", 0);
+        setBarWidth("barra-salario", 0);
+        setBarWidth("barra-lucro", 0);
+    }
+
+    // 4. Mensagem Motivacional (Prio 1)
+    const boxMsg = document.getElementById("mensagem-motivacional");
+    if (boxMsg) {
+        if (pedidosFiltrados.length > 0) {
+            boxMsg.style.display = "block";
+            let mensagem = "";
+            
+            // Lógica de Feedback Emocional
+            if (totalLucro > totalCustos) {
+                mensagem = "🎉 <strong>Uau!</strong> O caixa da sua empresa cresceu mais que seus gastos este mês!";
+            } else if (totalMO > totalLucro && totalMO > totalCustos) {
+                mensagem = "💼 <strong>Ótimo trabalho!</strong> Seu salário (Mão de Obra) foi o destaque do mês.";
+            } else {
+                mensagem = `🚀 <strong>Produção a todo vapor!</strong> Você entregou ${pedidosFiltrados.length} pedidos. Continue firme!`;
+            }
+            boxMsg.innerHTML = mensagem;
+        } else {
+            boxMsg.style.display = "none";
+        }
+    }
+}
+
+// Helpers internos para o relatório
+function updateElementText(id, value) {
+    const el = document.getElementById(id);
+    if(el) el.textContent = formatarMoeda(value);
+}
+function setBarWidth(id, pct) {
+    const el = document.getElementById(id);
+    if(el) el.style.width = `${pct}%`;
 }
 
 // Filtros Simples
